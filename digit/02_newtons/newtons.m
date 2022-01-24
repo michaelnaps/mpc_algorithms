@@ -28,7 +28,9 @@
 %         0 -> zero cost break
 %         1 -> first order optimality
 %         2 -> change in input break
-function [u, C, n, brk] = newtons(P, dt, q0, u0, um, c, m, L, Cq, thd, eps)
+
+% function [u, C, n, brk] = newtons(P, dt, q0, u0, um, c, m, L, Cq, thd, eps);
+function [u] = newtons(P, T, dt, q0, u0, um, c, m, L, Cq, thd, eps, model, log);
     %% Setup - Initial Guess, Cost, Gradient, and Hessian
     N = length(um);
     uc = u0;
@@ -65,10 +67,6 @@ function [u, C, n, brk] = newtons(P, dt, q0, u0, um, c, m, L, Cq, thd, eps)
 
         % maximum iteration break
         if (count == 1000)
-            fprintf("ERROR: Iteration break. (%i)\n", count)
-            fprintf("udn1 = %.3f  udn2 = %.3f  udn3 = %.3f\n", udn)
-            fprintf("u1 = %.3f  u2 = %.3f  u3 = %.3f\n", un)
-            fprintf("g1 = %.3f  g2 = %.3f  g3 = %.3f\n", g)
             brk = -1;
             break;
         end
