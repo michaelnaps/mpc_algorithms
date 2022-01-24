@@ -30,7 +30,7 @@
 %         2 -> change in input break
 
 % function [u, C, n, brk] = newtons(P, dt, q0, u0, um, c, m, L, Cq, thd, eps);
-function [u] = newtons(P, T, dt, q0, u0, um, c, m, L, Cq, thd, eps, model, log);
+function [u] = newtons(P, T, dt, q0, u0, um, c, m, L, Cq, thd, eps, model, logger);
     %% Setup - Initial Guess, Cost, Gradient, and Hessian
     N = length(um);
     uc = u0;
@@ -88,4 +88,6 @@ function [u] = newtons(P, T, dt, q0, u0, um, c, m, L, Cq, thd, eps, model, log);
     u = un;
     C = Cn;
     n = count;
+
+    logger = [C, n, brk];
 end
