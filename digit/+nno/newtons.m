@@ -29,12 +29,12 @@
 %         1 -> first order optimality
 %         2 -> change in input break
 
-% function [u, C, n, brk] = newtons(P, dt, q0, u0, um, c, m, L, Cq, thd, eps);
-function [u] = newtons(P, T, dt, q0, u0, um, c, m, L, Cq, thd, eps, model, logger);
+% function [u, C, n, brk] = newtons(P, dt, q0, u0, um, Cq, thd, eps);
+function [u] = newtons(P, dt, q0, u0, um, Cq, qd, eps, model, logger)
     %% Setup - Initial Guess, Cost, Gradient, and Hessian
-    N = length(um);
+    N = length(q0)/2;
     uc = u0;
-    Cc = cost(P, dt, q0, u0, uc, c, m, L, Cq, thd, " NN Initial Cost ");
+    Cc = nno.cost(P, dt, q0, u0, uc, Cq, qd, model);
     un = uc;  Cn = Cc;
 
     %% Loop for Newton's Method
@@ -42,14 +42,14 @@ function [u] = newtons(P, T, dt, q0, u0, um, c, m, L, Cq, thd, eps, model, logge
     brk = 0;
     while (Cc > eps)
         % gradient and hessian of the current input
-        g = cost_gradient(P, dt, q0, u0, uc, c, m, L, Cq, thd, 1e-3, " NN Main Loop Gradient ");
-        H = cost_hessian(P, dt, q0, u0, uc, c, m, L, Cq, thd, 1e-3, " NN Main Loop Hessian ");
+        g = nno.cost_gradient(P, dt, q0, u0, uc, Cq, qd, 1e-3, model);
+        H = nno.cost_hessian(P, dt, q0, u0, uc, Cq, qd, 1e-3, model);
 
         % calculate and add the next Newton's step
         un = uc - H\g;
 
         % compute new values for cost, gradient, and hessian
-        Cn = cost(P, dt, q0, u0, un, c, m, L, Cq, thd, " NN Main Loop Cost ");
+        Cn = nno.cost(P, dt, q0, u0, un, Cq, qd, model);
         udn = abs(un - uc);
         count = count + 1;
 
@@ -77,10 +77,10 @@ function [u] = newtons(P, T, dt, q0, u0, um, c, m, L, Cq, thd, eps, model, logge
         
     % check boundary constraints
     for i = 1:N
-        if (un(i) > um(i))
-            un(i) = um(i);
-        elseif (un(i) < -um(i))
-            un(i) = -um(i);
+        if (un(i) > um)
+            un(i) = um;
+        elseif (un(i) < -um)
+            un(i) = -um;
         end
     end
 
@@ -89,5 +89,17 @@ function [u] = newtons(P, T, dt, q0, u0, um, c, m, L, Cq, thd, eps, model, logge
     C = Cn;
     n = count;
 
-    logger = [C, n, brk];
+    if nargin > 4
+        calc = logger.calc;
+
+        calc.torque = u;
+        calc.cost = C;
+        calc.iterations = n;
+        calc.break = brk;
+
+        calc.qd = qd(1:int(length(qd)/2));
+        calc.dqd = qd(int(length(qd)/2):end);
+
+        logger.calc = calc;
+    end
 end
