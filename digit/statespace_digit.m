@@ -1,12 +1,12 @@
-function [xdot] = compute_xdot(model, x, u)
+function [xdot] = statespace_digit(q0, u, model)
     % This computes the xdot = [dq;ddq] given a controller input `u` and
     % states `x=[q;dq]`. 
     
        
     % extract the state variables into x and dx
-    nx = model.Dimension;
-    q = x(1:nx);
-    dq = x(nx+1:end);
+    nq = model.Dimension;
+    q = q0(1:nq);
+    dq = q0(nq+1:end);
         
     % compute the mass matrix and drift vector (internal dynamics)
     M = calcMassMatrix(model, q);
@@ -33,8 +33,8 @@ function [xdot] = compute_xdot(model, x, u)
         % determine the total dimension of the holonomic constraints
         cdim = sum([h_cstr.Dimension]);
         % initialize the Jacobian matrix
-        Je = zeros(cdim,nx);
-        Jedot = zeros(cdim,nx);
+        Je = zeros(cdim,nq);
+        Jedot = zeros(cdim,nq);
         
         idx = 1;
         for i=1:n_cstr
@@ -57,7 +57,7 @@ function [xdot] = compute_xdot(model, x, u)
         ddq = ddq_free;
     else
         Xi = Je * (M \ transpose(Je));
-        P = eye(nx) - M\(transpose(Je)/Xi)*Je;
+        P = eye(nq) - M\(transpose(Je)/Xi)*Je;
         %         ddq = M\(-Fv+Gv+Je'*lambda);
         ddq = P*ddq_free;
         
