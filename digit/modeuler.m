@@ -5,18 +5,12 @@ function [q] = modeuler(P, dt, q0, u, model)
     qm = Inf(Pm+1, length(q0));
 
     %% Modified Euler Method
-    N = length(q0)/2;
     q(1,:) = q0';
     qm(1,:) = q0';
     for i = 1:Pm
-        M = calcMassMatrix(model, qm(i,1:N));
-        F = calcDriftVector(model, qm(i,1:N), qm(i,N:end));
-        dq1 = M\(u - F);
+        dq1 = statespace_digit(qm(i,:), u, model)';
         qeu = qm(i,:) + dq1*dtm;
-
-        M = calcMassMatrix(model, qeu(1:N));
-        F = calcDriftVector(model, que(1:N), qeu(N:end));
-        dq2 = M\(u - F);
+        dq1 = statespace_digit(qeu, u, model)';
         qm(i+1,:) = qm(i,:) + 1/2*(dq1 + dq2)*dtm;
 
         if (rem(i,10) == 0)

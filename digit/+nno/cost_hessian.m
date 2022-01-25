@@ -21,7 +21,7 @@
 %
 %  Outputs:
 %   'H'   - hessian matrix (d2C/du2)
-function [H] = cost_hessian(P, dt, q0, u0, u, c, m, L, Cq, thd, h, loc)
+function [H] = cost_hessian(P, dt, q0, u0, u, Cq, qd, h, loc)
     %% Setup
     N = length(u);
     H = zeros(N);
@@ -34,8 +34,8 @@ function [H] = cost_hessian(P, dt, q0, u0, u, c, m, L, Cq, thd, h, loc)
         un1(i) = u(i) - h;
         up1(i) = u(i) + h;
 
-        Hn1 = cost_gradient(P, dt, q0, u0, un1, c, m, L, Cq, thd, h, " Hessian (i-1) " + loc);
-        Hp1 = cost_gradient(P, dt, q0, u0, up1, c, m, L, Cq, thd, h, " Hessian (i+1) " + loc);
+        Hn1 = cost_gradient(P, dt, q0, u0, un1, Cq, qd, h, model);
+        Hp1 = cost_gradient(P, dt, q0, u0, up1, Cq, qd, h, model);
 
         Hn = (Hp1 - Hn1)/(2*h);
 
@@ -45,8 +45,8 @@ function [H] = cost_hessian(P, dt, q0, u0, u, c, m, L, Cq, thd, h, loc)
 %         un2(i) = u(i) - 2*h;
 %         up2(i) = u(i) + 2*h;
 % 
-%         Hn2 = cost_gradient(P, dt, q0, u0, un2, c, m, L, Cq, thd, h);
-%         Hp2 = cost_gradient(P, dt, q0, u0, up2, c, m, L, Cq, thd, h);
+%         Hn2 = cost_gradient(P, dt, q0, u0, un2, Cq, qd, h, model);
+%         Hp2 = cost_gradient(P, dt, q0, u0, up2, Cq, qd, h, model);
 % 
 %         Hn = (Hn2 - 8*Hn1 + 8*Hp1 - Hp2)/(12*h);
         

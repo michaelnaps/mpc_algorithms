@@ -1,8 +1,7 @@
-function [xdot] = statespace_digit(q0, u, model)
+function [qdot] = statespace_digit(q0, u, model)
     % This computes the xdot = [dq;ddq] given a controller input `u` and
     % states `x=[q;dq]`. 
     
-       
     % extract the state variables into x and dx
     nq = model.Dimension;
     q = q0(1:nq);
@@ -12,8 +11,6 @@ function [xdot] = statespace_digit(q0, u, model)
     M = calcMassMatrix(model, q);
     Fv = calcDriftVector(model, q, dq);
     
-    
-        
     %% NOTE: 
     % here we assume no external input, and the joint torques are given by
     % the input arguments `u`. Therefore no need to call the callback
@@ -21,7 +18,6 @@ function [xdot] = statespace_digit(q0, u, model)
     torque = model.Inputs.torque;
     Gmap = feval(torque.Gmap.Name,q);
     Gv   = Gmap*u;
-    
     
     ddq_free = M\(-Fv+Gv);
     
@@ -50,7 +46,7 @@ function [xdot] = statespace_digit(q0, u, model)
         end 
     else
         Je = [];
-        Jedot = [];        
+        Jedot = [];
     end
     
     if isempty(Je)
@@ -58,16 +54,13 @@ function [xdot] = statespace_digit(q0, u, model)
     else
         Xi = Je * (M \ transpose(Je));
         P = eye(nq) - M\(transpose(Je)/Xi)*Je;
-        %         ddq = M\(-Fv+Gv+Je'*lambda);
+        % ddq = M\(-Fv+Gv+Je'*lambda);
         ddq = P*ddq_free;
-        
     end
     
    
     
     % the system dynamics
-    xdot = [dq; 
-        ddq];
-    
+    qdot = [dq; ddq];
 end
 

@@ -30,9 +30,24 @@
 %         2 -> change in input break
 
 % function [u, C, n, brk] = newtons(P, dt, q0, u0, um, Cq, thd, eps);
-function [u] = newtons(P, dt, q0, u0, um, Cq, qd, eps, model, logger)
-    %% Setup - Initial Guess, Cost, Gradient, and Hessian
+% function [u] = newtons(P, dt, q0, u0, um, Cq, qd, eps, input, model, logger)
+function [u] = newtons(input, model, ~, q0, logger) 
+    %% Constant Parameters
     N = length(q0)/2;
+    P   = input.Params.P;
+    dt  = input.Params.dt;
+    um  = input.Params.um;
+    Cq  = input.Params.Cq;
+    qd  = input.Params.qd;
+    eps = input.Params.eps;
+
+    if (isempty(fieldnames(logger.calc)))
+        u0 = zeros(N, 1);
+    else
+        u0 = logger.calc.torque;
+    end
+
+    %% Setup - Initial Guess, Cost, Gradient, and Hessian
     uc = u0;
     Cc = nno.cost(P, dt, q0, u0, uc, Cq, qd, model);
     un = uc;  Cn = Cc;
@@ -89,16 +104,16 @@ function [u] = newtons(P, dt, q0, u0, um, Cq, qd, eps, model, logger)
     C = Cn;
     n = count;
 
-    if nargin > 4
+    if nargin > 3
         calc = logger.calc;
 
         calc.torque = u;
         calc.cost = C;
         calc.iterations = n;
         calc.break = brk;
-
-        calc.qd = qd(1:int(length(qd)/2));
-        calc.dqd = qd(int(length(qd)/2):end);
+        
+        calc.qd = qd;
+        calc.dqd = dqd;
 
         logger.calc = calc;
     end
