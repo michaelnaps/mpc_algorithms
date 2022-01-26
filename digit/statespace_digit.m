@@ -58,9 +58,7 @@ function [qdot] = statespace_digit(q0, u, model)
         ddq = P*ddq_free;
     end
     
-   
-    
     % the system dynamics
-    qdot = [dq; ddq];
+    qdot = [dq'; ddq];
 end
 

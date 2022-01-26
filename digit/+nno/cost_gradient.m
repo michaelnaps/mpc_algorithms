@@ -21,7 +21,7 @@
 %
 %  Outputs:
 %   'g'   - gradient vector (dC/du)
-function [g] = cost_gradient(P, dt, q0, u0, u, Cq, qd, h, model)
+function [g] = cost_gradient(P, dt, q0, u0, u, Cq, qd, h, model, a_ind)
     %% Setup
     N = length(u);
     g = zeros(size(u));
@@ -34,8 +34,8 @@ function [g] = cost_gradient(P, dt, q0, u0, u, Cq, qd, h, model)
         un1(i) = u(i) - h;
         up1(i) = u(i) + h;
         
-        Cn1 = cost(P, dt, q0, u0, un1, Cq, qd, model);
-        Cp1 = cost(P, dt, q0, u0, up1, Cq, qd, model);
+        Cn1 = nno.cost(P, dt, q0, u0, un1, Cq, qd, model, a_ind);
+        Cp1 = nno.cost(P, dt, q0, u0, up1, Cq, qd, model, a_ind);
         
         gn = (Cp1 - Cn1)/(2*h);
 
@@ -45,8 +45,8 @@ function [g] = cost_gradient(P, dt, q0, u0, u, Cq, qd, h, model)
 %         un2(i) = u(i) - 2*h;
 %         up2(i) = u(i) + 2*h;
 % 
-%         Cn2 = cost(P, dt, q0, u0, un2, c, m, L, Cq, thd, 'Gradient u(i-2)');
-%         Cp2 = cost(P, dt, q0, u0, up2, c, m, L, Cq, thd, 'Gradient u(i+2)');
+%         Cn2 = nno.cost(P, dt, q0, u0, un2, c, m, L, Cq, thd, 'Gradient u(i-2)');
+%         Cp2 = nno.cost(P, dt, q0, u0, up2, c, m, L, Cq, thd, 'Gradient u(i+2)');
 % 
 %         gn = (Cn2 - 8*Cn1 + 8*Cp1 - Cp2)/(12*h);
 

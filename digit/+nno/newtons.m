@@ -30,26 +30,12 @@
 %         2 -> change in input break
 
 % function [u, C, n, brk] = newtons(P, dt, q0, u0, um, Cq, thd, eps);
-% function [u] = newtons(P, dt, q0, u0, um, Cq, qd, eps, input, model, logger)
-function [u] = newtons(input, model, ~, q0, logger) 
-    %% Constant Parameters
-    N = length(q0)/2;
-    P   = input.Params.P;
-    dt  = input.Params.dt;
-    um  = input.Params.um;
-    Cq  = input.Params.Cq;
-    qd  = input.Params.qd;
-    eps = input.Params.eps;
-
-    if (isempty(fieldnames(logger.calc)))
-        u0 = zeros(N, 1);
-    else
-        u0 = logger.calc.torque;
-    end
-
+% function [u] = newtons(input, model, ~, q0, logger)
+function [u, C, n, brk] = newtons(P, dt, q0, u0, um, Cq, qd, eps, model, a_ind)
     %% Setup - Initial Guess, Cost, Gradient, and Hessian
+    N = length(q0)/2;
     uc = u0;
-    Cc = nno.cost(P, dt, q0, u0, uc, Cq, qd, model);
+    Cc = nno.cost(P, dt, q0, u0, uc, Cq, qd, model, a_ind);
     un = uc;  Cn = Cc;
 
     %% Loop for Newton's Method
@@ -57,14 +43,14 @@ function [u] = newtons(input, model, ~, q0, logger)
     brk = 0;
     while (Cc > eps)
         % gradient and hessian of the current input
-        g = nno.cost_gradient(P, dt, q0, u0, uc, Cq, qd, 1e-3, model);
-        H = nno.cost_hessian(P, dt, q0, u0, uc, Cq, qd, 1e-3, model);
+        g = nno.cost_gradient(P, dt, q0, u0, uc, Cq, qd, 1e-3, model, a_ind);
+        H = nno.cost_hessian(P, dt, q0, u0, uc, Cq, qd, 1e-3, model, a_ind);
 
         % calculate and add the next Newton's step
         un = uc - H\g;
 
         % compute new values for cost, gradient, and hessian
-        Cn = nno.cost(P, dt, q0, u0, un, Cq, qd, model);
+        Cn = nno.cost(P, dt, q0, u0, un, Cq, qd, model, a_ind);
         udn = abs(un - uc);
         count = count + 1;
 
@@ -100,21 +86,8 @@ function [u] = newtons(input, model, ~, q0, logger)
     end
 
     %% Return Values for Input, Cost, and Iteration Count
-    u = un;
+    uzero = zeros(N,1);
+    u = uzero + un;
     C = Cn;
     n = count;
-
-    if nargin > 3
-        calc = logger.calc;
-
-        calc.torque = u;
-        calc.cost = C;
-        calc.iterations = n;
-        calc.break = brk;
-        
-        calc.qd = qd;
-        calc.dqd = dqd;
-
-        logger.calc = calc;
-    end
 end

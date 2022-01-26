@@ -10,7 +10,7 @@ function [q] = modeuler(P, dt, q0, u, model)
     for i = 1:Pm
         dq1 = statespace_digit(qm(i,:), u, model)';
         qeu = qm(i,:) + dq1*dtm;
-        dq1 = statespace_digit(qeu, u, model)';
+        dq2 = statespace_digit(qeu, u, model)';
         qm(i+1,:) = qm(i,:) + 1/2*(dq1 + dq2)*dtm;
 
         if (rem(i,10) == 0)
