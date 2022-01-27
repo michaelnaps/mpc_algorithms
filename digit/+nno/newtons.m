@@ -2,22 +2,21 @@
 %  Method: Nonlinear Newton's (NN) Optimization Method
 %  Created by: Michael Napoli
 %
-%  Purpose: To optimize and solve a given system
-%   of n-link pendulum models using model predictive
-%   control (MPC) and the NN algorithm with the
-%   necessary constraints.
+%  Purpose: To optimize and solve a given robotic
+%   system using a Model Predictive Control architecture
+%   in combination with Newton's Optimization.
 %
 %  Inputs:
-%   'P'   - length of prediction horizon (PH)
-%   'dt'  - step-size for prediction horizon
-%   'q0'  - initial state
-%   'u0'  - initial guess
-%   'um'  - maximum allowable torque values
-%   'c'   - coefficient of damping for each link
-%   'm'   - mass at end of each pendulum
-%   'L'   - length of pendulum links
-%   'Cq'  - system of quadratic cost equations
-%   'eps' - acceptable error (for breaking)
+%   'P'     - length of prediction horizon (PH)
+%   'dt'    - step-size for prediction horizon
+%   'q0'    - initial state
+%   'u0'    - initial guess
+%   'um'    - maximum allowable torque values
+%   'Cq'    - system of quadratic cost equations
+%   'qd'    - list of desired states for joints
+%   'eps'   - acceptable error (for breaking)
+%   'model' - robot model created using FROST software
+%   'a_ind' - indices for controlled joints         
 %
 %  Outputs:
 %   'u'   - inputs for each applicable joint
@@ -28,9 +27,6 @@
 %         0 -> zero cost break
 %         1 -> first order optimality
 %         2 -> change in input break
-
-% function [u, C, n, brk] = newtons(P, dt, q0, u0, um, Cq, thd, eps);
-% function [u] = newtons(input, model, ~, q0, logger)
 function [u, C, n, brk] = newtons(P, dt, q0, u0, um, Cq, qd, eps, model, a_ind)
     %% Setup - Initial Guess, Cost, Gradient, and Hessian
     N = length(q0)/2;
@@ -73,7 +69,7 @@ function [u, C, n, brk] = newtons(P, dt, q0, u0, um, Cq, qd, eps, model, a_ind)
         end
 
         % update current variables for next iteration
-        uc = un;
+        uc = un;  Cc = Cn;
     end
         
     % check boundary constraints
@@ -86,8 +82,7 @@ function [u, C, n, brk] = newtons(P, dt, q0, u0, um, Cq, qd, eps, model, a_ind)
     end
 
     %% Return Values for Input, Cost, and Iteration Count
-    uzero = zeros(N,1);
-    u = uzero + un;
+    u = un;
     C = Cn;
     n = count;
 end

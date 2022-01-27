@@ -74,7 +74,7 @@ function [u, C, n, brk] = newtons(P, dt, q0, u0, um, c, m, L, Cq, thd, eps)
         end
 
         % update current variables for next iteration
-        uc = un;
+        uc = un;  Cc = Cn;
     end
         
     % check boundary constraints
