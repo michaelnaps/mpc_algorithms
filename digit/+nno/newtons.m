@@ -73,7 +73,7 @@ function [u, C, n, brk] = newtons(P, dt, q0, u0, um, Cq, qd, eps, model, a_ind)
     end
         
     % check boundary constraints
-    for i = 1:N
+    for i = 1:length(un)
         if (un(i) > um)
             un(i) = um;
         elseif (un(i) < -um)

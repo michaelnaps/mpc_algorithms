@@ -1,6 +1,7 @@
 function [q] = modeuler(P, dt, q0, u, model)
     %% Initialize Arrays
-    Pm = 10*P;  dtm = dt/10;
+    adj = 5;
+    Pm = adj*P;  dtm = dt/adj;
     q = Inf(P+1, length(q0));
     qm = Inf(Pm+1, length(q0));
 
@@ -13,14 +14,13 @@ function [q] = modeuler(P, dt, q0, u, model)
         dq2 = statespace_digit(qeu, u, model)';
         qm(i+1,:) = qm(i,:) + 1/2*(dq1 + dq2)*dtm;
 
-        if (rem(i,10) == 0)
-            q(i/10+1,:) = qm(i+1,:);
+        if (rem(i,adj) == 0)
+            q(i/adj+1,:) = qm(i+1,:);
         end
 
         if (sum(isnan(qm(i+1,:))) > 0)
-            fprintf("ERROR: M/(u - F) returned NaN for inputs.\n")
+            fprintf("ERROR: statespace_digit() returned NaN for inputs.\n")
             fprintf("iteration(s): %i\n\n", i)
-            pause(1);
             break;
         end
     end

@@ -6,18 +6,19 @@ function [u] = mpc_root(input, model, ~, q0, logger)
     um    = input.Params.um;
     Cq    = input.Params.Cq;
     qd    = input.Params.qd;
+    dqd   = input.Params.dqd;
     eps   = input.Params.eps;
     a_ind = input.Params.a_ind;
 
     if (isempty(fieldnames(logger.calc)))
-        u0 = zeros(N, 1);
+        u0 = zeros(size(a_ind));
     else
         u0 = logger.calc.torque;
     end
     
     %% Run Optimization Algorithm
     tic;
-    [u, C, n, brk] = nno.newtons(P, dt, q0, u0(a_ind), um, Cq, qd, eps, model, a_ind);
+    [u, C, n, brk] = nno.newtons(P, dt, q0, u0, um, Cq, qd, eps, model, a_ind);
     t = toc;
     fprintf("runtime: %.3f - iterations: %i\n", t, n);
 
