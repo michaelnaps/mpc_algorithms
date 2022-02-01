@@ -11,7 +11,8 @@ function [u] = mpc_root(input, model, ~, q0, logger)
     a_ind = input.Params.a_ind;
 
     if (isempty(fieldnames(logger.calc)))
-        u0 = zeros(N,1);
+        % u0 = zeros(N,1);
+        u0 = zeros(size(a_ind));
     else
         u0 = logger.calc.torque;
     end
@@ -20,7 +21,7 @@ function [u] = mpc_root(input, model, ~, q0, logger)
     tic;
     [u, C, n, brk] = nno.newtons(P, dt, q0, u0, um, Cq, qd, eps, model, a_ind);
     t = toc;
-    fprintf("runtime: %.3f - iterations: %i\n", t, n);
+    fprintf("runtime: %.3f - iterations: %i\n\n", t, n);
 
     %% Log Data and Return
     if nargin > 4

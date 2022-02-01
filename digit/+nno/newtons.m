@@ -69,8 +69,8 @@ function [u, C, n, brk] = newtons(P, dt, q0, u0, um, Cq, qd, eps, model, a_ind)
         end
         
         % update current variables for next iteration
+        fprintf("Current cost: %.3f\tChange in cost: %.3f\n", Cn, abs(Cc-Cn))
         uc = un;  Cc = Cn;
-        fprintf("Current cost: %.3f\n", Cc)
     end
         
     % check boundary constraints
