@@ -57,7 +57,7 @@ function [u, C, n, brk] = newtons(P, dt, q0, u0, um, Cq, qd, eps, model, a_ind)
         end
 
         % change in input break
-        if ((udn < eps) == N)
+        if (sum(udn < eps) == N)
             brk = 2;
             break;
         end
@@ -67,9 +67,10 @@ function [u, C, n, brk] = newtons(P, dt, q0, u0, um, Cq, qd, eps, model, a_ind)
             brk = -1;
             break;
         end
-
+        
         % update current variables for next iteration
         uc = un;  Cc = Cn;
+        fprintf("Current cost: %.3f\n", Cc)
     end
         
     % check boundary constraints

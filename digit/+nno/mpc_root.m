@@ -11,7 +11,7 @@ function [u] = mpc_root(input, model, ~, q0, logger)
     a_ind = input.Params.a_ind;
 
     if (isempty(fieldnames(logger.calc)))
-        u0 = zeros(size(a_ind));
+        u0 = zeros(N,1);
     else
         u0 = logger.calc.torque;
     end
