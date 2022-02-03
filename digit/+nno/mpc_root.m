@@ -19,7 +19,7 @@ function [u] = mpc_root(input, model, ~, q0, logger)
     
     %% Run Optimization Algorithm
     tic;
-    [u, C, n, brk] = nno.newtons(P, dt, q0, u0, um, Cq, qd, eps, model, a_ind);
+    [u, C, n, brk] = nno.newtons(P, dt, q0, u0, um, Cq, qd, eps, model);
     t = toc;
     fprintf("runtime: %.3f - iterations: %i\n\n", t, n);
 

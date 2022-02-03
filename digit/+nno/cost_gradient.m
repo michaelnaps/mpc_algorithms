@@ -21,7 +21,7 @@
 %
 %  Outputs:
 %   'g'   - gradient vector (dC/du)
-function [g] = cost_gradient(P, dt, q0, u0, u, Cq, qd, h, model, a_ind)
+function [g] = cost_gradient(P, dt, q0, u0, u, Cq, qd, h, model)
     %% Setup
     N = length(u);
     g = zeros(size(u));
@@ -34,8 +34,8 @@ function [g] = cost_gradient(P, dt, q0, u0, u, Cq, qd, h, model, a_ind)
         un1(i) = u(i) - h;
         up1(i) = u(i) + h;
         
-        Cn1 = nno.cost(P, dt, q0, u0, un1, Cq, qd, model, a_ind);
-        Cp1 = nno.cost(P, dt, q0, u0, up1, Cq, qd, model, a_ind);
+        Cn1 = nno.cost(P, dt, q0, u0, un1, Cq, qd, model);
+        Cp1 = nno.cost(P, dt, q0, u0, up1, Cq, qd, model);
         
         gn = (Cp1 - Cn1)/(2*h);
 

@@ -27,11 +27,11 @@
 %         0 -> zero cost break
 %         1 -> first order optimality
 %         2 -> change in input break
-function [u, C, n, brk] = newtons(P, dt, q0, u0, um, Cq, qd, eps, model, a_ind)
+function [u, C, n, brk] = newtons(P, dt, q0, u0, um, Cq, qd, eps, model)
     %% Setup - Initial Guess, Cost, Gradient, and Hessian
     N = length(q0)/2;
     uc = u0;
-    Cc = nno.cost(P, dt, q0, u0, uc, Cq, qd, model, a_ind);
+    Cc = nno.cost(P, dt, q0, u0, uc, Cq, qd, model);
     un = uc;  Cn = Cc;
 
     %% Loop for Newton's Method
@@ -39,14 +39,14 @@ function [u, C, n, brk] = newtons(P, dt, q0, u0, um, Cq, qd, eps, model, a_ind)
     brk = 0;
     while (Cc > eps)
         % gradient and hessian of the current input
-        g = nno.cost_gradient(P, dt, q0, u0, uc, Cq, qd, 1e-3, model, a_ind);
-        H = nno.cost_hessian(P, dt, q0, u0, uc, Cq, qd, 1e-3, model, a_ind);
+        g = nno.cost_gradient(P, dt, q0, u0, uc, Cq, qd, 1e-3, model)
+        H = nno.cost_hessian(P, dt, q0, u0, uc, Cq, qd, 1e-3, model);
 
         % calculate and add the next Newton's step
         un = uc - H\g;
 
         % compute new values for cost, gradient, and hessian
-        Cn = nno.cost(P, dt, q0, u0, un, Cq, qd, model, a_ind);
+        Cn = nno.cost(P, dt, q0, u0, un, Cq, qd, model);
         udn = abs(un - uc);
         count = count + 1;
 
