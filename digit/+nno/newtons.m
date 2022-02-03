@@ -39,7 +39,7 @@ function [u, C, n, brk] = newtons(P, dt, q0, u0, um, Cq, qd, eps, model)
     brk = 0;
     while (Cc > eps)
         % gradient and hessian of the current input
-        g = nno.cost_gradient(P, dt, q0, u0, uc, Cq, qd, 1e-3, model)
+        g = nno.cost_gradient(P, dt, q0, u0, uc, Cq, qd, 1e-3, model);
         H = nno.cost_hessian(P, dt, q0, u0, uc, Cq, qd, 1e-3, model);
 
         % calculate and add the next Newton's step
@@ -69,7 +69,7 @@ function [u, C, n, brk] = newtons(P, dt, q0, u0, um, Cq, qd, eps, model)
         end
         
         % update current variables for next iteration
-        fprintf("Current cost: %.3f\tChange in cost: %.3f\n", Cn, abs(Cc-Cn))
+        fprintf("Initial Cost: %.3f\tCurrent cost: %.3f\tChange in cost: %.3f\n", Cc, Cn, abs(Cc-Cn))
         uc = un;  Cc = Cn;
     end
         
