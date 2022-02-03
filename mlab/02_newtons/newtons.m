@@ -58,7 +58,7 @@ function [u, C, n, brk] = newtons(P, dt, q0, u0, um, c, m, L, Cq, thd, eps)
         end
 
         % change in input break
-        if ((udn < eps) == N)
+        if (sum(udn < eps) == N)
             brk = 2;
             break;
         end
