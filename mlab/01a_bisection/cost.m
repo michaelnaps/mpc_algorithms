@@ -8,6 +8,6 @@ function C = cost(P, dt, q0, u0, u, c, m, L, Cq)
     duc = u0 - u;
     C = zeros(size(u));
     for i = 1:P+1
-        C = C + Cq(qc(i,:), duc);% + 1e6*sum(nlconstraints(qc(i,:)));
+        C = C + Cq(qc(i,:), duc);
     end
 end

@@ -28,9 +28,11 @@ function Cs = cost(P, dt, q0, u0, u, Cq, qd, model)
     % sum of cost of each step of the prediction horizon
     N = length(q0)/2;
     C = zeros(N,1);
-    for i = 1:adj*P+1
-        for j = 1:N
-            C(j) = C(j) + Cq([qd(j), 0.0], [qc(i,j), qc(i,N+j)]);
+    for i = 1:length(qc(:,1))
+        if (rem(i,adj) == 0)
+            for j = 1:N
+                C(j) = C(j) + Cq([qd(j), 0.0], [qc(i,j), qc(i,N+j)]);
+            end
         end
     end
     Cs = sum(C);

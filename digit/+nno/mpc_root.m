@@ -21,7 +21,7 @@ function [u] = mpc_root(input, model, ~, q0, logger)
     tic;
     [u, C, n, brk] = nno.newtons(P, dt, q0, u0, um, Cq, qd, eps, model);
     t = toc;
-    fprintf("State Calculated:\nRuntime: %.3f [s], Iterations: %i\n\n", t, n);
+    fprintf("State Calculated:\nRuntime: %.3f [s], Iterations: %i, Break: %i\n\n", t, n, brk);
 
     %% Log Data and Return
     if nargin > 4
