@@ -16,6 +16,11 @@ function [u] = mpc_root(input, model, ~, q0, logger)
     else
         u0 = logger.calc.torque;
     end
+
+    fprintf("Initial Guess:\n")
+    for i = 1:length(u0)
+        fprintf("\t%.3f\n", u0(i))
+    end
     
     %% Run Optimization Algorithm
     tic;
