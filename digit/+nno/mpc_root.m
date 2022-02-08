@@ -12,14 +12,14 @@ function [u] = mpc_root(input, model, ~, q0, logger)
 
     if (isempty(fieldnames(logger.calc)))
         % u0 = zeros(N,1);
-        u0 = zeros(size(a_ind));
+        u0 = input.Params.ui;
     else
         u0 = logger.calc.torque;
     end
 
     fprintf("Initial Guess:\n")
     for i = 1:length(u0)
-        fprintf("\t%.3f\n", u0(i))
+        fprintf("\t%.10f\n", u0(i))
     end
     
     %% Run Optimization Algorithm

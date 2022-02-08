@@ -47,7 +47,7 @@ function [u, C, n, brk] = newtons(P, dt, q0, u0, um, Cq, qd, eps, model)
 
         % compute new values for cost, gradient, and hessian
         Cn = nno.cost(P, dt, q0, u0, un, Cq, qd, model);
-        udn = abs(un - uc);
+        udn = abs(un - uc);  Cdn = abs(Cn - Cc);
         count = count + 1;
 
         % first order optimality break
@@ -62,14 +62,19 @@ function [u, C, n, brk] = newtons(P, dt, q0, u0, um, Cq, qd, eps, model)
             break;
         end
 
+        if (Cdn < eps)
+            brk = 3;
+            break;
+        end
+
         % maximum iteration break
-        if (count == 1000)
+        if (count == 10)
             brk = -1;
             break;
         end
         
         % update current variables for next iteration
-        fprintf("Initial Cost: %.3f\tCurrent cost: %.3f\tChange in cost: %.3f\n", Cc, Cn, abs(Cc-Cn))
+        fprintf("Initial Cost: %.3f\tCurrent cost: %.3f\tChange in cost: %.3f\n", Cc, Cn, Cdn)
         uc = un;  Cc = Cn;
     end
         
