@@ -1,4 +1,4 @@
-function [u] = mpc_root(input, model, ~, q0, logger)
+function [u] = mpc_root(input, model, Tc, q0, logger)
     %% Constant Parameters initializations
     N     = length(q0)/2;
     P     = input.Params.P;
@@ -26,7 +26,7 @@ function [u] = mpc_root(input, model, ~, q0, logger)
     tic;
     [u, C, n, brk] = nno.newtons(P, dt, q0, u0, um, Cq, qd, eps, model);
     t = toc;
-    fprintf("State Calculated:\nRuntime: %.3f [s], Iterations: %i, Break: %i\n\n", t, n, brk);
+    fprintf("State Calculated: t = %.6f\nOpt Time: %.3f [s], Iterations: %i, Break: %i\n\n", Tc, t, n, brk);
 
     %% Log Data and Return
     if nargin > 4
