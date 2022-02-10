@@ -22,7 +22,7 @@ function Cs = cost(P, dt, q0, u0, u, Cq, qd, model)
     %% Cost of Constant Input
     % calculate the state over the desired prediction horizon
     adj = 10;
-    % qc = modeuler(P, dt, q0, u, model);
+    % qc = nno.modeuler(P, dt, q0, u, model);
     [~, qc] = ode45(@(t,q) statespace_digit(q, u, model), 0:dt/adj:P*dt, q0);
 
     % sum of cost of each step of the prediction horizon

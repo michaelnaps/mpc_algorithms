@@ -49,7 +49,7 @@ function [u, C, n, brk] = newtons(P, dt, q0, u0, um, Cq, qd, eps, model)
         Cn = nno.cost(P, dt, q0, u0, un, Cq, qd, model);
         udn = abs(un - uc);  Cdn = abs(Cn - Cc);
         count = count + 1;
-        
+
         fprintf("Initial Cost: %.3f\tCurrent cost: %.3f\tChange in cost: %.3f\n", Cc, Cn, Cdn)
 
         % first order optimality break
@@ -64,13 +64,14 @@ function [u, C, n, brk] = newtons(P, dt, q0, u0, um, Cq, qd, eps, model)
             break;
         end
 
+        % change in cost break
         if (Cdn < eps)
             brk = 3;
             break;
         end
 
         % maximum iteration break
-        if (count == 10)
+        if (count == 30)
             brk = -1;
             break;
         end

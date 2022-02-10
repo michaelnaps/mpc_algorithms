@@ -1,8 +1,14 @@
-function [q] = modeuler(P, dt, q0, u, model)
-    %% Initialize Arrays
-    N = length(q0)/2;
-    adj = 50;
-    Pm = adj*P;  dtm = dt/adj;
+function [tspan, q] = modeuler(odefun, tspan, q0, ~)
+    %% Initialize Arrays/Matrices
+    adj = 100;
+    
+    P = length(tspan) - 1;
+    Pm = adj*P;
+    
+    dt = tspan(2) - tspan(1);
+    dtm = dt/adj;
+    tm = tspan(1):dt/adj:tspan(end);
+
     q = Inf(P+1, length(q0));
     qm = Inf(Pm+1, length(q0));
 
@@ -10,27 +16,17 @@ function [q] = modeuler(P, dt, q0, u, model)
     q(1,:) = q0';
     qm(1,:) = q0';
     for i = 1:Pm
-%         M = calcMassMatrix(model, qm(i,1:N));
-%         F = calcDriftVector(model, qm(i,1:N), qm(i,N+1:end));
-%         dq1 = M\(u - F);
-%         qeu = qm(i,:) + dq1*dtm;
-% 
-%         M = calcMassMatrix(model, qeu(1:N));
-%         F = calcDriftVector(model, qeu(1:N), qeu(N+1:end));
-%         dq2 = M\(u - F);
-%         qm(i+1,:) = qm(i,:) + 1/2*(dq1 + dq2)*dtm;
-
-        dq1 = statespace_digit(qm(i,:)', u, model)';
-        qeu = qm(i,:) + dq1*dtm;
-        dq2 = statespace_digit(qeu', u, model)';
-        qm(i+1,:) = qm(i,:) + 1/2*(dq1 + dq2)*dtm;
+        dq1 = odefun(tm(i), qm(i,:)');
+        qeu = qm(i,:)' + dq1*dtm;
+        dq2 = odefun(tm(i), qeu);
+        qm(i+1,:) = (qm(i,:)' + 1/2*(dq1 + dq2)*dtm)';
 
         if (rem(i,adj) == 0)
             q(i/adj+1,:) = qm(i+1,:);
         end
 
         if (sum(isnan(qm(i+1,:))) > 0)
-            fprintf("ERROR: statespace_digit() returned NaN for inputs.\n")
+            fprintf("ERROR: odefun() returned NaN for inputs.\n")
             fprintf("iteration(s): %i\n\n", i)
             break;
         end
