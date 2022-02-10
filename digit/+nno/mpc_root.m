@@ -26,6 +26,14 @@ function [u] = mpc_root(input, model, Tc, q0, logger)
     tic;
     [u, C, n, brk] = nno.newtons(P, dt, q0, u0, um, Cq, qd, eps, model);
     t = toc;
+
+    fprintf("Final Input:\n")
+    if (u ~= u0)
+        for i = 1:length(u)
+            fprintf("\t%.10f\n", u(i))
+        end
+    end
+
     fprintf("State Calculated: t = %.6f\nOpt Time: %.3f [s], Iterations: %i, Break: %i\n\n", Tc, t, n, brk);
 
     %% Log Data and Return

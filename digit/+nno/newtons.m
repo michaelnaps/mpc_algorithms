@@ -38,11 +38,18 @@ function [u, C, n, brk] = newtons(P, dt, q0, u0, um, Cq, qd, eps, model)
     count = 1;
     brk = 0;
     while (Cc > eps)
-        % gradient and hessian of the current input
+        % gradient and corresponding L2-norm
         g = nno.cost_gradient(P, dt, q0, u0, uc, Cq, qd, 1e-3, model);
-        H = nno.cost_hessian(P, dt, q0, u0, uc, Cq, qd, 1e-3, model);
+        gnorm = sqrt(sum(g.^2))/N;  % minimizing MSE
 
-        % calculate and add the next Newton's step
+        % first order optimality break according to L2-norm
+        if (gnorm < eps)
+            brk = 1;
+            break;
+        end
+
+        % calculate the Hessian matrix and corresponding Newton's step
+        H = nno.cost_hessian(P, dt, q0, u0, uc, Cq, qd, 1e-3, model);
         un = uc - H\g;
 
         % compute new values for cost, gradient, and hessian
@@ -50,13 +57,7 @@ function [u, C, n, brk] = newtons(P, dt, q0, u0, um, Cq, qd, eps, model)
         udn = abs(un - uc);  Cdn = abs(Cn - Cc);
         count = count + 1;
 
-        fprintf("Initial Cost: %.3f\tCurrent cost: %.3f\tChange in cost: %.3f\n", Cc, Cn, Cdn)
-
-        % first order optimality break according to L2-norm
-        if (sqrt(sum(g.^2)) < eps)
-            brk = 1;
-            break;
-        end
+        fprintf("Initial Cost: %.3f\tCurrent cost: %.3f\tChange in cost: %.3f\tGradient Norm: %.3f\n", Cc, Cn, Cdn, gnorm)
 
         % change in input break
         if (sum(udn < eps) == N)
