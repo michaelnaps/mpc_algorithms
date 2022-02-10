@@ -1,6 +1,6 @@
 function [tspan, q] = modeuler(odefun, tspan, q0, ~)
     %% Initialize Arrays/Matrices
-    adj = 100;
+    adj = 10;
     
     P = length(tspan) - 1;
     Pm = adj*P;
