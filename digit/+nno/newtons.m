@@ -52,8 +52,8 @@ function [u, C, n, brk] = newtons(P, dt, q0, u0, um, Cq, qd, eps, model)
 
         fprintf("Initial Cost: %.3f\tCurrent cost: %.3f\tChange in cost: %.3f\n", Cc, Cn, Cdn)
 
-        % first order optimality break
-        if (sum(g < eps) == N)
+        % first order optimality break according to L2-norm
+        if (sqrt(sum(g.^2)) < eps)
             brk = 1;
             break;
         end

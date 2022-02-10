@@ -51,8 +51,8 @@ function [u, C, n, brk] = newtons(P, dt, q0, u0, um, c, m, L, Cq, thd, eps)
         udn = abs(un - uc);
         count = count + 1;
 
-        % first order optimality break
-        if (sum(g < eps) == N)
+        % first order optimality break according to L2-norm
+        if (sqrt(sum(g.^2)) < eps)
             brk = 1;
             break;
         end
