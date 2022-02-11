@@ -36,7 +36,7 @@ function [u] = mpc_root(input, model, Tc, q0, logger)
 %             fprintf("\t%.10f\n", u(i))
 %         end
 %     end
-% 
+
     fprintf("State Calculated: t = %.6f\nOpt Time: %.3f [s], Iterations: %i, Break: %i\n\n", Tc, t, n, brk);
 
     %% Log Data and Return

@@ -29,6 +29,7 @@
 %         2 -> change in input break
 function [u, C, n, brk] = newtons(P, dt, q0, u0, um, Cq, qd, eps, h, model)
     %% Setup - Initial Guess, Cost, Gradient, and Hessian
+    alph = 1;
     N = length(q0)/2;
     uc = u0;
     Cc = nno.cost(P, dt, q0, u0, uc, Cq, qd, model);
@@ -49,8 +50,9 @@ function [u, C, n, brk] = newtons(P, dt, q0, u0, um, Cq, qd, eps, h, model)
         end
 
         % calculate the Hessian matrix and corresponding Newton's step
-        H = nno.cost_hessian(P, dt, q0, u0, uc, Cq, qd, h, model);
-        un = uc - H\g;
+%         H = nno.cost_hessian(P, dt, q0, u0, uc, Cq, qd, h, model);
+%         un = uc - H\g;
+        un = uc - alph*g;  % alternative: gradient descent
 
         % compute new values for cost, gradient, and hessian
         Cn = nno.cost(P, dt, q0, u0, un, Cq, qd, model);
@@ -59,12 +61,12 @@ function [u, C, n, brk] = newtons(P, dt, q0, u0, um, Cq, qd, eps, h, model)
 
         fprintf("Initial Cost: %.3f\tCurrent cost: %.3f\tChange in cost: %.3f\tGradient Norm: %.3f\n", Cc, Cn, Cdn, gnorm)
 
-        % change in input break based on MSE of udn to zero
-        unorm = sqrt(sum(udn.^2))/N;
-        if (unorm < eps)
-            brk = 2;
-            break;
-        end
+%         % change in input break based on MSE of udn to zero
+%         unorm = sqrt(sum(udn.^2))/N;
+%         if (unorm < eps)
+%             brk = 2;
+%             break;
+%         end
 
         % change in cost break
         if (Cdn < eps)
