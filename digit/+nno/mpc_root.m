@@ -8,7 +8,9 @@ function [u] = mpc_root(input, model, Tc, q0, logger)
     qd    = input.Params.qd;
     dqd   = input.Params.dqd;
     eps   = input.Params.eps;
+    h     = input.Params.stepSize;
     a_ind = input.Params.a_ind;
+    testID = input.Params.testID;
 
     if (isempty(fieldnames(logger.calc)))
         % u0 = zeros(N,1);
@@ -16,24 +18,25 @@ function [u] = mpc_root(input, model, Tc, q0, logger)
     else
         u0 = logger.calc.torque;
     end
-
-    fprintf("Initial Guess:\n")
-    for i = 1:length(u0)
-        fprintf("\t%.10f\n", u0(i))
-    end
     
     %% Run Optimization Algorithm
     tic;
-    [u, C, n, brk] = nno.newtons(P, dt, q0, u0, um, Cq, qd, eps, model);
+    [u, C, n, brk] = nno.newtons(P, dt, q0, u0, um, Cq, qd, eps, h, model);
     t = toc;
 
-    fprintf("Final Input:\n")
-    if (u ~= u0)
-        for i = 1:length(u)
-            fprintf("\t%.10f\n", u(i))
-        end
-    end
+    TF = save_newton(testID + "_data.csv", [Tc, u', C, n, brk]);
 
+%     fprintf("Initial Guess:\n")
+%     for i = 1:length(u0)
+%         fprintf("\t%.10f\n", u0(i))
+%     end
+%     fprintf("Final Input:\n")
+%     if (u ~= u0)
+%         for i = 1:length(u)
+%             fprintf("\t%.10f\n", u(i))
+%         end
+%     end
+% 
     fprintf("State Calculated: t = %.6f\nOpt Time: %.3f [s], Iterations: %i, Break: %i\n\n", Tc, t, n, brk);
 
     %% Log Data and Return

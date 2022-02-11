@@ -27,7 +27,7 @@
 %         0 -> zero cost break
 %         1 -> first order optimality
 %         2 -> change in input break
-function [u, C, n, brk] = newtons(P, dt, q0, u0, um, Cq, qd, eps, model)
+function [u, C, n, brk] = newtons(P, dt, q0, u0, um, Cq, qd, eps, h, model)
     %% Setup - Initial Guess, Cost, Gradient, and Hessian
     N = length(q0)/2;
     uc = u0;
@@ -38,9 +38,9 @@ function [u, C, n, brk] = newtons(P, dt, q0, u0, um, Cq, qd, eps, model)
     count = 1;
     brk = 0;
     while (Cc > eps)
-        % gradient and corresponding L2-norm
-        g = nno.cost_gradient(P, dt, q0, u0, uc, Cq, qd, 1e-3, model);
-        gnorm = sqrt(sum(g.^2))/N;  % minimizing MSE
+        % gradient and corresponding MSE to zero
+        g = nno.cost_gradient(P, dt, q0, u0, uc, Cq, qd, h, model);
+        gnorm = sqrt(sum(g.^2))/N;
 
         % first order optimality break according to L2-norm
         if (gnorm < eps)
@@ -49,7 +49,7 @@ function [u, C, n, brk] = newtons(P, dt, q0, u0, um, Cq, qd, eps, model)
         end
 
         % calculate the Hessian matrix and corresponding Newton's step
-        H = nno.cost_hessian(P, dt, q0, u0, uc, Cq, qd, 1e-3, model);
+        H = nno.cost_hessian(P, dt, q0, u0, uc, Cq, qd, h, model);
         un = uc - H\g;
 
         % compute new values for cost, gradient, and hessian
@@ -59,8 +59,9 @@ function [u, C, n, brk] = newtons(P, dt, q0, u0, um, Cq, qd, eps, model)
 
         fprintf("Initial Cost: %.3f\tCurrent cost: %.3f\tChange in cost: %.3f\tGradient Norm: %.3f\n", Cc, Cn, Cdn, gnorm)
 
-        % change in input break
-        if (sum(udn < eps) == N)
+        % change in input break based on MSE of udn to zero
+        unorm = sqrt(sum(udn.^2))/N;
+        if (unorm < eps)
             brk = 2;
             break;
         end

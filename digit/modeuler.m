@@ -26,7 +26,7 @@ function [tspan, q] = modeuler(odefun, tspan, q0, ~)
         end
 
         if (sum(isnan(qm(i+1,:))) > 0)
-            fprintf("ERROR: odefun() returned NaN for inputs.\n")
+            fprintf("ERROR: in modeuler() -> odefun() returned NaN for inputs.\n")
             fprintf("iteration(s): %i\n\n", i)
             break;
         end
