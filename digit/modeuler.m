@@ -1,11 +1,17 @@
-function [tspan, q] = modeuler(odefun, tspan, q0, ~)
+function [tspan, q, logger] = modeuler(model, odefun, tspan, q0, logger)
+    %% Check that time step is above minimum (1e-3)
+    minStepSize = 1e-3;
+    dt = tspan(2) - tspan(1);
+    if (dt > minStepSize)
+        adj = dt/minStepSize;
+    else
+        adj = 1;
+    end
+
     %% Initialize Arrays/Matrices
-    adj = 10;
-    
     P = length(tspan) - 1;
     Pm = adj*P;
     
-    dt = tspan(2) - tspan(1);
     dtm = dt/adj;
     tm = tspan(1):dt/adj:tspan(end);
 
@@ -16,13 +22,18 @@ function [tspan, q] = modeuler(odefun, tspan, q0, ~)
     q(1,:) = q0';
     qm(1,:) = q0';
     for i = 1:Pm
-        dq1 = odefun(tm(i), qm(i,:)');
+        dq1 = odefun(model, tm(i), qm(i,:)', logger);
         qeu = qm(i,:)' + dq1*dtm;
-        dq2 = odefun(tm(i), qeu);
+        dq2 = odefun(model, tm(i), qeu, logger);
         qm(i+1,:) = (qm(i,:)' + 1/2*(dq1 + dq2)*dtm)';
 
         if (rem(i,adj) == 0)
             q(i/adj+1,:) = qm(i+1,:);
+            loggerStatus = updateLog(logger);
+            if (loggerStatus)
+                fprintf("ERROR: Loggger status false...\nIterations: %i\n\n", i)
+                break;
+            end
         end
 
         if (sum(isnan(qm(i+1,:))) > 0)
