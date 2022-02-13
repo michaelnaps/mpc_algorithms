@@ -1,6 +1,6 @@
 function [tspan, q, logger] = modeuler(model, odefun, tspan, q0, logger)
     %% Check that time step is above minimum (1e-3)
-    minStepSize = 1e-4;
+    minStepSize = 1e-3;
     dt = tspan(2) - tspan(1);
     if (dt > minStepSize)
         adj = dt/minStepSize;
