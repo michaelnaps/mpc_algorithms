@@ -27,11 +27,13 @@
 %         0 -> zero cost break
 %         1 -> first order optimality
 %         2 -> change in input break
-function [u, C, n, brk] = newtons(P, dt, q0, u0, um, Cq, qd, eps, h, model)
-    %% Setup - Initial Guess, Cost, Gradient, and Hessian
+function [u, C, n, brk] = gdescent(model, P, dt, q0, u0, um, Cq, qd, eps, h, alph0)
+    %% Setup - Initial Guess, and Cost
+    maxAlph = alph0;
+    minAlph = 1e-3;
     N = length(q0)/2;
     uc = u0;
-    Cc = nno.cost(P, dt, q0, u0, uc, Cq, qd, model);
+    Cc = ngd.cost(P, dt, q0, u0, uc, Cq, qd, model);
     un = uc;  Cn = Cc;
 
     %% Loop for Newton's Method
@@ -39,7 +41,7 @@ function [u, C, n, brk] = newtons(P, dt, q0, u0, um, Cq, qd, eps, h, model)
     brk = 0;
     while (Cc > eps)
         % gradient and corresponding MSE to zero
-        g = nno.cost_gradient(P, dt, q0, u0, uc, Cq, qd, h, model);
+        g = ngd.cost_gradient(P, dt, q0, u0, uc, Cq, qd, h, model);
         gnorm = sqrt(sum(g.^2))/N;
 
         % first order optimality break according to L2-norm
@@ -48,24 +50,35 @@ function [u, C, n, brk] = newtons(P, dt, q0, u0, um, Cq, qd, eps, h, model)
             break;
         end
 
-        % calculate the Hessian matrix and corresponding Newton's step
-        H = nno.cost_hessian(P, dt, q0, u0, uc, Cq, qd, h, model);
-        un = uc - H\g;
-%         un = uc - alph*g;  % alternative: gradient descent
+        % calculate next iteration using gradient descent
+        %   and backtracking line search
+        %   if alpha falls below minimum, break
+        a = maxAlph;  ua = uc - a*g;   
+        b = minAlph;  ub = uc - b*g;
+        Ca = ngd.cost(P, dt, q0, u0, ua, Cq, qd, model);
+        Cb = ngd.cost(P, dt, q0, u0, ub, Cq, qd, model);
+        while (1)
+            uave = uc - (a + b)/2*g;
+            Cave = ngd.cost(P, dt, q0, u0, uave, Cq, qd, model);
+            % if new cost is less than previous cost, break
+            if (Ca < Cb)
+                b = (a + b)/2;
+                Cb = Cave;
+            else
+                a = (a + b)/2;
+                Cb = Cave;
+            end
+
+            if (Cave < eps || abs(Ca - Cb) < eps)
+                break;
+            end
+        end
 
         % compute new values for cost, gradient, and hessian
-        Cn = nno.cost(P, dt, q0, u0, un, Cq, qd, model);
-        udn = abs(un - uc);  Cdn = abs(Cn - Cc);
+        Cdn = abs(Cn - Cc);
         count = count + 1;
 
-        fprintf("Initial Cost: %.3f\tCurrent cost: %.3f\tChange in cost: %.6f\tGradient Norm: %.6f\n", Cc, Cn, Cdn, gnorm)
-
-%         % change in input break based on MSE of udn to zero
-%         unorm = sqrt(sum(udn.^2))/N;
-%         if (unorm < eps)
-%             brk = 2;
-%             break;
-%         end
+        fprintf("Initial Cost: %.3f\tCurrent cost: %.3f\tChange in cost: %.6f\tGradient Norm: %.6f\tAlpha: %.6f\n", Cc, Cn, Cdn, gnorm, (a + b)/2)
 
         % change in cost break
         if (Cdn < eps)
@@ -81,6 +94,7 @@ function [u, C, n, brk] = newtons(P, dt, q0, u0, um, Cq, qd, eps, h, model)
         
         % update current variables for next iteration
         uc = un;  Cc = Cn;
+        maxAlph = alph0;  % reset alpha guess
     end
         
     % check boundary constraints

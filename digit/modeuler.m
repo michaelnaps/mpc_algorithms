@@ -11,10 +11,8 @@ function [tspan, q, logger] = modeuler(model, odefun, tspan, q0, logger)
     %% Initialize Arrays/Matrices
     P = length(tspan) - 1;
     Pm = adj*P;
-    
     dtm = dt/adj;
     tm = tspan(1):dt/adj:tspan(end);
-
     q = Inf(P+1, length(q0));
     qm = Inf(Pm+1, length(q0));
 
