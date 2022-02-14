@@ -4,7 +4,7 @@ Designed and tested by Michael Napoli as a part of the Ohio State University Cyb
 Continuation of the michaelnaps/lipm.git repository.
 
 To see most up-to-date algorithms, see the **/digit** folder which contains specialized controller functions
-which correspond to the __digit_matlab_sim__ repository.
+which correspond to the *digit_matlab_sim* repository (*mpc* branch).
 
 The functions found in the **/mlab** folder will eventually be generalized to work with a given
 configuration space and simulator, but are currently written for the use of an n-link pendulum model.
