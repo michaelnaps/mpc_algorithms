@@ -50,29 +50,30 @@ function [u, C, n, brk] = gdescent(model, P, dt, q0, u0, um, Cq, qd, eps, h, alp
             break;
         end
 
-        % calculate next iteration using gradient descent
-        %   and backtracking line search
-        %   if alpha falls below minimum, break
-        a = maxAlph;  ua = uc - a*g;   
-        b = minAlph;  ub = uc - b*g;
-        Ca = ngd.cost(P, dt, q0, u0, ua, Cq, qd, model);
-        Cb = ngd.cost(P, dt, q0, u0, ub, Cq, qd, model);
-        while (1)
-            uave = uc - (a + b)/2*g;
-            Cave = ngd.cost(P, dt, q0, u0, uave, Cq, qd, model);
-            % if new cost is less than previous cost, break
-            if (Ca < Cb)
-                b = (a + b)/2;
-                Cb = Cave;
-            else
-                a = (a + b)/2;
-                Cb = Cave;
-            end
-
-            if (Cave < eps || abs(Ca - Cb) < eps)
-                break;
-            end
-        end
+        un = uc - alpha0*g;
+%         % calculate next iteration using gradient descent
+%         %   and backtracking line search
+%         %   if alpha falls below minimum, break
+%         a = maxAlph;  ua = uc - a*g;   
+%         b = minAlph;  ub = uc - b*g;
+%         Ca = ngd.cost(P, dt, q0, u0, ua, Cq, qd, model);
+%         Cb = ngd.cost(P, dt, q0, u0, ub, Cq, qd, model);
+%         while (1)
+%             uave = uc - (a + b)/2*g;
+%             Cave = ngd.cost(P, dt, q0, u0, uave, Cq, qd, model);
+%             % if new cost is less than previous cost, break
+%             if (Ca < Cb)
+%                 b = (a + b)/2;
+%                 Cb = Cave;
+%             else
+%                 a = (a + b)/2;
+%                 Cb = Cave;
+%             end
+% 
+%             if (Cave < eps || abs(Ca - Cb) < eps)
+%                 break;
+%             end
+%         end
 
         % compute new values for cost, gradient, and hessian
         Cdn = abs(Cn - Cc);
