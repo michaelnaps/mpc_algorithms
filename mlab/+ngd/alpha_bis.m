@@ -1,6 +1,9 @@
-function [u, a, n, brk] = alpha_search(g, P, dt, q0, u0, uc, c, m, L, Cq, qd, arng, eps)
+function [u, n, brk, a] = alpha_bis(g, P, dt, q0, u0, uc, c, m, L, Cq, qd, arng, eps)
     %% Variable Setup
     if (length(arng) == 1)
+        u = uc - arng*g;
+        n = 0;
+        brk = -2;
         a = arng;
         return;
     end

@@ -31,8 +31,9 @@
 %         0 -> zero cost break
 %         1 -> first order optimality (L2 norm of gradient)
 %         2 -> change in input break (L2 norm of input changes)
-function [u, C, n, brk] = gdescent(P, dt, q0, u0, um, c, m, L, Cq, qd, arng, eps, h)
+function [u, C, n, brk, a] = gdescent(P, dt, q0, u0, um, c, m, L, Cq, qd, arng, eps, h)
     %% Setup - Initial Guess, Cost, Gradient, and Hessian
+    a = -1;
     N = length(um);
     uc = u0;
     Cc = ngd.cost(P, dt, q0, u0, uc, c, m, L, Cq, qd, " NN Initial Cost ");
@@ -53,7 +54,8 @@ function [u, C, n, brk] = gdescent(P, dt, q0, u0, um, c, m, L, Cq, qd, arng, eps
         end
 
         % gradient descent step
-        [un, ~, ~, ~] = ngd.alpha_search(g, P, dt, q0, u0, uc, c, m, L, Cq, qd, arng, eps);
+        [un, ~, ~, a] = ngd.alpha_bis(g, P, dt, q0, u0, uc, c, m, L, Cq, qd, arng, eps);
+%         [un, ~, ~, a] = ngd.alpha_blk(g, Cc, P, dt, q0, u0, uc, c, m, L, Cq, qd, arng, eps);
 
         % compute new values for cost, gradient, and hessian
         Cn = ngd.cost(P, dt, q0, u0, un, c, m, L, Cq, qd, " NN Main Loop Cost ");
