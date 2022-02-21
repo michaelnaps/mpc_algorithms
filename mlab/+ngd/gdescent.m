@@ -1,23 +1,26 @@
-%% Optimization Algorithm II
-%  Method: Nonlinear Newton's (NN) Optimization Method
+%% Optimization Algorithm III
+%  Method: Gradient Descent with Alpha Search
 %  Created by: Michael Napoli
 %
 %  Purpose: To optimize and solve a given system
 %   of n-link pendulum models using model predictive
-%   control (MPC) and the NN algorithm with the
+%   control (MPC) and the NGD algorithm with the
 %   necessary constraints.
 %
 %  Inputs:
-%   'P'   - length of prediction horizon (PH)
-%   'dt'  - step-size for prediction horizon
-%   'q0'  - initial state
-%   'u0'  - initial guess
-%   'um'  - maximum allowable torque values
-%   'c'   - coefficient of damping for each link
-%   'm'   - mass at end of each pendulum
-%   'L'   - length of pendulum links
-%   'Cq'  - system of quadratic cost equations
-%   'eps' - acceptable error (for breaking)
+%   'P'    - length of prediction horizon (PH)
+%   'dt'   - step-size for prediction horizon
+%   'q0'   - initial state
+%   'u0'   - initial guess
+%   'um'   - maximum allowable torque values
+%   'c'    - coefficient of damping for each link
+%   'm'    - mass at end of each pendulum
+%   'L'    - length of pendulum links
+%   'Cq'   - system of quadratic cost equations
+%   'qd'   - list of desired angles
+%   'arng' - maximum and minimum allowable step sizes
+%   'eps'  - acceptable error (for breaking)
+%   'h'    - step size of gradient calculation function
 %
 %  Outputs:
 %   'u'   - inputs for each applicable joint
@@ -28,8 +31,9 @@
 %         0 -> zero cost break
 %         1 -> first order optimality (L2 norm of gradient)
 %         2 -> change in input break (L2 norm of input changes)
-function [u, C, n, brk] = gdescent(P, dt, q0, u0, um, c, m, L, Cq, qd, alph, eps, h)
+function [u, C, n, brk, a] = gdescent(P, dt, q0, u0, um, c, m, L, Cq, qd, arng, eps, h)
     %% Setup - Initial Guess, Cost, Gradient, and Hessian
+    a = -1;
     N = length(um);
     uc = u0;
     Cc = ngd.cost(P, dt, q0, u0, uc, c, m, L, Cq, qd, " NN Initial Cost ");
@@ -50,19 +54,14 @@ function [u, C, n, brk] = gdescent(P, dt, q0, u0, um, c, m, L, Cq, qd, alph, eps
         end
 
         % gradient descent step
-        un = uc - alph*g;
+        [un, ~, ~, a] = ngd.alpha_bis(g, P, dt, q0, u0, uc, c, m, L, Cq, qd, arng, eps);
+%         [un, ~, ~, a] = ngd.alpha_blk(g, Cc, P, dt, q0, u0, uc, c, m, L, Cq, qd, arng, eps);
 
         % compute new values for cost, gradient, and hessian
         Cn = ngd.cost(P, dt, q0, u0, un, c, m, L, Cq, qd, " NN Main Loop Cost ");
         udn = abs(un - uc);
         unorm = sqrt(sum(udn.^2))/N;
         count = count + 1;
-
-        % first order optimality break according to L2-norm
-        if (gnorm < eps)
-            brk = 1;
-            break;
-        end
 
         % change in input break
         if (unorm < eps)
