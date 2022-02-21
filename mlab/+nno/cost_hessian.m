@@ -34,8 +34,8 @@ function [H] = cost_hessian(P, dt, q0, u0, u, c, m, L, Cq, thd, h, loc)
         un1(i) = u(i) - h;
         up1(i) = u(i) + h;
 
-        Hn1 = cost_gradient(P, dt, q0, u0, un1, c, m, L, Cq, thd, h, " Hessian (i-1) " + loc);
-        Hp1 = cost_gradient(P, dt, q0, u0, up1, c, m, L, Cq, thd, h, " Hessian (i+1) " + loc);
+        Hn1 = nno.cost_gradient(P, dt, q0, u0, un1, c, m, L, Cq, thd, h, " Hessian (i-1) " + loc);
+        Hp1 = nno.cost_gradient(P, dt, q0, u0, up1, c, m, L, Cq, thd, h, " Hessian (i+1) " + loc);
 
         Hn = (Hp1 - Hn1)/(2*h);
 

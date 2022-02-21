@@ -24,7 +24,7 @@
 %   'n' - number of iterations needed
 function [u, C, n] = bisection(P, dt, q0, u0, um, c, m, L, Cq, eps)
     %% Initial Cost Check
-    C0 = cost(P, dt, q0, u0, u0, c, m, L, Cq);
+    C0 = pbs.cost(P, dt, q0, u0, u0, c, m, L, Cq);
     if (sum(C0 > eps) < 1)
         u = u0;
         C = C0;
@@ -38,9 +38,9 @@ function [u, C, n] = bisection(P, dt, q0, u0, um, c, m, L, Cq, eps)
     ub =  um;
     uave = zeros(size(u0));
     du = Inf(size(u0));
-    Ca = cost(P, dt, q0, u0, ua, c, m, L, Cq);
-    Cb = cost(P, dt, q0, u0, ub, c, m, L, Cq);
-    Cave = cost(P, dt, q0, u0, uave, c, m, L, Cq);
+    Ca = pbs.cost(P, dt, q0, u0, ua, c, m, L, Cq);
+    Cb = pbs.cost(P, dt, q0, u0, ub, c, m, L, Cq);
+    Cave = pbs.cost(P, dt, q0, u0, uave, c, m, L, Cq);
     
     %% Optimization Loop
     count = 1;
@@ -72,7 +72,7 @@ function [u, C, n] = bisection(P, dt, q0, u0, um, c, m, L, Cq, eps)
         
         % update center inputs and cost
         uave = (ua + ub) ./ 2;
-        Cave = cost(P, dt, q0, u0, uave, c, m, L, Cq);
+        Cave = pbs.cost(P, dt, q0, u0, uave, c, m, L, Cq);
         count = count + 1;
         
         % iteration check
