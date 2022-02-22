@@ -1,22 +1,26 @@
-%% Optimization Algorithm II
-%  Method: Nonlinear Newton's (NN) Optimization Method
+%% Optimization Algorithm III
+%  Method: Gradient Descent with Alpha Search
 %  Created by: Michael Napoli
 %
-%  Purpose: To optimize and solve a given robotic
-%   system using a Model Predictive Control architecture
-%   in combination with Newton's Optimization.
+%  Purpose: To optimize and solve a given system
+%   of n-link pendulum models using model predictive
+%   control (MPC) and the NGD algorithm with the
+%   necessary constraints.
 %
 %  Inputs:
-%   'P'     - length of prediction horizon (PH)
-%   'dt'    - step-size for prediction horizon
-%   'q0'    - initial state
-%   'u0'    - initial guess
-%   'um'    - maximum allowable torque values
-%   'Cq'    - system of quadratic cost equations
-%   'qd'    - list of desired states for joints
-%   'eps'   - acceptable error (for breaking)
-%   'model' - robot model created using FROST software
-%   'a_ind' - indices for controlled joints         
+%   'P'    - length of prediction horizon (PH)
+%   'dt'   - step-size for prediction horizon
+%   'q0'   - initial state
+%   'u0'   - initial guess
+%   'um'   - maximum allowable torque values
+%   'c'    - coefficient of damping for each link
+%   'm'    - mass at end of each pendulum
+%   'L'    - length of pendulum links
+%   'Cq'   - system of quadratic cost equations
+%   'qd'   - list of desired angles
+%   'arng' - maximum and minimum allowable step sizes
+%   'eps'  - acceptable error (for breaking)
+%   'h'    - step size of gradient calculation function
 %
 %  Outputs:
 %   'u'   - inputs for each applicable joint
@@ -25,15 +29,14 @@
 %   'brk' - loop break code
 %        -1 -> iteration break (1000)
 %         0 -> zero cost break
-%         1 -> first order optimality
-%         2 -> change in input break
-function [u, C, n, brk] = gdescent(model, P, dt, q0, u0, um, Cq, qd, eps, h, alph0)
-    %% Setup - Initial Guess, and Cost
-    maxAlph = alph0;
-    minAlph = 1e-3;
-    N = length(q0)/2;
+%         1 -> first order optimality (L2 norm of gradient)
+%         2 -> change in input break (L2 norm of input changes)
+function [u, C, n, brk, a] = gdescent(model, P, dt, q0, u0, um, Cq, qd, arng, eps, h)
+    %% Setup - Initial Guess, Cost, Gradient, and Hessian
+    a = -1;
+    N = length(um);
     uc = u0;
-    Cc = ngd.cost(P, dt, q0, u0, uc, Cq, qd, model);
+    Cc = ngd.cost(model, P, dt, q0, u0, uc, Cq, qd);
     un = uc;  Cn = Cc;
 
     %% Loop for Newton's Method
@@ -41,7 +44,7 @@ function [u, C, n, brk] = gdescent(model, P, dt, q0, u0, um, Cq, qd, eps, h, alp
     brk = 0;
     while (Cc > eps)
         % gradient and corresponding MSE to zero
-        g = ngd.cost_gradient(P, dt, q0, u0, uc, Cq, qd, h, model);
+        g = ngd.cost_gradient(model, P, dt, q0, u0, uc, Cq, qd, h);
         gnorm = sqrt(sum(g.^2))/N;
 
         % first order optimality break according to L2-norm
@@ -50,60 +53,39 @@ function [u, C, n, brk] = gdescent(model, P, dt, q0, u0, um, Cq, qd, eps, h, alp
             break;
         end
 
-        un = uc - alpha0*g;
-%         % calculate next iteration using gradient descent
-%         %   and backtracking line search
-%         %   if alpha falls below minimum, break
-%         a = maxAlph;  ua = uc - a*g;   
-%         b = minAlph;  ub = uc - b*g;
-%         Ca = ngd.cost(P, dt, q0, u0, ua, Cq, qd, model);
-%         Cb = ngd.cost(P, dt, q0, u0, ub, Cq, qd, model);
-%         while (1)
-%             uave = uc - (a + b)/2*g;
-%             Cave = ngd.cost(P, dt, q0, u0, uave, Cq, qd, model);
-%             % if new cost is less than previous cost, break
-%             if (Ca < Cb)
-%                 b = (a + b)/2;
-%                 Cb = Cave;
-%             else
-%                 a = (a + b)/2;
-%                 Cb = Cave;
-%             end
-% 
-%             if (Cave < eps || abs(Ca - Cb) < eps)
-%                 break;
-%             end
-%         end
+        % gradient descent step
+        [un, ~, ~, a] = ngd.alpha_bis(model, g, P, dt, q0, u0, uc, Cq, qd, arng, eps);
+%         [un, ~, ~, a] = ngd.alpha_blk(model, g, P, dt, q0, u0, uc, Cq, qd, arng);
 
         % compute new values for cost, gradient, and hessian
-        Cdn = abs(Cn - Cc);
+        Cn = ngd.cost(model, P, dt, q0, u0, un, Cq, qd);
+        udn = abs(un - uc);
+        unorm = sqrt(sum(udn.^2))/N;
         count = count + 1;
 
-        fprintf("Initial Cost: %.3f\tCurrent cost: %.3f\tChange in cost: %.6f\tGradient Norm: %.6f\tAlpha: %.6f\n", Cc, Cn, Cdn, gnorm, (a + b)/2)
-
-        % change in cost break
-        if (Cdn < eps)
-            brk = 3;
+        % change in input break
+        if (unorm < eps)
+            brk = 2;
             break;
         end
 
         % maximum iteration break
-        if (count == 30)
+        if (count == 1000)
+            fprintf("ERROR: Iteration break. (%i)\n", count)
             brk = -1;
             break;
         end
-        
+
         % update current variables for next iteration
         uc = un;  Cc = Cn;
-        maxAlph = alph0;  % reset alpha guess
     end
         
     % check boundary constraints
-    for i = 1:length(un)
-        if (un(i) > um)
-            un(i) = um;
-        elseif (un(i) < -um)
-            un(i) = -um;
+    for i = 1:N
+        if (un(i) > um(i))
+            un(i) = um(i);
+        elseif (un(i) < -um(i))
+            un(i) = -um(i);
         end
     end
 

@@ -1,6 +1,6 @@
-function [q] = modeuler(P, dt, q0, u, model)
+function [q] = modeuler(model, P, dt, q0, u)
     %% Check that time step is above minimum (1e-3)
-    minStepSize = 5e-3;
+    minStepSize = 1e-4;
     if (dt > minStepSize)
         adj = dt/minStepSize;
     else
@@ -16,9 +16,9 @@ function [q] = modeuler(P, dt, q0, u, model)
     q(1,:) = q0';
     qm(1,:) = q0';
     for i = 1:Pm
-        dq1 = statespace_digit(qm(i,:)', u, model)';
+        dq1 = statespace_digit(model, qm(i,:)', u)';
         qeu = qm(i,:) + dq1*dtm;
-        dq2 = statespace_digit(qeu', u, model)';
+        dq2 = statespace_digit(model, qeu', u)';
         qm(i+1,:) = qm(i,:) + 1/2*(dq1 + dq2)*dtm;
 
         if (rem(i,adj) == 0)

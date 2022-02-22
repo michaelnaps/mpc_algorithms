@@ -1,4 +1,4 @@
-function [qdot] = statespace_digit(q0, u, model)
+function [qdot] = statespace_digit(model, q0, u)
     % This computes the xdot = [dq;ddq] given a controller input `u` and
     % states `x=[q;dq]`. 
     

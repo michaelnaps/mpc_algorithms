@@ -1,12 +1,12 @@
 function [u] = mpc_root(input, model, Tc, q0, logger)
     %% Constant Parameters initializations
-    N     = length(q0)/2;
     P     = input.Params.P;
     dt    = input.Params.dt;
     um    = input.Params.um;
     Cq    = input.Params.Cq;
     qd    = input.Params.qd;
     dqd   = input.Params.dqd;
+    arng  = input.Params.arng;
     eps   = input.Params.eps;
     h     = input.Params.stepSize;
     a_ind = input.Params.a_ind;
@@ -21,7 +21,7 @@ function [u] = mpc_root(input, model, Tc, q0, logger)
     
     %% Run Optimization Algorithm
     tic;
-    [u, C, n, brk] = ngd.gdescent(model, P, dt, q0, u0, um, Cq, qd, eps, h, 1);
+    [u, C, n, brk] = ngd.gdescent(model, P, dt, q0, u0, um, Cq, qd, arng, eps, h);
     t = toc;
     
     save_newton((testID + "_data.csv"), [u', C, n, brk]);
