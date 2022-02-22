@@ -1,6 +1,6 @@
 function [q] = modeuler(model, P, dt, q0, u)
     %% Check that time step is above minimum (1e-3)
-    minStepSize = 1e-4;
+    minStepSize = 5e-4;
     if (dt > minStepSize)
         adj = dt/minStepSize;
     else

@@ -24,7 +24,7 @@ function [u] = mpc_root(input, model, Tc, q0, logger)
     [u, C, n, brk] = ngd.gdescent(model, P, dt, q0, u0, um, Cq, qd, arng, eps, h);
     t = toc;
     
-    save_newton((testID + "_data.csv"), [u', C, n, brk]);
+%     save_newton((testID + "_data.csv"), [u', C, n, brk]);
     fprintf("State Calculated: t = %.6f\nOpt Time: %.3f [s], Iterations: %i, Break: %i\n\n", Tc, t, n, brk);
 
     %% Log Data and Return
