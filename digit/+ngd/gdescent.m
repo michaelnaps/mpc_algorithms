@@ -42,6 +42,7 @@ function [u, C, n, brk, a] = gdescent(model, P, dt, q0, u0, um, Cq, qd, arng, ep
     %% Loop for Newton's Method
     count = 1;
     brk = 0;
+    fprintf("Initial Iteration: %i, Cost: %.3f\n", count, Cn)
     while (Cc > eps)
         % gradient and corresponding MSE to zero
         g = ngd.cost_gradient(model, P, dt, q0, u0, uc, Cq, qd, h);
@@ -57,14 +58,16 @@ function [u, C, n, brk, a] = gdescent(model, P, dt, q0, u0, um, Cq, qd, arng, ep
         [un, ~, ~, a] = ngd.alpha_bis(model, g, P, dt, q0, u0, uc, Cq, qd, arng, eps);
 %         [un, ~, ~, a] = ngd.alpha_blk(model, g, P, dt, q0, u0, uc, Cq, qd, arng);
 
+        fprintf("Iteration: %i, Cost: %.3f, |g|: %.6f, a: %.6f\n", count, Cn, gnorm, a)
+
         % compute new values for cost, gradient, and hessian
         Cn = ngd.cost(model, P, dt, q0, u0, un, Cq, qd);
-        udn = abs(un - uc);
-        unorm = sqrt(sum(udn.^2))/N;
+        Cdn = abs(Cn - Cc);
+        Cnorm = sqrt(sum(Cdn.^2))/N;
         count = count + 1;
 
-        % change in input break
-        if (unorm < eps)
+        % change in Cost break
+        if (Cnorm < eps^2)
             brk = 2;
             break;
         end
@@ -90,6 +93,7 @@ function [u, C, n, brk, a] = gdescent(model, P, dt, q0, u0, um, Cq, qd, arng, ep
     end
 
     %% Return Values for Input, Cost, and Iteration Count
+    fprintf("Final Iteration: %i, Cost: %.3f\n", count, Cn)
     u = un;
     C = Cn;
     n = count;
