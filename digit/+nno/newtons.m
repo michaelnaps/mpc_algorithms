@@ -27,19 +27,20 @@
 %         0 -> zero cost break
 %         1 -> first order optimality
 %         2 -> change in input break
-function [u, C, n, brk] = newtons(P, dt, q0, u0, um, Cq, qd, eps, h, model)
+function [u, C, n, brk] = newtons(model, P, dt, q0, u0, um, Cq, qd, eps, h)
     %% Setup - Initial Guess, Cost, Gradient, and Hessian
     N = length(q0)/2;
     uc = u0;
-    Cc = nno.cost(P, dt, q0, u0, uc, Cq, qd, model);
+    Cc = nno.cost(model, P, dt, q0, u0, uc, Cq, qd);
     un = uc;  Cn = Cc;
 
     %% Loop for Newton's Method
     count = 1;
     brk = 0;
+    fprintf("Initial Iteration: %i, Cost: %.3e\n", count, Cn)
     while (Cc > eps)
         % gradient and corresponding MSE to zero
-        g = nno.cost_gradient(P, dt, q0, u0, uc, Cq, qd, h, model);
+        g = nno.cost_gradient(model, P, dt, q0, u0, uc, Cq, qd, h);
         gnorm = sqrt(sum(g.^2))/N;
 
         % first order optimality break according to L2-norm
@@ -49,18 +50,18 @@ function [u, C, n, brk] = newtons(P, dt, q0, u0, um, Cq, qd, eps, h, model)
         end
 
         % calculate the Hessian matrix and corresponding Newton's step
-        H = nno.cost_hessian(P, dt, q0, u0, uc, Cq, qd, h, model);
+        H = nno.cost_hessian(model, P, dt, q0, u0, uc, Cq, qd, h);
         un = uc - H\g;
 %         un = uc - alph*g;  % alternative: gradient descent
 
         % compute new values for cost, gradient, and hessian
-        Cn = nno.cost(P, dt, q0, u0, un, Cq, qd, model);
+        Cn = nno.cost(model, P, dt, q0, u0, un, Cq, qd);
         udn = abs(un - uc);  Cdn = abs(Cn - Cc);
         count = count + 1;
 
-        fprintf("Initial Cost: %.3f\tCurrent cost: %.3f\tChange in cost: %.6f\tGradient Norm: %.6f\n", Cc, Cn, Cdn, gnorm)
+        fprintf("Iteration: %i, Cost: %.3e, |g|: %.3e\n", count, Cn, gnorm)
 
-%         % change in input break based on MSE of udn to zero
+%         % change in input break based on MSE of udn
 %         unorm = sqrt(sum(udn.^2))/N;
 %         if (unorm < eps)
 %             brk = 2;
@@ -68,7 +69,7 @@ function [u, C, n, brk] = newtons(P, dt, q0, u0, um, Cq, qd, eps, h, model)
 %         end
 
         % change in cost break
-        if (Cdn < eps)
+        if (Cdn < eps^2)
             brk = 3;
             break;
         end
@@ -93,6 +94,7 @@ function [u, C, n, brk] = newtons(P, dt, q0, u0, um, Cq, qd, eps, h, model)
     end
 
     %% Return Values for Input, Cost, and Iteration Count
+    fprintf("Final Iteration: %i, Cost: %.3e\n", count, Cn)
     u = un;
     C = Cn;
     n = count;

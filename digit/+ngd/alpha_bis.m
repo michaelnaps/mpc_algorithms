@@ -44,7 +44,7 @@ function [u, n, brk, a] = alpha_bis(model, g, P, dt, q0, u0, uc, Cq, qd, arng, e
         end
     
         count = count + 1;
-        fprintf("\tIteration: %i, a: %.9f\n", count, aave)
+        fprintf("\tIteration: %i, a: %.3ef\n", count, aave)
 
         if (count == 1000)
             fprintf("ERROR: Iteration break in alpha search. (%i)\n", count)

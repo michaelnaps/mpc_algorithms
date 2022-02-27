@@ -21,23 +21,10 @@ function [u] = mpc_root(input, model, Tc, q0, logger)
     
     %% Run Optimization Algorithm
     tic;
-    [u, C, n, brk] = nno.newtons(P, dt, q0, u0, um, Cq, qd, eps, h, model);
+    [u, C, n, brk] = nno.newtons(model, P, dt, q0, u0, um, Cq, qd, eps, h);
     t = toc;
 
-%     TF = save_newton(testID + "_data.csv", [Tc, u', C, n, brk]);
-
-%     fprintf("Initial Guess:\n")
-%     for i = 1:length(u0)
-%         fprintf("\t%.10f\n", u0(i))
-%     end
-%     fprintf("Final Input:\n")
-%     if (u ~= u0)
-%         for i = 1:length(u)
-%             fprintf("\t%.10f\n", u(i))
-%         end
-%     end
-
-    fprintf("State Calculated: t = %.6f\nOpt Time: %.3f [s], Iterations: %i, Break: %i\n\n", Tc, t, n, brk);
+    fprintf("State Calculated: t = %.3f\nOpt Time: %.3e [s], Iterations: %i, Break: %i\n\n", Tc, t, n, brk);
 
     %% Log Data and Return
     if nargin > 4

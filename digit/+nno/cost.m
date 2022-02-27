@@ -18,10 +18,10 @@
 %
 %  Outputs:
 %   'Cs'  - sum of the cost for each link and given input
-function Cs = cost(P, dt, q0, u0, u, Cq, qd, model)
+function Cs = cost(model, P, dt, q0, u0, u, Cq, qd)
     %% Cost of Constant Input
     % calculate the state over the desired prediction horizon
-    qc = nno.modeuler(P, dt, q0, u, model);
+    qc = nno.modeuler(model, P, dt, q0, u);
 
     % sum of cost of each step of the prediction horizon
     N = length(q0)/2;
