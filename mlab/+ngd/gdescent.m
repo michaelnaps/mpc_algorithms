@@ -54,8 +54,8 @@ function [u, C, n, brk, a] = gdescent(P, dt, q0, u0, um, c, m, L, Cq, qd, arng, 
         end
 
         % gradient descent step
-        [un, ~, ~, a] = ngd.alpha_bis(g, P, dt, q0, u0, uc, c, m, L, Cq, qd, arng, eps);
-%         [un, ~, ~, a] = ngd.alpha_blk(g, Cc, P, dt, q0, u0, uc, c, m, L, Cq, qd, arng, eps);
+%         [un, ~, ~, a] = ngd.alpha_bis(g, P, dt, q0, u0, uc, c, m, L, Cq, qd, arng, eps);
+        [un, ~, ~, a] = ngd.alpha_blk(g, Cc, P, dt, q0, u0, uc, c, m, L, Cq, qd, arng, eps);
 
         % compute new values for cost, gradient, and hessian
         Cn = ngd.cost(P, dt, q0, u0, un, c, m, L, Cq, qd, " NN Main Loop Cost ");
