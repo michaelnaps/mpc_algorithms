@@ -8,3 +8,5 @@ which correspond to the **digit_matlab_sim** repository in the **mpc** branch.
 
 The functions found in the */mlab* folder will eventually be generalized to work with a given
 configuration space and simulator, but are currently written for the use of an n-link pendulum model.
+
+For generalized system check the **general** branch of this repository.
