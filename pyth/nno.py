@@ -5,6 +5,8 @@
 
 
 import numpy as np
+import math
+from modeuler.py import *
 
 
 def mpc_root(mpc_var, model, q0, inputs):
