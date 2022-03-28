@@ -11,7 +11,7 @@ function [T, q] = mpc_control(P, T, q0, um, c, m, L, Cq, thd, eps, height, push)
         
         % Calculate Optimal Input and Next State
         tic
-        [u, C, n] = nno.newtons(P, dt, q(i-1,1:6)', q(i-1,7:9)', um, c, m, L, Cq, thd, eps);
+        [u, C, n, brk] = nno.newtons(P, dt, q(i-1,1:6)', q(i-1,7:9)', um, c, m, L, Cq, thd, eps);
         t = toc;
         qc = modeuler(P, dt, q(i-1,1:6)', u, c, m, L, 'Main Simulation Loop');
         
@@ -19,7 +19,7 @@ function [T, q] = mpc_control(P, T, q0, um, c, m, L, Cq, thd, eps, height, push)
         qnew = pend_push(qc(2,:), T(i), push);
         
         % Add Values to State Matrix
-        q(i,:) = [qnew, u', C, n, t];
+        q(i,:) = [qnew, u', C, n, t, brk];
 
     end
     
