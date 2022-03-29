@@ -6,7 +6,7 @@
 
 import numpy as np
 import math
-from modeuler.py import *
+from modeuler import *
 
 
 def mpc_root(mpc_var, model, q0, inputs):
@@ -46,11 +46,21 @@ def newtons(mpc_var, model, q0, u0, inputs):
       uc = un;  Cc = Cn;
    
    # while (Cc != 0):
-   return brk;
+   return u;
    
 
 def cost(mpc_var, model, q0, u, inputs):
-   return 1;
+   # Cost of Constant Input
+   # calculate the state over the desired prediction horizon
+   qc = modeuler(mpc_var, model, q0, u, inputs);
+
+   # sum of cost of each step of the prediction horizon
+   du = (u0 - u);
+   C = zeros(size(u));
+   for i in range(P+1):
+      C = C + Cq(thd, qc[i], du);
+   end
+   Cs = sum(C);
    
 
 def gradient(mpc_var, model, q0, u, inputs):

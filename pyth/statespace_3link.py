@@ -1,11 +1,11 @@
 import numpy as np
 
-def statespace_3link(q, u):
+def statespace_3link(q, u, inputs):
    # Constants and State Variables
-   c = [500, 500, 500];
-   m = [15, 15, 60];
-   L = [0.5, 0.5, 1.0];
-   g = 9.81;
+   g = inputs.gravity_acc;
+   c = inputs.damping_coefficients;
+   m = inputs.joint_masses;
+   L = inputs.link_lengths;
    
    jNum = len(u);
    m1 = m[0];      m2 = m[1];      m3 = m[2];
