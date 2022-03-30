@@ -1,4 +1,5 @@
 import numpy as np
+import matplotlib.pyplot as plt
 
 def statespace_3link(q, u, inputs):
    # Constants and State Variables
@@ -41,3 +42,46 @@ def statespace_3link(q, u, inputs):
    dq = np.linalg.solve(M,E);
 
    return [q[1], dq[0], q[3], dq[1], q[5], dq[2]];
+
+
+def animate_3link(q, dt):
+   return 1;   
+
+
+def plotStates_3link(q, T):
+   qT = np.transpose(q);
+   
+   fig, statePlot = plt.subplots(2,3);
+   
+   statePlot[0,0].plot(T, qT[0]);  statePlot[1,0].plot(T, qT[1]);
+   statePlot[0,1].plot(T, qT[2]);  statePlot[1,1].plot(T, qT[3]);
+   statePlot[0,2].plot(T, qT[4]);  statePlot[1,2].plot(T, qT[5]);
+
+   return statePlot;
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   

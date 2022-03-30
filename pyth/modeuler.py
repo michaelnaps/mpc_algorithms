@@ -4,9 +4,10 @@
 #
 # Purpose: To calculate the states of a given statespace
 #   over a predetermined prediction horizon.
-def modeuler(mpc_var, statespace, q0, u, inputs):
+def modeuler(mpc_var, q0, u, inputs):
    P  = mpc_var.PH_length;
    dt = mpc_var.time_step;
+   statespace = mpc_var.model;
 
    dt_min = 1e-3;
    if (dt >= dt_min):

@@ -13,13 +13,13 @@ def CF(qd, q):
    return Cqu;
 
 class mpc_var:
-   PH_length  = 40;
+   model      = statespace_3link;
+   cost_func  = CF;
+   PH_length  = 400;
    time_step  = 0.025;
    appx_zero  = 1e-6;
    step_size  = 1e-3;
-   cost_func  = CF;
    des_angles = [math.pi/2, 0, math.pi, 0, math.pi, 0];
-   model      = statespace_3link;
 
 class inputs:
    # Constants and State Variables
@@ -29,9 +29,12 @@ class inputs:
    joint_masses         = [15, 15, 60];
    link_lengths         = [0.5, 0.5, 1.0];
 
-q0 = [math.pi/2, 0, math.pi, 0, math.pi, 0];
+q0 = [math.pi/4, 0, math.pi/2, 0, -math.pi/4, 0];
 u0 = [0, 0, 0];
 
-for i in range(100):
-   H = nno.hessian(mpc_var, statespace_3link, q0, [i,i,i], inputs);
-   print(H);
+q = modeuler(mpc_var, q0, u0, inputs);
+
+T = [i*mpc_var.time_step for i in range(mpc_var.PH_length+1)];
+statePlot = plotStates_3link(q, T);
+
+plt.show();
