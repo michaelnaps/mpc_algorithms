@@ -30,4 +30,4 @@ def modeuler(mpc_var, q0, u, inputs):
          q[int(i/adj+1)] = qm[i+1];
    
    t = [i*dt for i in range(P+1)];
-   return t, q;
+   return (t, q);

@@ -16,7 +16,7 @@ def CF(qd, q):
 class mpc_var:
    model      = statespace_3link;
    cost_func  = CF;
-   PH_length  = 400;
+   PH_length  = 40;
    time_step  = 0.025;
    appx_zero  = 1e-6;
    step_size  = 1e-3;
@@ -33,7 +33,7 @@ class inputs:
 q0 = [math.pi/4, 0, math.pi/2, 0, -math.pi/4, 0];
 u0 = [0, 0, 0];
 
-res = modeuler(mpc_var, q0, u0, inputs);
+res = nno.newtons(mpc_var, q0, u0, inputs);
 
 t = res[0];
 q = res[1];

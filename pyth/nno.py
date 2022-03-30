@@ -17,17 +17,17 @@ def mpc_root(mpc_var, q0, inputs):
    
 def newtons(mpc_var, q0, u0, inputs):
    # variable setup
-   N = len(q0)/2;
+   N  = len(q0)/2;
    eps = mpc_var.appx_zero;
-   uc = u0;
-   Cc = cost(mpc_var, q0, uc, inputs);
+   uc  = u0;
+   Cc  = cost(mpc_var, q0, uc, inputs);
    un = uc;  Cn = Cc;
    
    count = 1;
    brk = 0;
    while(Cc != 0):
       g = gradient(mpc_var, q0, uc, inputs);
-      gnorm = np.sqrt(np.sum(1))/N;
+      gnorm = np.sqrt(np.sum([g[i]**2 for i in range(len(g))]))/N;
       
       if (gnorm < eps):
          brk = 1;
