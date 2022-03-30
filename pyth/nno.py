@@ -53,16 +53,16 @@ def cost(mpc_var, q0, u, inputs):
    # MPC constants
    P  = mpc_var.PH_length;
    Cq = mpc_var.cost_func;
-   qd = mpc_var.des_angles;
+   qd = mpc_var.des_config;
    
    # Cost of Constant Input
    # simulate over the prediction horizon and sum cost
-   qc = modeuler(mpc_var, q0, u, inputs);
+   q = modeuler(mpc_var, q0, u, inputs)[1];
 
    C = [0 for i in range(len(u))];
 
    for i in range(P+1):
-      C = C + Cq(qd, qc[i]);
+      C = C + Cq(qd, q[i]);
 
    return np.sum(C);
    

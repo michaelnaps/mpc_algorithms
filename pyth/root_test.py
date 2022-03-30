@@ -1,5 +1,6 @@
 import math
 import numpy as np
+import matplotlib.pyplot as plt
 import nno
 from modeuler import *
 from statespace_3link import *
@@ -19,7 +20,7 @@ class mpc_var:
    time_step  = 0.025;
    appx_zero  = 1e-6;
    step_size  = 1e-3;
-   des_angles = [math.pi/2, 0, math.pi, 0, math.pi, 0];
+   des_config = [math.pi/2, 0, math.pi, 0, math.pi, 0];
 
 class inputs:
    # Constants and State Variables
@@ -32,9 +33,14 @@ class inputs:
 q0 = [math.pi/4, 0, math.pi/2, 0, -math.pi/4, 0];
 u0 = [0, 0, 0];
 
-q = modeuler(mpc_var, q0, u0, inputs);
+res = modeuler(mpc_var, q0, u0, inputs);
 
-T = [i*mpc_var.time_step for i in range(mpc_var.PH_length+1)];
-statePlot = plotStates_3link(q, T);
+t = res[0];
+q = res[1];
+
+statePlot = plotStates_3link(q, t);
+
+fig, costPlot = plt.subplots();
+costPlot.plot(t, [CF(mpc_var.des_config, q[i]) for i in range(len(q))]);
 
 plt.show();
