@@ -50,21 +50,87 @@ def newtons(mpc_var, model, q0, u0, inputs):
    
 
 def cost(mpc_var, model, q0, u, inputs):
+   # MPC constants
+   P  = mpc_var.PH_length;
+   Cq = mpc_var.cost_func;
+   qd = mpc_var.des_angles;
+   
    # Cost of Constant Input
-   # calculate the state over the desired prediction horizon
+   # simulate over the prediction horizon and sum cost
    qc = modeuler(mpc_var, model, q0, u, inputs);
 
-   # sum of cost of each step of the prediction horizon
-   du = (u0 - u);
-   C = zeros(size(u));
+   C = [0 for i in range(len(u))];
+
    for i in range(P+1):
-      C = C + Cq(thd, qc[i], du);
-   end
-   Cs = sum(C);
+      C = C + Cq(qd, qc[i]);
+
+   return np.sum(C);
    
 
-def gradient(mpc_var, model, q0, u, inputs):
-   return 1;
+def gradient(mpc_var, model, q, u, inputs):
+   # variable setup
+   N = len(u);
+   g = [0 for i in range(N)];
+   h = mpc_var.step_size;
    
-def hessian(mpc_var, model, q0, u, inputs):
-   return 1;
+   for i in range(N):
+      un1 = [u[j] - (i==j)*h for j in range(N)];
+      up1 = [u[j] + (i==j)*h for j in range(N)];
+      
+      Cn1 = cost(mpc_var, model, q, un1, inputs);
+      Cp1 = cost(mpc_var, model, q, up1, inputs);
+      
+      g[i] = (Cp1 - Cn1)/(2*h);
+
+   return np.transpose(g);
+
+
+def hessian(mpc_var, model, q, u, inputs):
+   # variable setup
+   N = len(u);
+   H = [[0 for i in range(N)] for j in range(N)];
+   h = mpc_var.step_size;
+   
+   for i in range(N):
+      un1 = [u[j] - (i==j)*h for j in range(N)];
+      up1 = [u[j] + (i==j)*h for j in range(N)];
+      
+      gn1 = gradient(mpc_var, model, q, un1, inputs);
+      gp1 = gradient(mpc_var, model, q, up1, inputs);
+      
+      H[i] = [(gp1[j] - gn1[j])/(2*h) for j in range(N)];
+
+   return H;
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
