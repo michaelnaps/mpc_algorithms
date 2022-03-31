@@ -23,20 +23,22 @@ def mpc_root(mpc_var, q0, u0, inputs):
    N = int(len(mpc_var.des_config)/2)
    q = [[0 for i in range(N)] for j in range(Nt)];
    q[0] = q0;
+   
+   # loop input
+   unew = u0;
 
    for i in range(1,Nt):
-      unew = newtons(mpc_var, q[i-1], u0, u0, inputs)[0];
+      unew = newtons(mpc_var, q[i-1], unew, unew, inputs)[0];
       qnew = modeuler(mpc_var, q[i-1], unew, inputs)[1];
       q[i] = qnew[0];
-      u0   = unew;
    
    return (T, q);
    
-def newtons(mpc_var, q0, u0, u, inputs):
+def newtons(mpc_var, q0, u0, uinit, inputs):
    # variable setup
    N  = int(len(q0)/2);
    eps = mpc_var.appx_zero;
-   uc  = u0;
+   uc  = uinit;
    Cc  = cost(mpc_var, q0, u0, uc, inputs);
    un = uc;  Cn = Cc;
    
