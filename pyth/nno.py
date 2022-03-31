@@ -9,33 +9,51 @@ import math
 from modeuler import *
 
 
-def mpc_root(mpc_var, q0, inputs):
-   u0 = 0;
-   u = newtons(mpc_var, q0, u0, inputs);
-   return u;
+def mpc_root(mpc_var, q0, u0, inputs):
+   # MPC variable declaration
+   tspan = mpc_var.sim_time;
+   P  = mpc_var.PH_length;
+   dt = mpc_var.time_step;
    
+   # simulation time variables
+   Nt = int(tspan/dt+1);
+   T = [i*dt for i in range(Nt)];
    
-def newtons(mpc_var, q0, u0, inputs):
+   # state matrices declarations
+   N = int(len(mpc_var.des_config)/2)
+   q = [[0 for i in range(N)] for j in range(Nt)];
+   q[0] = q0;
+
+   for i in range(1,Nt):
+      unew = newtons(mpc_var, q[i-1], u0, u0, inputs)[0];
+      qnew = modeuler(mpc_var, q[i-1], unew, inputs)[1];
+      q[i] = qnew[0];
+      u0   = unew;
+   
+   return (T, q);
+   
+def newtons(mpc_var, q0, u0, u, inputs):
    # variable setup
-   N  = len(q0)/2;
+   N  = int(len(q0)/2);
    eps = mpc_var.appx_zero;
    uc  = u0;
-   Cc  = cost(mpc_var, q0, uc, inputs);
+   Cc  = cost(mpc_var, q0, u0, uc, inputs);
    un = uc;  Cn = Cc;
    
    count = 1;
    brk = 0;
    while(Cc != 0):
-      g = gradient(mpc_var, q0, uc, inputs);
-      gnorm = np.sqrt(np.sum([g[i]**2 for i in range(len(g))]))/N;
+      g = gradient(mpc_var, q0, u0, uc, inputs);
+      gnorm = np.sqrt(np.sum([g[i]**2 for i in range(N)]))/N;
       
       if (gnorm < eps):
          brk = 1;
          break;
       
-      H = hessian(mpc_var, q0, uc, inputs);
-      un = uc - np.linalg.lstsq(H, g);
-      Cn = cost(mpc_var, q0, un, inputs);
+      H = hessian(mpc_var, q0, u0, uc, inputs);
+      udn = np.linalg.lstsq(H, g, rcond=None)[0];
+      un = [uc[i] - udn[i] for i in range(N)];
+      Cn = cost(mpc_var, q0, u0, un, inputs);
       count += 1;
       
       # break conditions
@@ -45,11 +63,10 @@ def newtons(mpc_var, q0, u0, inputs):
          
       uc = un;  Cc = Cn;
    
-   # while (Cc != 0):
-   return u;
+   return (un, Cn, count, brk);
    
 
-def cost(mpc_var, q0, u, inputs):
+def cost(mpc_var, q0, u0, u, inputs):
    # MPC constants
    P  = mpc_var.PH_length;
    Cq = mpc_var.cost_func;
@@ -57,17 +74,18 @@ def cost(mpc_var, q0, u, inputs):
    
    # Cost of Constant Input
    # simulate over the prediction horizon and sum cost
-   q = modeuler(mpc_var, q0, u, inputs)[1];
+   q  = modeuler(mpc_var, q0, u, inputs)[1];
+   du = [u[i] - u0[i] for i in range(len(u))];
 
    C = [0 for i in range(len(u))];
 
    for i in range(P+1):
-      C = C + Cq(qd, q[i]);
+      C = C + Cq(qd, q[i], du);
 
    return np.sum(C);
    
 
-def gradient(mpc_var, q, u, inputs):
+def gradient(mpc_var, q, u0, u, inputs):
    # variable setup
    N = len(u);
    g = [0 for i in range(N)];
@@ -77,15 +95,15 @@ def gradient(mpc_var, q, u, inputs):
       un1 = [u[j] - (i==j)*h for j in range(N)];
       up1 = [u[j] + (i==j)*h for j in range(N)];
       
-      Cn1 = cost(mpc_var, q, un1, inputs);
-      Cp1 = cost(mpc_var, q, up1, inputs);
+      Cn1 = cost(mpc_var, q, u0, un1, inputs);
+      Cp1 = cost(mpc_var, q, u0, up1, inputs);
       
       g[i] = (Cp1 - Cn1)/(2*h);
 
    return np.transpose(g);
 
 
-def hessian(mpc_var, q, u, inputs):
+def hessian(mpc_var, q, u0, u, inputs):
    # variable setup
    N = len(u);
    H = [[0 for i in range(N)] for j in range(N)];
@@ -95,8 +113,8 @@ def hessian(mpc_var, q, u, inputs):
       un1 = [u[j] - (i==j)*h for j in range(N)];
       up1 = [u[j] + (i==j)*h for j in range(N)];
       
-      gn1 = gradient(mpc_var, q, un1, inputs);
-      gp1 = gradient(mpc_var, q, up1, inputs);
+      gn1 = gradient(mpc_var, q, u0, un1, inputs);
+      gp1 = gradient(mpc_var, q, u0, up1, inputs);
       
       H[i] = [(gp1[j] - gn1[j])/(2*h) for j in range(N)];
 
