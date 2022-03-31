@@ -21,18 +21,28 @@ def mpc_root(mpc_var, q0, u0, inputs):
    
    # state matrices declarations
    N = int(len(mpc_var.des_config)/2)
-   q = [[0 for i in range(N)] for j in range(Nt)];
-   q[0] = q0;
+   qlist = [[0 for i in range(N)] for j in range(Nt)];
+   qlist[0] = q0;
    
-   # loop input
-   unew = u0;
+   # return variables
+   ulist = [[0 for i in range(N)] for j in range(Nt)];
+   Clist = [0 for i in range(Nt)];
+   nlist = [0 for i in range(Nt)];
+   brklist = [0 for i in range(Nt)];
+   
+   ulist[0] = u0;
 
    for i in range(1,Nt):
-      unew = newtons(mpc_var, q[i-1], unew, unew, inputs)[0];
-      qnew = modeuler(mpc_var, q[i-1], unew, inputs)[1];
-      q[i] = qnew[0];
+      opt_results = newtons(mpc_var, qlist[i-1], ulist[i-1], ulist[i-1], inputs);
+      ulist[i] = opt_results[0];
+      Clist[i] = opt_results[1];
+      nlist[i] = opt_results[2];
+      brklist[i] = opt_results[3];
+      
+      print(qlist[i]);
+      qlist[i] = modeuler(mpc_var, qlist[i-1], ulist[i], inputs)[1];
    
-   return (T, q);
+   return (T, qlist, ulist, Clist, nlist, brklist);
    
 def newtons(mpc_var, q0, u0, uinit, inputs):
    # variable setup
@@ -45,24 +55,32 @@ def newtons(mpc_var, q0, u0, uinit, inputs):
    count = 1;
    brk = 0;
    while(Cc != 0):
+   	# calculate the gradient around the current input
       g = gradient(mpc_var, q0, u0, uc, inputs);
       gnorm = np.sqrt(np.sum([g[i]**2 for i in range(N)]))/N;
       
+      # check if gradient is an approx. of zero
       if (gnorm < eps):
          brk = 1;
          break;
       
+      # calculation the hessian around the current input
       H = hessian(mpc_var, q0, u0, uc, inputs);
+      
+      # calculate the next iteration of the input
       udn = np.linalg.lstsq(H, g, rcond=None)[0];
       un = [uc[i] - udn[i] for i in range(N)];
+      
+      # simulate and calculate the new cost value
       Cn = cost(mpc_var, q0, u0, un, inputs);
-      count += 1;
+      count += 1;  # iterate the loop counter
       
       # break conditions
       if (count == 100):
          brk = -1;
          break;
-         
+      
+      # update loop variables   
       uc = un;  Cc = Cn;
    
    return (un, Cn, count, brk);

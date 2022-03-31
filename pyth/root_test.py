@@ -21,7 +21,7 @@ class mpc_var:
    time_step  = 0.025;
    appx_zero  = 1e-6;
    step_size  = 1e-3;
-   des_config = [math.pi/2, 0, math.pi, 0, math.pi, 0];
+   des_config = [math.pi/4, 0, math.pi/2, 0, -math.pi/4, 0];
 
 class inputs:
    # Constants and State Variables
@@ -31,16 +31,26 @@ class inputs:
    joint_masses         = [15, 15, 60];
    link_lengths         = [0.5, 0.5, 1.0];
 
-q0 = [math.pi/4, 0, math.pi/2, 0, -math.pi/4, 0];
+q0 = [math.pi/2, 0, 0, 0, 0, 0];
 u0 = [0, 0, 0];
 
 opt_results = nno.mpc_root(mpc_var, q0, u0, inputs);
 
 T = opt_results[0];
 q = opt_results[1];
+u = opt_results[2];
+C = opt_results[3];
+n = opt_results[4];
+brk = opt_results[5];
 
-statePlot = plotStates_3link(T, q);
+for i in range(len(q)):
+	print(q[i]);
+	print(u[i]);
+	print(C[i]);
+	print(brk[i]);
 
-plt.show();
+# statePlot = plotStates_3link(T, q);
+
+# plt.show();
 
 
