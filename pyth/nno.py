@@ -21,11 +21,11 @@ def mpc_root(mpc_var, q0, u0, inputs):
    
    # state matrices declarations
    N = int(len(mpc_var.des_config)/2)
-   qlist = [[0 for i in range(N)] for j in range(Nt)];
+   qlist = [0 for i in range(N)];
    qlist[0] = q0;
    
    # return variables
-   ulist = [[0 for i in range(N)] for j in range(Nt)];
+   ulist = [0 for i in range(Nt)];
    Clist = [0 for i in range(Nt)];
    nlist = [0 for i in range(Nt)];
    brklist = [0 for i in range(Nt)];
@@ -122,7 +122,15 @@ def gradient(mpc_var, q, u0, u, inputs):
       Cn1 = cost(mpc_var, q, u0, un1, inputs);
       Cp1 = cost(mpc_var, q, u0, up1, inputs);
       
-      g[i] = (Cp1 - Cn1)/(2*h);
+      # g[i] = (Cp1 - Cn1)/(2*h);
+      
+      un2 = [u[j] - (i==j)*2*h for j in range(N)];
+      up2 = [u[j] + (i==j)*2*h for j in range(N)];
+      
+      Cn2 = cost(mpc_var, q, u0, un2, inputs);
+      Cp2 = cost(mpc_var, q, u0, up2, inputs);
+      
+      g[i] = (Cp2 - 8*Cn1 + 8*Cp1 - Cp2)/(12*h);
 
    return np.transpose(g);
 
@@ -130,7 +138,7 @@ def gradient(mpc_var, q, u0, u, inputs):
 def hessian(mpc_var, q, u0, u, inputs):
    # variable setup
    N = len(u);
-   H = [[0 for i in range(N)] for j in range(N)];
+   H = [0 for i in range(N)];
    h = mpc_var.step_size;
    
    for i in range(N):
