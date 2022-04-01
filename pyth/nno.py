@@ -39,17 +39,17 @@ def mpc_root(mpc_var, q0, u0, inputs):
       nlist[i] = opt_results[2];
       brklist[i] = opt_results[3];
       
-      print(qlist[i]);
-      qlist[i] = modeuler(mpc_var, qlist[i-1], ulist[i], inputs)[1];
+      qlist[i] = modeuler(mpc_var, qlist[i-1], ulist[i], inputs)[1][1];
    
    return (T, qlist, ulist, Clist, nlist, brklist);
    
 def newtons(mpc_var, q0, u0, uinit, inputs):
    # variable setup
-   N  = int(len(q0)/2);
-   eps = mpc_var.appx_zero;
-   uc  = uinit;
-   Cc  = cost(mpc_var, q0, u0, uc, inputs);
+   N    = int(len(q0)/2);
+   eps  = mpc_var.appx_zero;
+   umax = mpc_var.input_bounds;
+   uc   = uinit;
+   Cc   = cost(mpc_var, q0, u0, uc, inputs);
    un = uc;  Cn = Cc;
    
    count = 1;
@@ -57,9 +57,9 @@ def newtons(mpc_var, q0, u0, uinit, inputs):
    while(Cc != 0):
    	# calculate the gradient around the current input
       g = gradient(mpc_var, q0, u0, uc, inputs);
-      gnorm = np.sqrt(np.sum([g[i]**2 for i in range(N)]))/N;
+      gnorm = np.sqrt(np.sum([g[i]**2 for i in range(N)]));
       
-      # check if gradient is an approx. of zero
+      # check if gradient-norm is an approx. of zero
       if (gnorm < eps):
          brk = 1;
          break;
@@ -83,6 +83,10 @@ def newtons(mpc_var, q0, u0, uinit, inputs):
       # update loop variables   
       uc = un;  Cc = Cn;
    
+   # input boundary check
+   ucheck = [umax[i] > un[i] for i in range(N)];
+   un = [un[i]*ucheck[i] + umax[i]*~ucheck[i] for i in range(N)];
+   
    return (un, Cn, count, brk);
    
 
@@ -97,10 +101,10 @@ def cost(mpc_var, q0, u0, u, inputs):
    q  = modeuler(mpc_var, q0, u, inputs)[1];
    du = [u[i] - u0[i] for i in range(len(u))];
 
-   C = [0 for i in range(len(u))];
+   C = [0 for i in range(P+1)];
 
    for i in range(P+1):
-      C = C + Cq(qd, q[i], du);
+      C[i] = np.sum(Cq(qd, q[i], du));
 
    return np.sum(C);
    

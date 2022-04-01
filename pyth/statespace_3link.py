@@ -59,29 +59,13 @@ def plotStates_3link(T, q):
 
    return statePlot;
    
+def plotInputs_3link(T, u):
+   uT = np.transpose(u);
    
+   fig, inputPlot = plt.subplots(1,3);
    
+   inputPlot[0].plot(T, uT[0]);
+   inputPlot[1].plot(T, uT[1]);
+   inputPlot[2].plot(T, uT[2]);
    
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
+   return inputPlot;
