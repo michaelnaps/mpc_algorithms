@@ -31,7 +31,7 @@ class inputs:
    joint_masses         = [15, 15, 60];
    link_lengths         = [0.5, 0.5, 1.0];
 
-q0 = [math.pi/4, 0, math.pi/2, 0, -math.pi/4, 0];
+q0 = [math.pi/4, 0, 0, 0, 0, 0];
 u0 = [0, 0, 0];
 
 g = nno.gradient(mpc_var, q0, u0, u0, inputs);
