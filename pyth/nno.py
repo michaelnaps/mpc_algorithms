@@ -21,7 +21,7 @@ def mpc_root(mpc_var, q0, u0, inputs):
    
    # state matrices declarations
    N = int(len(mpc_var.des_config)/2)
-   qlist = [0 for i in range(N)];
+   qlist = [0 for i in range(Nt)];
    qlist[0] = q0;
    
    # return variables
@@ -38,6 +38,8 @@ def mpc_root(mpc_var, q0, u0, inputs):
       Clist[i] = opt_results[1];
       nlist[i] = opt_results[2];
       brklist[i] = opt_results[3];
+      
+      print(ulist[i]);
       
       qlist[i] = modeuler(mpc_var, qlist[i-1], ulist[i], inputs)[1][1];
    
@@ -122,15 +124,15 @@ def gradient(mpc_var, q, u0, u, inputs):
       Cn1 = cost(mpc_var, q, u0, un1, inputs);
       Cp1 = cost(mpc_var, q, u0, up1, inputs);
       
-      # g[i] = (Cp1 - Cn1)/(2*h);
+      g[i] = (Cp1 - Cn1)/(2*h);
       
-      un2 = [u[j] - (i==j)*2*h for j in range(N)];
-      up2 = [u[j] + (i==j)*2*h for j in range(N)];
+      # un2 = [u[j] - (i==j)*2*h for j in range(N)];
+      # up2 = [u[j] + (i==j)*2*h for j in range(N)];
       
-      Cn2 = cost(mpc_var, q, u0, un2, inputs);
-      Cp2 = cost(mpc_var, q, u0, up2, inputs);
+      # Cn2 = cost(mpc_var, q, u0, un2, inputs);
+      # Cp2 = cost(mpc_var, q, u0, up2, inputs);
       
-      g[i] = (Cp2 - 8*Cn1 + 8*Cp1 - Cp2)/(12*h);
+      # g[i] = (Cp2 - 8*Cn1 + 8*Cp1 - Cp2)/(12*h);
 
    return np.transpose(g);
 

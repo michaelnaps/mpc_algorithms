@@ -69,3 +69,9 @@ def plotInputs_3link(T, u):
    inputPlot[2].plot(T, uT[2]);
    
    return inputPlot;
+   
+def plotCost_3link(T, C):
+	fig, costPlot = plt.subplots();
+	costPlot.plot(T, C);
+	
+	return costPlot;

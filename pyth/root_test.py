@@ -31,12 +31,18 @@ class inputs:
    joint_masses         = [15, 15, 60];
    link_lengths         = [0.5, 0.5, 1.0];
 
-q0 = [math.pi/4, 0, 0, 0, 0, 0];
+q0 = [math.pi/2-0.01, 0, 0, 0, 0, 0];
 u0 = [0, 0, 0];
 
-g = nno.gradient(mpc_var, q0, u0, u0, inputs);
-H = nno.hessian(mpc_var, q0, u0, u0, inputs);
+mpc_results = nno.mpc_root(mpc_var, q0, u0, inputs);
 
-print(g);
-for i in range(len(H)):
-   print(H[i]);
+T = mpc_results[0];
+q = mpc_results[1];
+u = mpc_results[2];
+C = mpc_results[3];
+
+statePlot = plotStates_3link(T, q);
+inputPlot = plotInputs_3link(T, u);
+costPlot  = plotCost_3link(T, C);
+
+plt.show();
