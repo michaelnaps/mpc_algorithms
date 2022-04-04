@@ -1,5 +1,7 @@
 import numpy as np
+import time
 import matplotlib.pyplot as plt
+import matplotlib.animation as anim
 
 def statespace_3link(q, u, inputs):
    # Constants and State Variables
@@ -44,8 +46,28 @@ def statespace_3link(q, u, inputs):
    return [q[1], dq[0], q[3], dq[1], q[5], dq[2]];
 
 
-def animate_3link(q, dt):
-   return 1;   
+def updateAnimation_3link(i):
+   data = q[:i][0];
+   ax.plot(data, [j*dt for j in range(i)]);
+
+
+def animation_3link(T, q):
+   Nt = len(T);
+   dt = T[1] - T[0];
+   
+   for i in range(Nt):
+      q1_pos = [];  q1_vel = [];
+   
+      for j in range(i+1):
+         q1_pos.append(q[j][0]);
+         q1_vel.append(q[j][1]);
+   
+      plt.clf();
+      plt.scatter(T[:i+1], q1_pos, color='blue');
+      plt.scatter(T[:i+1], q1_vel, color='red');
+      plt.pause(dt);
+   
+   return 1;
 
 
 def plotStates_3link(T, q):
