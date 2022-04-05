@@ -34,11 +34,6 @@ class inputs:
 q0 = [math.pi/2-0.01, 0, 0, 0, 0, 0];
 u0 = [0, 0, 0];
 
-T, q = modeuler(mpc_var, q0, u0, inputs);
-
-animPlot = animation_3link(T, q);
-
-"""
 mpc_results = nno.mpc_root(mpc_var, q0, u0, inputs);
 
 T = mpc_results[0];
@@ -49,10 +44,6 @@ C = mpc_results[3];
 statePlot = plotStates_3link(T, q);
 inputPlot = plotInputs_3link(T, u);
 costPlot  = plotCost_3link(T, C);
-
 plt.show();
 
-"""
-
-#statePlot = plotStates_3link(T, q);
-plt.show();
+animation_3link(T, q, inputs);

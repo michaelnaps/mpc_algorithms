@@ -51,20 +51,35 @@ def updateAnimation_3link(i):
    ax.plot(data, [j*dt for j in range(i)]);
 
 
-def animation_3link(T, q):
+def animation_3link(T, q, inputs):
    Nt = len(T);
    dt = T[1] - T[0];
    
+   L1 = inputs.link_lengths[0];
+   L2 = inputs.link_lengths[1];
+   L3 = inputs.link_lengths[2];
+   
+   axesLimits = [-(L1+L2+L3+0.5), (L1+L2+L3+0.5)];   
+   
    for i in range(Nt):
-      q1_pos = [];  q1_vel = [];
-   
-      for j in range(i+1):
-         q1_pos.append(q[j][0]);
-         q1_vel.append(q[j][1]);
-   
       plt.clf();
-      plt.scatter(T[:i+1], q1_pos, color='blue');
-      plt.scatter(T[:i+1], q1_vel, color='red');
+      
+      th1 = q[i][0];
+      th2 = q[i][2];
+      th3 = q[i][4];
+      
+      xAnkle = 0;                              yAnkle = 0;
+      xKnee  = xAnkle + L1*np.cos(th1);        yKnee  = yAnkle + L1*np.sin(th1);
+      xHip   = xKnee + L2*np.cos(th1+th2);     yHip   = yKnee + L2*np.sin(th1+th2);
+      xHead  = xHip + L3*np.cos(th1+th2+th3);  yHead  = yHip + L3*np.sin(th1+th2+th3);
+      
+      plt.plot([xAnkle, xKnee], [yAnkle, yKnee]);
+      plt.plot([xKnee, xHip], [yKnee, yHip]);
+      plt.plot([xHip, xHead], [yHip, yHead]);
+      
+      plt.xlim(axesLimits);
+      plt.ylim(axesLimits);
+      plt.grid();
       plt.pause(dt);
    
    return 1;
