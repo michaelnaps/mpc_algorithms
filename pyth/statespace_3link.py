@@ -77,10 +77,13 @@ def animation_3link(T, q, inputs):
       plt.plot([xKnee, xHip], [yKnee, yHip]);
       plt.plot([xHip, xHead], [yHip, yHead]);
       
+      plt.title("TPM Simulation: t = {:.3f}".format(T[i]));
       plt.xlim(axesLimits);
       plt.ylim(axesLimits);
       plt.grid();
       plt.pause(dt);
+   
+   input("Press Enter to close animation...");
    
    return 1;
 
