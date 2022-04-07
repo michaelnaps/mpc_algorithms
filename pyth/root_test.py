@@ -14,7 +14,7 @@ def CF(qd, q):
    return Cqu;
 
 class mpc_var:
-   sim_time     = 10;
+   sim_time     = 0.1;
    model        = statespace_3link;
    cost_func    = CF;
    PH_length    = 2;
@@ -55,7 +55,4 @@ input("Press Enter for animation...");
 
 animation_3link(T, q, inputs);
 
-statePlot = plotStates_3link(T, q);
-plt.show();
-
-animation_3link(T, q, inputs);
+nno.save_results("prevRun_data.pickle", mpc_results);

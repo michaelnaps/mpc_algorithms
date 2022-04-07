@@ -6,6 +6,7 @@
 
 import numpy as np
 import math
+import pickle
 from modeuler import *
 
 
@@ -158,36 +159,15 @@ def hessian(mpc_var, q, u0, u, inputs):
       H[i] = [(gp1[j] - gn1[j])/(2*h) for j in range(N)];
 
    return H;
+
+def save_results(filename, mpc_results):
+   with open(filename, 'wb') as save_file:
+      pickle.dump(mpc_results, save_file);
    
+   return 1;
    
+def load_results(filename):
+   with open(filename, 'rb') as save_file:
+      mpc_results = pickle.load(save_file);
    
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
+   return mpc_results;
