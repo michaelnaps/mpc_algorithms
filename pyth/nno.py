@@ -11,16 +11,16 @@ from modeuler import *
 
 def mpc_root(mpc_var, q0, u0, inputs):
    # MPC variable declaration
-   tspan = mpc_var.sim_time;
+   N = mpc_var.num_inputs;
    P  = mpc_var.PH_length;
    dt = mpc_var.time_step;
+   tspan = mpc_var.sim_time;
    
    # simulation time variables
    Nt = int(tspan/dt+1);
    T = [i*dt for i in range(Nt)];
    
    # state matrices declarations
-   N = int(len(mpc_var.des_config)/2)
    qlist = [0 for i in range(Nt)];
    qlist[0] = q0;
    
@@ -33,23 +33,28 @@ def mpc_root(mpc_var, q0, u0, inputs):
    ulist[0] = u0;
 
    for i in range(1,Nt):
+      print("\nOpt. Start:");
       opt_results = newtons(mpc_var, qlist[i-1], ulist[i-1], ulist[i-1], inputs);
-      ulist[i] = opt_results[0];
-      Clist[i] = opt_results[1];
-      nlist[i] = opt_results[2];
+      ulist[i]   = opt_results[0];
+      Clist[i]   = opt_results[1];
+      nlist[i]   = opt_results[2];
       brklist[i] = opt_results[3];
       
+      print("Input Found:");
       print(ulist[i]);
       
-      qlist[i] = modeuler(mpc_var, qlist[i-1], ulist[i], inputs)[1][1];
+      qlist[i] = modeuler(mpc_var, qlist[i-1], ulist[i][:N], inputs)[1][1];
    
    return (T, qlist, ulist, Clist, nlist, brklist);
    
 def newtons(mpc_var, q0, u0, uinit, inputs):
-   # variable setup
-   N    = int(len(q0)/2);
+   # MPC constants initialization
+   P    = mpc_var.PH_length;
+   N    = mpc_var.num_inputs;
    eps  = mpc_var.appx_zero;
-   umax = mpc_var.input_bounds;
+   umax = [mpc_var.input_bounds for i in range(P*N)];
+
+   # loop variable setup
    uc   = uinit;
    Cc   = cost(mpc_var, q0, u0, uc, inputs);
    un = uc;  Cn = Cc;
@@ -71,7 +76,9 @@ def newtons(mpc_var, q0, u0, uinit, inputs):
       
       # calculate the next iteration of the input
       udn = np.linalg.lstsq(H, g, rcond=None)[0];
-      un = [uc[i] - udn[i] for i in range(N)];
+      un = [uc[i] - udn[i] for i in range(P*N)];
+      
+      print(un);
       
       # simulate and calculate the new cost value
       Cn = cost(mpc_var, q0, u0, un, inputs);
@@ -86,8 +93,8 @@ def newtons(mpc_var, q0, u0, uinit, inputs):
       uc = un;  Cc = Cn;
    
    # input boundary check
-   ucheck = [umax[i] > un[i] for i in range(N)];
-   un = [un[i]*ucheck[i] + umax[i]*~ucheck[i] for i in range(N)];
+   ucheck = [umax[i] > un[i] for i in range(P*N)];
+   un = [un[i]*ucheck[i] + umax[i]*~ucheck[i] for i in range(P*N)];
    
    return (un, Cn, count, brk);
    
@@ -98,15 +105,21 @@ def cost(mpc_var, q0, u0, u, inputs):
    Cq = mpc_var.cost_func;
    qd = mpc_var.des_config;
    
+   # reshape input variable
+   N = int(len(q0)/2);
+   uc = np.reshape(u, [P, N]);
+   
    # Cost of Constant Input
    # simulate over the prediction horizon and sum cost
-   q  = modeuler(mpc_var, q0, u, inputs)[1];
-   du = [u[i] - u0[i] for i in range(len(u))];
+   q = [[0 for i in range(2*N)] for j in range(P+1)];
+   q[0] = q0;
+   for i in range(P):
+      q[i+1] = modeuler(mpc_var, q[i], uc[i], inputs)[1][-1];
 
    C = [0 for i in range(P+1)];
 
    for i in range(P+1):
-      C[i] = np.sum(Cq(qd, q[i], du));
+      C[i] = np.sum(Cq(qd, q[i]));
 
    return np.sum(C);
    
@@ -125,14 +138,6 @@ def gradient(mpc_var, q, u0, u, inputs):
       Cp1 = cost(mpc_var, q, u0, up1, inputs);
       
       g[i] = (Cp1 - Cn1)/(2*h);
-      
-      # un2 = [u[j] - (i==j)*2*h for j in range(N)];
-      # up2 = [u[j] + (i==j)*2*h for j in range(N)];
-      
-      # Cn2 = cost(mpc_var, q, u0, un2, inputs);
-      # Cp2 = cost(mpc_var, q, u0, up2, inputs);
-      
-      # g[i] = (Cp2 - 8*Cn1 + 8*Cp1 - Cp2)/(12*h);
 
    return np.transpose(g);
 

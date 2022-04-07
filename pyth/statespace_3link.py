@@ -16,8 +16,8 @@ def statespace_3link(q, u, inputs):
    r1 = L1/2;      r2 = L2/2;      r3 = L3/2;
    I1 = m1*L1/12;  I2 = m2*L2/12;  I3 = m3*L3/12;
    
-   q1 = q[0];  q2 = q[2];  q3 = q[4];
-   q4 = q[1];  q5 = q[3];  q6 = q[5];
+   q1 = q[0];  q2 = q[1];  q3 = q[2];
+   q4 = q[3];  q5 = q[4];  q6 = q[5];
 
    u1 = u[0];  u2 = u[1];  u3 = u[2];
    c1 = c[0];  c2 = c[1];  c3 = c[2];
@@ -43,7 +43,7 @@ def statespace_3link(q, u, inputs):
 
    dq = np.linalg.solve(M,E);
 
-   return [q[1], dq[0], q[3], dq[1], q[5], dq[2]];
+   return [q[3], q[4], q[5], dq[0], dq[1], dq[2]];
 
 
 def updateAnimation_3link(i):
@@ -65,8 +65,8 @@ def animation_3link(T, q, inputs):
       plt.clf();
       
       th1 = q[i][0];
-      th2 = q[i][2];
-      th3 = q[i][4];
+      th2 = q[i][1];
+      th3 = q[i][3];
       
       xAnkle = 0;                              yAnkle = 0;
       xKnee  = xAnkle + L1*np.cos(th1);        yKnee  = yAnkle + L1*np.sin(th1);
@@ -93,9 +93,9 @@ def plotStates_3link(T, q):
    
    fig, statePlot = plt.subplots(2,3);
    
-   statePlot[0,0].plot(T, qT[0]);  statePlot[1,0].plot(T, qT[1]);
-   statePlot[0,1].plot(T, qT[2]);  statePlot[1,1].plot(T, qT[3]);
-   statePlot[0,2].plot(T, qT[4]);  statePlot[1,2].plot(T, qT[5]);
+   statePlot[0,0].plot(T, qT[0]);  statePlot[1,0].plot(T, qT[3]);
+   statePlot[0,1].plot(T, qT[1]);  statePlot[1,1].plot(T, qT[4]);
+   statePlot[0,2].plot(T, qT[2]);  statePlot[1,2].plot(T, qT[5]);
 
    return statePlot;
    
