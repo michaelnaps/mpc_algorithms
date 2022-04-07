@@ -46,11 +46,6 @@ def statespace_3link(q, u, inputs):
    return [q[3], q[4], q[5], dq[0], dq[1], dq[2]];
 
 
-def updateAnimation_3link(i):
-   data = q[:i][0];
-   ax.plot(data, [j*dt for j in range(i)]);
-
-
 def animation_3link(T, q, inputs):
    Nt = len(T);
    dt = T[1] - T[0];
@@ -66,7 +61,7 @@ def animation_3link(T, q, inputs):
       
       th1 = q[i][0];
       th2 = q[i][1];
-      th3 = q[i][3];
+      th3 = q[i][2];
       
       xAnkle = 0;                              yAnkle = 0;
       xKnee  = xAnkle + L1*np.cos(th1);        yKnee  = yAnkle + L1*np.sin(th1);

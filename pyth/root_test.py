@@ -14,17 +14,17 @@ def CF(qd, q):
    return Cqu;
 
 class mpc_var:
-   sim_time     = 0.1;
+   sim_time     = 90;
    model        = statespace_3link;
    cost_func    = CF;
-   PH_length    = 2;
+   PH_length    = 1;
    knot_length  = 4;
    time_step    = 0.025;
    appx_zero    = 1e-6;
    step_size    = 1e-3;
    num_inputs   = 3;
    input_bounds = 3000;
-   des_config   = [math.pi/2, 0, 0, 0, 0, 0];
+   des_config   = [math.pi/4, math.pi/2, -math.pi/4, 0, 0, 0];
 
 class inputs:
    # Constants and State Variables
@@ -33,7 +33,7 @@ class inputs:
    joint_masses         = [15, 15, 60];
    link_lengths         = [0.5, 0.5, 1.0];
 
-q0 = [math.pi/4, math.pi/2, -math.pi/4, 0, 0, 0];
+q0 = [math.pi/2, 0, 0, 0, 0, 0];
 u0 = [0 for i in range(mpc_var.num_inputs*mpc_var.PH_length)];
 
 mpc_results = nno.mpc_root(mpc_var, q0, u0, inputs);
