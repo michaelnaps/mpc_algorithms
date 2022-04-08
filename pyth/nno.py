@@ -35,14 +35,14 @@ def mpc_root(mpc_var, q0, u0, inputs):
 
    for i in range(1,Nt):
       print("\nOpt. Start:");
-      opt_results = newtons(mpc_var, qlist[i-1], ulist[i-1], ulist[i-1], inputs);
+      opt_results = newtons(mpc_var, qlist[i-1], ulist[i-1][:N], ulist[i-1], inputs);
       ulist[i]   = opt_results[0];
       Clist[i]   = opt_results[1];
       nlist[i]   = opt_results[2];
       brklist[i] = opt_results[3];
       
       print("Input Found:");
-      print(ulist[i]);
+      print(ulist[i][:N]);
       
       qlist[i] = modeuler(mpc_var, qlist[i-1], ulist[i][:N], inputs)[1][1];
    
@@ -53,7 +53,7 @@ def newtons(mpc_var, q0, u0, uinit, inputs):
    P    = mpc_var.PH_length;
    N    = mpc_var.num_inputs;
    eps  = mpc_var.appx_zero;
-   umax = [mpc_var.input_bounds for i in range(P*N)];
+   umax = mpc_var.input_bounds;
 
    # loop variable setup
    uc   = uinit;
@@ -92,27 +92,29 @@ def newtons(mpc_var, q0, u0, uinit, inputs):
       
       # update loop variables   
       uc = un;  Cc = Cn;
-   
-   # input boundary check
+         
+   # hard set input bounds   # input boundary check
    ucheck = [umax[i] > un[i] for i in range(P*N)];
    un = [un[i]*ucheck[i] + umax[i]*~ucheck[i] for i in range(P*N)];
-   
+
    return (un, Cn, count, brk);
    
 
 def cost(mpc_var, q0, u0, u, inputs):
    # MPC constants
+   N  = mpc_var.num_inputs;
    P  = mpc_var.PH_length;
-   Cq = mpc_var.cost_func;
+   Cq = mpc_var.state_cost;
+   Cu = mpc_var.input_cost;
    qd = mpc_var.des_config;
    
    # reshape input variable
-   N = int(len(q0)/2);
    uc = np.reshape(u, [P, N]);
+   du = [[uc[i][j] - u0[j] for j in range(N)] for i in range(P)];
    
    # Cost of Constant Input
    # simulate over the prediction horizon and sum cost
-   q = [[0 for i in range(2*N)] for j in range(P+1)];
+   q = [[0 for i in range(N)] for j in range(P+1)];
    q[0] = q0;
    for i in range(P):
       q[i+1] = modeuler(mpc_var, q[i], uc[i], inputs)[1][-1];
@@ -121,6 +123,9 @@ def cost(mpc_var, q0, u0, u, inputs):
 
    for i in range(P+1):
       C[i] = np.sum(Cq(qd, q[i]));
+      
+      if i != P: C[i] = np.sum(Cu(uc[i], du[i]));
+      
 
    return np.sum(C);
    
