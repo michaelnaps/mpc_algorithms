@@ -26,7 +26,7 @@ class mpc_var:
    model        = statespace_3link;
    state_cost   = Cq;
    input_cost   = Cu;
-   PH_length    = 2;
+   PH_length    = 4;
    knot_length  = 2;
    time_step    = 0.025;
    appx_zero    = 1e-6;
