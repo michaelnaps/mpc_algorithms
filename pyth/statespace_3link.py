@@ -5,7 +5,7 @@ import matplotlib.animation as anim
 
 def statespace_3link(q, u, inputs):
    # Constants and State Variables
-   jNum = int(len(u));
+   N = inputs.num_joints;
    g = inputs.gravity_acc;
    c = inputs.damping_coefficients;
    m = inputs.joint_masses;
@@ -19,12 +19,12 @@ def statespace_3link(q, u, inputs):
    q1 = q[0];  q2 = q[1];  q3 = q[2];
    q4 = q[3];  q5 = q[4];  q6 = q[5];
 
-   u1 = u[0];  u2 = u[1];  u3 = u[2];
+   u1 = u[0];  u2 = u[1];  u3 = 0;  # u3 = u[2];
    c1 = c[0];  c2 = c[1];  c3 = c[2];
 
    # State Space Equations
    # Equation: E*ddq = M (rearrange for ddq)
-   M = [[0 for j in range(jNum)] for i in range(jNum)]
+   M = [[0 for j in range(N)] for i in range(N)]
    M[0][0] = -I3 - m3*r3**2 - L1*m3*r3*np.cos(q2 + q3) - L2*m3*r3*np.cos(q3);
    M[0][1] = -m3*r3**2 - L2*m3*np.cos(q3)*r3 - I3;
    M[0][2] = -m3*r3**2 - I3;

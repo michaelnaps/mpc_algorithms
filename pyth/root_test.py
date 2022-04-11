@@ -17,7 +17,7 @@ def Cu(u, du):
    Cu = [
       1e-7*(du[0])**2 + (u[0]/1500)**4,
       1e-7*(du[1])**2 + (u[1]/1500)**4,
-      1e-7*(du[2])**2 + (u[2]/1500)**4,
+      # 1e-7*(du[2])**2 + (u[2]/1500)**4,
    ];
    return Cu;
 
@@ -27,16 +27,18 @@ class mpc_var:
    state_cost   = Cq;
    input_cost   = Cu;
    PH_length    = 4;
-   knot_length  = 2;
+   knot_length  = 4;
    time_step    = 0.025;
    appx_zero    = 1e-6;
    step_size    = 1e-3;
-   num_inputs   = 3;
+   num_joints   = 3;
+   num_inputs   = 2;
    input_bounds = [3000 for i in range(num_inputs*PH_length)];
    des_config   = [math.pi/4, math.pi/2, -math.pi/4, 0, 0, 0];
 
 class inputs:
    # Constants and State Variables
+   num_joints           = 3;
    gravity_acc          = 9.81;
    damping_coefficients = [500, 500, 500];
    joint_masses         = [15, 15, 60];
