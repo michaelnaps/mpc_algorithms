@@ -94,8 +94,11 @@ def newtons(mpc_var, q0, u0, uinit, inputs):
       uc = un;  Cc = Cn;
          
    # hard set input bounds   # input boundary check
-   ucheck = [umax[i] > un[i] for i in range(P*N)];
-   un = [un[i]*ucheck[i] + umax[i]*~ucheck[i] for i in range(P*N)];
+   for i in range(P*N):
+      if un[i] > umax[i]:
+         un[i] = umax[i];
+      elif un[i] < -umax[i]:
+         un[i] = -umax[i];
 
    return (un, Cn, count, brk);
    
@@ -110,9 +113,15 @@ def cost(mpc_var, q0, u0, u, inputs):
    
    # reshape input variable
    uc = np.reshape(u, [P, N]);
-   du = [[uc[i][j] - u0[j] for j in range(N)] for i in range(P)];
    
-   # Cost of Constant Input
+   # calculate change in input
+   du = [[0 for j in range(N)] for i in range(P)];
+   du[0] = [uc[0][i] - u0[i] for i in range(N)];
+   for i in range(1, P):
+      for j in range(N):
+         du[i][j] = uc[i][j] - uc[i-1][j];
+      
+   # Cost of each input over the designated windows
    # simulate over the prediction horizon and sum cost
    q = [[0 for i in range(N)] for j in range(P+1)];
    q[0] = q0;

@@ -40,12 +40,12 @@ class inputs:
    # Constants and State Variables
    num_joints           = 3;
    gravity_acc          = 9.81;
-   damping_coefficients = [500, 500, 500];
+   damping_coefficients = [300, 300, 300];
    joint_masses         = [15, 15, 60];
    link_lengths         = [0.5, 0.5, 1.0];
 
-q0 = [math.pi/2, 0, 0, 0, 0, 0];
-u0 = [0 for i in range(mpc_var.num_inputs*mpc_var.PH_length)];
+q0 = [math.pi/2, 0, 0, 0, 0, 0];    # initial state
+u0 = [-20, -270, -20, -270, -20, -270, -20, -270];                # initial guess
 
 mpc_results = nno.mpc_root(mpc_var, q0, u0, inputs);
 
