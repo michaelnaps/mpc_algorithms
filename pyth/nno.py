@@ -13,8 +13,9 @@ from modeuler import *
 def mpc_root(mpc_var, q0, u0, inputs):
    # MPC variable declaration
    N = mpc_var.num_inputs;
-   P  = mpc_var.PH_length;
+   P = mpc_var.PH_length;
    dt = mpc_var.time_step;
+   eps = mpc_var.appx_zero;
    tspan = mpc_var.sim_time;
    
    # simulation time variables
@@ -32,7 +33,7 @@ def mpc_root(mpc_var, q0, u0, inputs):
    brklist = [0 for i in range(Nt)];
    
    ulist[0] = u0;
-
+   
    for i in range(1,Nt):
       print("\nOpt. Start:");
       opt_results = newtons(mpc_var, qlist[i-1], ulist[i-1][:N], ulist[i-1], inputs);
