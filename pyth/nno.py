@@ -76,12 +76,13 @@ def newtons(mpc_var, q0, u0, uinit, inputs):
          break;
       
       # calculation the hessian around the current input
-      H = hessian(mpc_var, q0, u0, uc, inputs);
+      # H = hessian(mpc_var, q0, u0, uc, inputs);
       
-      print(H);
+      # print(H);
       
       # calculate the next iteration of the input
-      udn = np.linalg.lstsq(H, g, rcond=None)[0];
+      # udn = np.linalg.lstsq(H, g, rcond=None)[0];
+      udn = [1*g[i] for i in range(N)];
       un = [uc[i] - udn[i] for i in range(P*N)];
       
       print(un);
@@ -91,7 +92,7 @@ def newtons(mpc_var, q0, u0, uinit, inputs):
       count += 1;  # iterate the loop counter
       
       # break conditions
-      if (count == 100):
+      if (count == 1000):
          brk = -1;
          break;
       
@@ -140,7 +141,7 @@ def cost(mpc_var, q0, u0, u, inputs):
    for i in range(P+1):
       C[i] = np.sum(Cq(qd, q[i]));
       
-      # if i != P: C[i] = np.sum(Cu(uc[i], du[i]));
+      if i != P: C[i] = np.sum(Cu(uc[i], du[i]));
       
 
    return np.sum(C);
@@ -161,7 +162,7 @@ def gradient(mpc_var, q, u0, u, inputs):
       
       g[i] = (Cp1 - Cn1)/(2*h);
 
-   return np.transpose(g);
+   return g;
 
 
 def hessian(mpc_var, q, u0, u, inputs):

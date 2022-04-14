@@ -15,13 +15,13 @@ def Cq(qd, q):
 
 def Cu(u, du):
    Cu = [
-      1e-7*(du[0])**2 + (u[0]/1000)**4,
-      1e-7*(du[1])**2 + (u[1]/1000)**4,
+      1e-5*(du[0])**2 + (u[0]/1000)**4,
+      1e-5*(du[1])**2 + (u[1]/1000)**4,
    ];
    return Cu;
 
 class mpc_var:
-   sim_time     = 1;
+   sim_time     = 10;
    model        = statespace_lapm;
    state_cost   = Cq;
    input_cost   = Cu;
