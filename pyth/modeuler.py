@@ -5,7 +5,8 @@
 # Purpose: To calculate the states of a given model
 #   over a predetermined prediction horizon.
 def modeuler(mpc_var, q0, u, inputs):
-   N  = mpc_var.num_joints;
+   N  = mpc_var.num_ssvar;
+   P  = mpc_var.PH_length;
    k  = mpc_var.knot_length;
    dt = mpc_var.time_step;
    statespace = mpc_var.model;

@@ -68,6 +68,8 @@ def newtons(mpc_var, q0, u0, uinit, inputs):
       g = gradient(mpc_var, q0, u0, uc, inputs);
       gnorm = np.sqrt(np.sum([g[i]**2 for i in range(N)]));
       
+      print(g);
+      
       # check if gradient-norm is an approx. of zero
       if (gnorm < eps):
          brk = 1;
@@ -75,6 +77,8 @@ def newtons(mpc_var, q0, u0, uinit, inputs):
       
       # calculation the hessian around the current input
       H = hessian(mpc_var, q0, u0, uc, inputs);
+      
+      print(H);
       
       # calculate the next iteration of the input
       udn = np.linalg.lstsq(H, g, rcond=None)[0];
@@ -95,6 +99,7 @@ def newtons(mpc_var, q0, u0, uinit, inputs):
       uc = un;  Cc = Cn;
          
    # hard set input bounds   # input boundary check
+   
    for i in range(P*N):
       if un[i] > umax[i]:
          un[i] = umax[i];
@@ -106,7 +111,8 @@ def newtons(mpc_var, q0, u0, uinit, inputs):
 
 def cost(mpc_var, q0, u0, u, inputs):
    # MPC constants
-   N  = mpc_var.num_inputs;
+   N  = mpc_var.num_ssvar;
+   Nu = mpc_var.num_inputs;
    P  = mpc_var.PH_length;
    Cq = mpc_var.state_cost;
    Cu = mpc_var.input_cost;
@@ -116,10 +122,10 @@ def cost(mpc_var, q0, u0, u, inputs):
    uc = np.reshape(u, [P, N]);
    
    # calculate change in input
-   du = [[0 for j in range(N)] for i in range(P)];
-   du[0] = [uc[0][i] - u0[i] for i in range(N)];
+   du = [[0 for j in range(Nu)] for i in range(P)];
+   du[0] = [uc[0][i] - u0[i] for i in range(Nu)];
    for i in range(1, P):
-      for j in range(N):
+     for j in range(Nu):
          du[i][j] = uc[i][j] - uc[i-1][j];
       
    # Cost of each input over the designated windows
@@ -134,7 +140,7 @@ def cost(mpc_var, q0, u0, u, inputs):
    for i in range(P+1):
       C[i] = np.sum(Cq(qd, q[i]));
       
-      if i != P: C[i] = np.sum(Cu(uc[i], du[i]));
+      # if i != P: C[i] = np.sum(Cu(uc[i], du[i]));
       
 
    return np.sum(C);
