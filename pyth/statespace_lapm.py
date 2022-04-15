@@ -58,7 +58,31 @@ def animation_lapm(T, q, inputs):
 
    return 1;
    
+def plotStates_lapm(T, q):
+   qT = np.transpose(q);
    
+   fig, statePlot = plt.subplots(2,2);
+   
+   statePlot[0,0].plot(T, qT[0]);  statePlot[1,0].plot(T, qT[2]);
+   statePlot[0,1].plot(T, qT[1]);  statePlot[1,1].plot(T, qT[3]);
+
+   return statePlot;
+   
+def plotInputs_lapm(T, u):
+   uT = np.transpose(u);
+   
+   fig, inputPlot = plt.subplots(1,2);
+   
+   inputPlot[0].plot(T, uT[0]);
+   inputPlot[1].plot(T, uT[1]);
+   
+   return inputPlot;
+   
+def plotCost_lapm(T, C):
+	fig, costPlot = plt.subplots();
+	costPlot.plot(T, C);
+	
+	return costPlot;
    
    
    

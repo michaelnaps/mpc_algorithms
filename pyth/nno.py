@@ -61,14 +61,14 @@ def newtons(mpc_var, q0, u0, uinit, inputs):
    Cc   = cost(mpc_var, q0, u0, uc, inputs);
    un = uc;  Cn = Cc;
    
+   print("Initial Cost: ", Cc);
+   
    count = 1;
    brk = 0;
-   while(Cc != 0):
+   while(Cc > eps):
    	# calculate the gradient around the current input
       g = gradient(mpc_var, q0, u0, uc, inputs);
       gnorm = np.sqrt(np.sum([g[i]**2 for i in range(N)]));
-      
-      print(g);
       
       # check if gradient-norm is an approx. of zero
       if (gnorm < eps):
@@ -76,20 +76,21 @@ def newtons(mpc_var, q0, u0, uinit, inputs):
          break;
       
       # calculation the hessian around the current input
-      # H = hessian(mpc_var, q0, u0, uc, inputs);
-      
-      # print(H);
+      H = hessian(mpc_var, q0, u0, uc, inputs);
       
       # calculate the next iteration of the input
-      # udn = np.linalg.lstsq(H, g, rcond=None)[0];
-      udn = [1*g[i] for i in range(N)];
+      udn = np.linalg.lstsq(H, g, rcond=None)[0];
+      # udn = [1*g[i] for i in range(N)];
       un = [uc[i] - udn[i] for i in range(P*N)];
-      
-      print(un);
       
       # simulate and calculate the new cost value
       Cn = cost(mpc_var, q0, u0, un, inputs);
       count += 1;  # iterate the loop counter
+      
+      print("Gradient:  ", g, "|g| = ", gnorm);
+      print("Hessian:   ", H);
+      print("New Input: ", un);
+      print("New Cost:  ", Cn, "\n");
       
       # break conditions
       if (count == 1000):
@@ -140,7 +141,6 @@ def cost(mpc_var, q0, u0, u, inputs):
 
    for i in range(P+1):
       C[i] = np.sum(Cq(qd, q[i]));
-      
       if i != P: C[i] = np.sum(Cu(uc[i], du[i]));
       
 
@@ -149,9 +149,9 @@ def cost(mpc_var, q0, u0, u, inputs):
 
 def gradient(mpc_var, q, u0, u, inputs):
    # variable setup
-   N = len(u);
-   g = [0 for i in range(N)];
+   N = mpc_var.num_inputs*mpc_var.PH_length;
    h = mpc_var.step_size;
+   g = [0 for i in range(N)];
    
    for i in range(N):
       un1 = [u[j] - (i==j)*h for j in range(N)];
@@ -167,9 +167,9 @@ def gradient(mpc_var, q, u0, u, inputs):
 
 def hessian(mpc_var, q, u0, u, inputs):
    # variable setup
-   N = len(u);
-   H = [0 for i in range(N)];
+   N = mpc_var.num_inputs*mpc_var.PH_length;
    h = mpc_var.step_size;
+   H = [0 for i in range(N)];
    
    for i in range(N):
       un1 = [u[j] - (i==j)*h for j in range(N)];
