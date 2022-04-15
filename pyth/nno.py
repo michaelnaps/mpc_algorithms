@@ -87,8 +87,8 @@ def newtons(mpc_var, q0, u0, uinit, inputs):
       Cn = cost(mpc_var, q0, u0, un, inputs);
       count += 1;  # iterate the loop counter
       
-      print("Gradient:  ", g, "|g| = ", gnorm);
-      print("Hessian:   ", H);
+      print("Gradient:  ", g);
+      print("|g|:       ", gnorm);
       print("New Input: ", un);
       print("New Cost:  ", Cn, "\n");
       

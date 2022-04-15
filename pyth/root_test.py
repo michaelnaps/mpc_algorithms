@@ -44,7 +44,7 @@ class inputs:
    joint_masses         = [80];
    link_lengths         = [2.0];
 
-q0 = [0-0.01, 0, 0, 0];
+q0 = [0-0.1, 0, 0, 0];
 u0 = [0 for i in range(mpc_var.num_inputs*mpc_var.PH_length)];
 
 mpc_results = nno.mpc_root(mpc_var, q0, u0, inputs);

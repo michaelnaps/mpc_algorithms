@@ -28,11 +28,9 @@ def animation_lapm(T, q, inputs):
    Nt = len(T);
    dt = T[1] - T[0];
    
+   # constant parameters
    H = inputs.link_lengths[0];
    L = inputs.link_lengths[0];
-
-   # create theta list
-   # thList = [np.arccos(q[i][0]/H) for i in range(Nt)];
    
    # limits of plot axes
    axesLimits = [-L-1/4, L+1/4];
@@ -40,14 +38,19 @@ def animation_lapm(T, q, inputs):
    for i in range(Nt):
       plt.clf();
       
-      x = q[i][0];
+      x  = q[i][0];
+      th = np.arccos(x/H);
 
       x0 = 0; y0 = 0;
 
       xlapm = x0 + x;
       ylapm = H;
+      
+      xtrue = x0 + L*np.cos(th);
+      ytrue = y0 + L*np.cos(th);
 
       plt.plot([x0, xlapm], [y0, ylapm]);
+      plt.plot([x0, xtrue], [y0, ytrue]);
       
       plt.title("TPM Simulation: t = {:.3f}".format(T[i]));
       plt.ylim(axesLimits);  plt.xlim(axesLimits);
