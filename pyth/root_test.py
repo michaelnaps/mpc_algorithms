@@ -15,13 +15,13 @@ def Cq(qd, q):
 
 def Cu(u, du):
    Cu = [
-      1e-5*(du[0])**2,# + (u[0]/1000)**4,
-      1e-5*(du[1])**2,# + (u[1]/1000)**4,
+      1e-5*(du[0])**2 - np.log(60**2 - u[0]**2) + np.log(60**2),
+      1e-5*(du[1])**2, # + (u[1]/1000)**4,
    ];
    return Cu;
 
 class mpc_var:
-   sim_time     = 60;
+   sim_time     = 10;
    model        = statespace_lapm;
    state_cost   = Cq;
    input_cost   = Cu;
@@ -33,7 +33,7 @@ class mpc_var:
    num_joints   = 1;
    num_ssvar    = 2;
    num_inputs   = 2;
-   input_bounds = [5000 for i in range(num_inputs*PH_length)];
+   input_bounds = [1000 for i in range(num_inputs*PH_length)];
    des_config   = [0, 0, 0, 0];
 
 class inputs:
@@ -44,7 +44,7 @@ class inputs:
    joint_masses         = [80];
    link_lengths         = [2.0];
 
-q0 = [0-0.1, 0, 0, 0];
+q0 = [0-0.05, 0, 0, 0];
 u0 = [0 for i in range(mpc_var.num_inputs*mpc_var.PH_length)];
 
 mpc_results = nno.mpc_root(mpc_var, q0, u0, inputs);
@@ -61,7 +61,8 @@ inputPlot = plotInputs_lapm(T, u);
 costPlot  = plotCost_lapm(T, C);
 plt.show();
 
-input("\nPress Enter for animation...");
-animation_lapm(T, q, inputs);
+ans = input("\nSee animation? [y/n] ");
+if ans == 'y':
+   animation_lapm(T, q, inputs);
 
 nno.save_results("prevRun_data.pickle", mpc_results);

@@ -129,10 +129,10 @@ def cost(mpc_var, q0, u0, u, inputs):
    for i in range(1, P):
      for j in range(Nu):
          du[i][j] = uc[i][j] - uc[i-1][j];
-      
+   
    # Cost of each input over the designated windows
    # simulate over the prediction horizon and sum cost
-   q = [[0 for i in range(N)] for j in range(P+1)];
+   q = [[0 for i in range(2*N)] for j in range(P+1)];
    q[0] = q0;
    for i in range(P):
       q[i+1] = modeuler(mpc_var, q[i], uc[i], inputs)[1][-1];
@@ -140,10 +140,9 @@ def cost(mpc_var, q0, u0, u, inputs):
    C = [0 for i in range(P+1)];
 
    for i in range(P+1):
-      C[i] = np.sum(Cq(qd, q[i]));
-      if i != P: C[i] = np.sum(Cu(uc[i], du[i]));
+      C[i] = C[i] + np.sum(Cq(qd, q[i]));
+      if i != P:  C[i] = C[i] + np.sum(Cu(uc[i], du[i]));
       
-
    return np.sum(C);
    
 
