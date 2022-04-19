@@ -1,9 +1,4 @@
-import math
-import random as rm
-import numpy as np
-import matplotlib.pyplot as plt
 import nno
-from modeuler import *
 from statespace_lapm import *
 
 def Cq(qd, q):
@@ -11,26 +6,42 @@ def Cq(qd, q):
       100*(qd[0] - q[0])**2 + (qd[2] - q[2])**2,
       100*(qd[1] - q[1])**2 + (qd[3] - q[3])**2
    ];
-   return Cq;
+   
+   return np.sum(Cq);
 
 def Cu(u, du):
+   umax = 60;
+   
    Cu = [
-      1e-5*(du[0])**2 - np.log(60**2 - u[0]**2) + np.log(60**2),
-      1e-5*(du[1])**2, # + (u[1]/1000)**4,
+      1e-5*(du[0])**2 - np.log(umax**2 - u[0]**2) + np.log(umax**2),
+      1e-5*(du[1])**2# + (u[1]/1000)**4
    ];
-   return Cu;
+   
+   return np.sum(Cu);
+   
+def Ccp(u, inputs):
+   dmax = inputs.CP_distance;
+   g = inputs.gravity_acc;
+   m = inputs.joint_masses[0];
+   
+   Ccp = [
+      -np.log((m*g*dmax)**2 - u[0]**2) + np.log((m*g*dmax)**2),
+      0
+   ];
+   
+   return np.sum(Ccp);
 
 class mpc_var:
    sim_time     = 10;
    model        = statespace_lapm;
    state_cost   = Cq;
    input_cost   = Cu;
+   CP_cost      = Ccp;
    PH_length    = 2;
    knot_length  = 4;
    time_step    = 0.025;
    appx_zero    = 1e-6;
    step_size    = 1e-3;
-   num_joints   = 1;
    num_ssvar    = 2;
    num_inputs   = 2;
    input_bounds = [1000 for i in range(num_inputs*PH_length)];
@@ -43,6 +54,7 @@ class inputs:
    damping_coefficients = [0];
    joint_masses         = [80];
    link_lengths         = [2.0];
+   CP_distance          = 0.1;
 
 q0 = [0-0.05, 0, 0, 0];
 u0 = [0 for i in range(mpc_var.num_inputs*mpc_var.PH_length)];

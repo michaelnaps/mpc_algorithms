@@ -12,8 +12,8 @@ from modeuler import *
 
 def mpc_root(mpc_var, q0, u0, inputs):
    # MPC variable declaration
-   N = mpc_var.num_inputs;
-   P = mpc_var.PH_length;
+   N  = mpc_var.num_inputs;
+   P  = mpc_var.PH_length;
    dt = mpc_var.time_step;
    eps = mpc_var.appx_zero;
    tspan = mpc_var.sim_time;
@@ -35,7 +35,8 @@ def mpc_root(mpc_var, q0, u0, inputs):
    ulist[0] = u0;
    
    for i in range(1,Nt):
-      print("\nOpt. Start:");
+      print("\nTime: %0.3f" % (T[i]));
+      print("Opt. Start:");
       opt_results = newtons(mpc_var, qlist[i-1], ulist[i-1][:N], ulist[i-1], inputs);
       ulist[i]   = opt_results[0];
       Clist[i]   = opt_results[1];
@@ -57,8 +58,8 @@ def newtons(mpc_var, q0, u0, uinit, inputs):
    umax = mpc_var.input_bounds;
 
    # loop variable setup
-   uc   = uinit;
-   Cc   = cost(mpc_var, q0, u0, uc, inputs);
+   uc = uinit;
+   Cc = cost(mpc_var, q0, u0, uc, inputs);
    un = uc;  Cn = Cc;
    
    print("Initial Cost: ", Cc);
@@ -99,8 +100,6 @@ def newtons(mpc_var, q0, u0, uinit, inputs):
       
       # update loop variables   
       uc = un;  Cc = Cn;
-         
-   # hard set input bounds   # input boundary check
    
    for i in range(P*N):
       if un[i] > umax[i]:
@@ -118,6 +117,7 @@ def cost(mpc_var, q0, u0, u, inputs):
    P  = mpc_var.PH_length;
    Cq = mpc_var.state_cost;
    Cu = mpc_var.input_cost;
+   Ccp = mpc_var.CP_cost;
    qd = mpc_var.des_config;
    
    # reshape input variable
@@ -140,8 +140,10 @@ def cost(mpc_var, q0, u0, u, inputs):
    C = [0 for i in range(P+1)];
 
    for i in range(P+1):
-      C[i] = C[i] + np.sum(Cq(qd, q[i]));
-      if i != P:  C[i] = C[i] + np.sum(Cu(uc[i], du[i]));
+      C[i] = C[i] + Cq(qd, q[i]);
+      if i != P:
+         C[i] = C[i] + Cu(uc[i], du[i]);
+         C[i] = C[i] + Ccp(uc[i], inputs);
       
    return np.sum(C);
    

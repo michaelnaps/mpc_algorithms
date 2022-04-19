@@ -57,7 +57,7 @@ def animation_lapm(T, q, inputs):
       plt.grid();
       plt.pause(dt);
    
-   input("Press Enter to close animation...");
+   input("Press enter to close animation...");
 
    return 1;
    
