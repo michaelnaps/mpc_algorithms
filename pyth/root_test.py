@@ -4,7 +4,7 @@ from statespace_lapm import *
 def Cq(qd, q):
    Cq = [
       100*(qd[0] - q[0])**2 + (qd[2] - q[2])**2,
-      100*(qd[1] - q[1])**2 + (qd[3] - q[3])**2
+      10*(qd[1] - q[1])**2 + (qd[3] - q[3])**2
    ];
    
    return np.sum(Cq);
@@ -32,7 +32,7 @@ def Ccp(u, inputs):
    return np.sum(Ccp);
 
 class mpc_var:
-   sim_time     = 10;
+   sim_time     = 60;
    model        = statespace_lapm;
    state_cost   = Cq;
    input_cost   = Cu;

@@ -19,7 +19,7 @@ def statespace_3link(q, u, inputs):
    q1 = q[0];  q2 = q[1];  q3 = q[2];
    q4 = q[3];  q5 = q[4];  q6 = q[5];
 
-   u1 = 0;     u2 = u[0];  u3 = u[1];#  u3 = u[2];
+   u1 = u[0];  u2 = u[1];  u3 = u[2];#  u3 = u[2];
    c1 = c[0];  c2 = c[1];  c3 = c[2];
 
    # State Space Equations
