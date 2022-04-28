@@ -49,7 +49,7 @@ def mpc_root(mpc_var, q0, u0, inputs):
       # inverse dynamics: lapm -> 3link (digit)
       
       qlist[i] = modeuler(mpc_var, qlist[i-1], ulist[i][:N], inputs)[1][1];
-   
+      
    return (T, qlist, ulist, Clist, nlist, brklist);
    
 def newtons(mpc_var, q0, u0, uinit, inputs):

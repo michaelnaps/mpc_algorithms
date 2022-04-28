@@ -32,7 +32,7 @@ def Ccp(u, inputs):
    return np.sum(Ccp);
 
 class mpc_var:
-   sim_time     = 60;
+   sim_time     = 10;
    model        = statespace_lapm;
    state_cost   = Cq;
    input_cost   = Cu;
