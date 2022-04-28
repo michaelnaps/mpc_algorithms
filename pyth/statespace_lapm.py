@@ -44,13 +44,13 @@ def animation_lapm(T, q, inputs):
       x0 = 0; y0 = 0;
 
       xlapm = x0 + x;
-      ylapm = H;
+      ylapm = y0 + H;
       
       xtrue = x0 + L*np.cos(th);
-      ytrue = y0 + L*np.cos(th);
+      ytrue = y0 + L*np.sin(th);
 
       plt.plot([x0, xlapm], [y0, ylapm]);
-      plt.plot([x0, xtrue], [y0, ytrue]);
+      plt.plot([x0, xtrue], [y0, ytrue], ':');
       
       plt.title("TPM Simulation: t = {:.3f}".format(T[i]));
       plt.ylim(axesLimits);  plt.xlim(axesLimits);
