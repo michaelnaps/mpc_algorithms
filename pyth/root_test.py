@@ -10,11 +10,11 @@ def Cq(qd, q):
    return np.sum(Cq);
 
 def Cu(u, du):
-   umax = 60;
+   umax = [60, 150];
    
    Cu = [
-      1e-5*(du[0])**2 - np.log(umax**2 - u[0]**2) + np.log(umax**2),
-      1e-5*(du[1])**2# + (u[1]/1000)**4
+      1e-5*(du[0])**2 - np.log(umax[0]**2 - u[0]**2) + np.log(umax[0]**2),
+      1e-5*(du[1])**2# - np.log(umax[1]**2 - u[1]**2) + np.log(umax[1]**2)
    ];
    
    return np.sum(Cu);

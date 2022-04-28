@@ -35,16 +35,16 @@ def mpc_root(mpc_var, q0, u0, inputs):
    ulist[0] = u0;
    
    for i in range(1,Nt):
-      print("\nTime: %0.3f" % (T[i]));
-      print("Opt. Start:");
+#      print("\nTime: %0.3f" % (T[i]));
+#      print("Opt. Start:");
       opt_results = newtons(mpc_var, qlist[i-1], ulist[i-1][:N], ulist[i-1], inputs);
       ulist[i]   = opt_results[0];
       Clist[i]   = opt_results[1];
       nlist[i]   = opt_results[2];
       brklist[i] = opt_results[3];
       
-      print("Input Found:");
-      print(ulist[i][:N]);
+#      print("Input Found:");
+#      print(ulist[i][:N]);
       
       # inverse dynamics: lapm -> 3link (digit)
       
@@ -64,7 +64,7 @@ def newtons(mpc_var, q0, u0, uinit, inputs):
    Cc = cost(mpc_var, q0, u0, uc, inputs);
    un = uc;  Cn = Cc;
    
-   print("Initial Cost: ", Cc);
+#   print("Initial Cost: ", Cc);
    
    count = 1;
    brk = 0;
@@ -90,10 +90,10 @@ def newtons(mpc_var, q0, u0, uinit, inputs):
       Cn = cost(mpc_var, q0, u0, un, inputs);
       count += 1;  # iterate the loop counter
       
-      print("Gradient:  ", g);
-      print("|g|:       ", gnorm);
-      print("New Input: ", un);
-      print("New Cost:  ", Cn, "\n");
+#      print("Gradient:  ", g);
+#      print("|g|:       ", gnorm);
+#      print("New Input: ", un);
+#      print("New Cost:  ", Cn, "\n");
       
       # break conditions
       if (count == 1000):
