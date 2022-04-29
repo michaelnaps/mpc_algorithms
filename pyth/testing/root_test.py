@@ -1,20 +1,24 @@
+import sys
+
+sys.path.insert(0, '/home/michaelnaps/prog/mpc_algorithms/pyth/.');
+
 import nno
 from statespace_lapm import *
 
 def Cq(qd, q):
    Cq = [
       100*(qd[0] - q[0])**2 + (qd[2] - q[2])**2,
-      10*(qd[1] - q[1])**2 + (qd[3] - q[3])**2
+       10*(qd[1] - q[1])**2 + (qd[3] - q[3])**2
    ];
    
    return np.sum(Cq);
 
 def Cu(u, du):
-   umax = [60, 200];
+   umax = [60, 150];
    
    Cu = [
       1e-5*(du[0])**2 - np.log(umax[0]**2 - u[0]**2) + np.log(umax[0]**2),
-      1e-5*(du[1])**2 - np.log(umax[1]**2 - u[1]**2) + np.log(umax[1]**2)
+      1e-5*(du[1])**2# - np.log(umax[1]**2 - u[1]**2) + np.log(umax[1]**2)
    ];
    
    return np.sum(Cu);
@@ -59,7 +63,7 @@ class inputs:
 q0 = [0-0.075, 0, 0, 0];
 u0 = [0 for i in range(mpc_var.num_inputs*mpc_var.PH_length)];
 
-mpc_results = nno.mpc_root(mpc_var, q0, u0, inputs);
+mpc_results = nno.mpc_root(mpc_var, q0, u0, inputs, 1);
 
 print("\nBreak List: ", mpc_results[5]);
 

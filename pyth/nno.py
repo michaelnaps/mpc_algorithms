@@ -10,7 +10,7 @@ import pickle
 from modeuler import *
 
 
-def mpc_root(mpc_var, q0, u0, inputs):
+def mpc_root(mpc_var, q0, u0, inputs, output=0):
    # MPC variable declaration
    N  = mpc_var.num_inputs;
    P  = mpc_var.PH_length;
@@ -35,16 +35,14 @@ def mpc_root(mpc_var, q0, u0, inputs):
    ulist[0] = u0;
    
    for i in range(1,Nt):
-#      print("\nTime: %0.3f" % (T[i]));
-#      print("Opt. Start:");
-      opt_results = newtons(mpc_var, qlist[i-1], ulist[i-1][:N], ulist[i-1], inputs);
+      if output:  print("\nTime: %0.3f" % (T[i]));
+      
+      opt_results = newtons(mpc_var, qlist[i-1], ulist[i-1][:N], ulist[i-1], inputs, output);
       ulist[i]   = opt_results[0];
       Clist[i]   = opt_results[1];
       nlist[i]   = opt_results[2];
       brklist[i] = opt_results[3];
-      
-#      print("Input Found:");
-#      print(ulist[i][:N]);
+
       
       # inverse dynamics: lapm -> 3link (digit)
       
@@ -52,7 +50,7 @@ def mpc_root(mpc_var, q0, u0, inputs):
       
    return (T, qlist, ulist, Clist, nlist, brklist);
    
-def newtons(mpc_var, q0, u0, uinit, inputs):
+def newtons(mpc_var, q0, u0, uinit, inputs, output=0):
    # MPC constants initialization
    P    = mpc_var.PH_length;
    N    = mpc_var.num_inputs;
@@ -63,12 +61,14 @@ def newtons(mpc_var, q0, u0, uinit, inputs):
    uc = uinit;
    Cc = cost(mpc_var, q0, u0, uc, inputs);
    un = uc;  Cn = Cc;
-   
-#   print("Initial Cost: ", Cc);
+
+   if output:
+      print("Opt. Start:");
+      print("Initial Cost: ", Cc);
    
    count = 1;
    brk = 0;
-   while(Cc > eps):
+   while (Cc > eps):
    	# calculate the gradient around the current input
       g = gradient(mpc_var, q0, u0, uc, inputs);
       gnorm = np.sqrt(np.sum([g[i]**2 for i in range(N)]));
@@ -90,10 +90,12 @@ def newtons(mpc_var, q0, u0, uinit, inputs):
       Cn = cost(mpc_var, q0, u0, un, inputs);
       count += 1;  # iterate the loop counter
       
-#      print("Gradient:  ", g);
-#      print("|g|:       ", gnorm);
-#      print("New Input: ", un);
-#      print("New Cost:  ", Cn, "\n");
+      if output:
+         # print("Gradient:  ", g);
+         print("|g|:       ", gnorm);
+         print("New Input: ");
+         for i in range(P*N):  print('\t', un[i]);
+         print("New Cost:  ", Cn, "\n");
       
       # break conditions
       if (count == 1000):
