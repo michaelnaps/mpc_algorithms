@@ -125,7 +125,7 @@ def cost(mpc_var, q0, u0, u, inputs):
    qd = mpc_var.des_config;
    
    # reshape input variable
-   uc = np.reshape(u, [P, N]);
+   uc = np.reshape(u, [P, Nu]);
    
    # calculate change in input
    du = [[0 for j in range(Nu)] for i in range(P)];
