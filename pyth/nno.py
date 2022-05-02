@@ -119,9 +119,9 @@ def cost(mpc_var, q0, u0, u, inputs):
    N  = mpc_var.num_ssvar;
    Nu = mpc_var.num_inputs;
    P  = mpc_var.PH_length;
-   Cq = mpc_var.state_cost;
-   Cu = mpc_var.input_cost;
-   Ccp = mpc_var.CP_cost;
+   Cq = mpc_var.cost_state;
+   Cu = mpc_var.cost_input;
+   Ccmp = mpc_var.cost_CMP;
    qd = mpc_var.des_config;
    
    # reshape input variable
@@ -147,7 +147,7 @@ def cost(mpc_var, q0, u0, u, inputs):
       C[i] = C[i] + Cq(qd, q[i]);
       if i != P:
          C[i] = C[i] + Cu(uc[i], du[i]);
-         C[i] = C[i] + Ccp(uc[i], inputs);
+         C[i] = C[i] + Ccmp(uc[i], inputs);
       
    return np.sum(C);
    

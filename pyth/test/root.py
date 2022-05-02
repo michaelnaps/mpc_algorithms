@@ -23,24 +23,28 @@ def Cu(u, du):
    
    return np.sum(Cu);
    
-def Ccp(u, inputs):
+def Ccmp(u, inputs):
    dmax = inputs.CP_maxdistance;
    g = inputs.gravity_acc;
    m = inputs.joint_masses[0];
+   H = inputs.link_lengths[0];
    
-   Ccp = [
+   # natural frequency
+   w = np.sqrt(g/H);
+   
+   Ccmp = [
       -np.log((m*g*dmax)**2 - u[0]**2) + np.log((m*g*dmax)**2),
       0
    ];
    
-   return np.sum(Ccp);
+   return np.sum(Ccmp);
 
 class mpc_var:
-   sim_time     = 10;
+   sim_time     = 5;
    model        = statespace_lapm;
-   state_cost   = Cq;
-   input_cost   = Cu;
-   CP_cost      = Ccp;
+   cost_state   = Cq;
+   cost_input   = Cu;
+   cost_CMP     = Ccmp;
    PH_length    = 2;
    knot_length  = 4;
    time_step    = 0.025;
