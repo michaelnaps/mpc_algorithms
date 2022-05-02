@@ -24,7 +24,7 @@ def Cu(u, du):
    return np.sum(Cu);
    
 def Ccp(u, inputs):
-   dmax = inputs.CP_distance;
+   dmax = inputs.CP_maxdistance;
    g = inputs.gravity_acc;
    m = inputs.joint_masses[0];
    
@@ -36,7 +36,7 @@ def Ccp(u, inputs):
    return np.sum(Ccp);
 
 class mpc_var:
-   sim_time     = 5;
+   sim_time     = 10;
    model        = statespace_lapm;
    state_cost   = Cq;
    input_cost   = Cu;
@@ -58,7 +58,7 @@ class inputs:
    damping_coefficients = [0];
    joint_masses         = [80];
    link_lengths         = [2.0];
-   CP_distance          = 0.1;
+   CP_maxdistance       = 0.1;
 
 q0 = [0-0.075, 0, 0, 0];
 u0 = [0 for i in range(mpc_var.num_inputs*mpc_var.PH_length)];
@@ -72,10 +72,12 @@ q = mpc_results[1];
 u = mpc_results[2];
 C = mpc_results[3];
 
-statePlot = plotStates_lapm(T, q);
-inputPlot = plotInputs_lapm(T, u);
-costPlot  = plotCost_lapm(T, C);
-plt.show();
+ans = input("\nSee state, input, and cost plots? [y/n] ");
+if ans == 'y':
+   statePlot = plotStates_lapm(T, q);
+   inputPlot = plotInputs_lapm(T, u);
+   costPlot  = plotCost_lapm(T, C);
+   plt.show();
 
 ans = input("\nSee animation? [y/n] ");
 if ans == 'y':

@@ -31,9 +31,12 @@ def animation_lapm(T, q, inputs):
    # constant parameters
    H = inputs.link_lengths[0];
    L = inputs.link_lengths[0];
+   d = inputs.CP_maxdistance;
+   m = inputs.joint_masses[0];
    
    # limits of plot axes
-   axesLimits = [-L-1/4, L+1/4];
+   yLimits = [-0.1, L+L/10];
+   xLimits = [-L/3, L/3];
    
    for i in range(Nt):
       plt.clf();
@@ -48,12 +51,20 @@ def animation_lapm(T, q, inputs):
       
       xtrue = x0 + L*np.cos(th);
       ytrue = y0 + L*np.sin(th);
-
-      plt.plot([x0, xlapm], [y0, ylapm]);
-      plt.plot([x0, xtrue], [y0, ytrue], ':');
+      
+      plt.plot([x0, xlapm], [y0, ylapm], linewidth=2, label="CoM - LAPM");
+      plt.plot([x0, xtrue], [y0, ytrue], linestyle=':', label="CoM - True");
+      plt.plot([xlapm], [ylapm], marker='o', 
+         markerfacecolor='k', markeredgecolor='k', markersize=m/10);
+      
+      plt.plot([x0-L/4, x0+L/4], [y0, y0], 'k');
+      plt.plot([xlapm, xlapm], [y0-d/2, y0+d/2], color='g', label="CP - Current");
+      plt.plot([x0-d, x0-d], [y0-d/2, y0+d/2], 'k', label="CP - Bounds");
+      plt.plot([x0+d, x0+d], [y0-d/2, y0+d/2], 'k');
       
       plt.title("TPM Simulation: t = {:.3f}".format(T[i]));
-      plt.ylim(axesLimits);  plt.xlim(axesLimits);
+      plt.ylim(yLimits);  plt.xlim(xLimits);
+      plt.legend();
       plt.grid();
       plt.pause(dt);
    
@@ -64,10 +75,19 @@ def animation_lapm(T, q, inputs):
 def plotStates_lapm(T, q):
    qT = np.transpose(q);
    
-   fig, statePlot = plt.subplots(2,2);
+   fig, statePlot = plt.subplots(1,2);
    
-   statePlot[0,0].plot(T, qT[0]);  statePlot[1,0].plot(T, qT[2]);
-   statePlot[0,1].plot(T, qT[1]);  statePlot[1,1].plot(T, qT[3]);
+   # CoM x-distance
+   statePlot[0].plot(T, qT[0], label="x");
+   statePlot[0].plot(T, qT[2], label="dx");
+   statePlot[0].set_title("Position (x)");
+   statePlot[0].legend();
+   
+   # angular momentum
+   statePlot[1].plot(T, qT[1], label="Lc");
+   statePlot[1].plot(T, qT[3], label="dLc");
+   statePlot[1].set_title("Angular Momentum (L)");
+   statePlot[1].legend();
 
    return statePlot;
    
