@@ -46,10 +46,10 @@ class mpc_var:
    time_step    = 0.025;
    appx_zero    = 1e-6;
    step_size    = 1e-3;
-   num_ssvar    = 3;
+   num_ssvar    = 2;
    num_inputs   = 2;
    input_bounds = [1000 for i in range(num_inputs*PH_length)];
-   des_config   = [0, 0, 0, 0, 0];
+   des_config   = [0, 0, 0, 0];
 
 class inputs:
    # Constants and State Variables
@@ -60,7 +60,7 @@ class inputs:
    link_lengths         = [2.0];
    CP_maxdistance       = 0.1;
 
-q0 = [0-0.075, 0, 0, 0, 0, 0];
+q0 = [0-0.075, 0, 0, 0];
 u0 = [0 for i in range(mpc_var.num_inputs*mpc_var.PH_length)];
 
 mpc_results = nno.mpc_root(mpc_var, q0, u0, inputs, 1);

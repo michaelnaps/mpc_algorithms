@@ -7,9 +7,6 @@ def statespace_lapm(q, u, inputs):
    H = inputs.link_lengths[0];
    g = inputs.gravity_acc;
    
-   # natural frequency
-   w = np.sqrt(np.abs(g)/H);
-   
    # state variables
    x  = q[0];  Lc  = q[1];
    dx = q[2];  dLc = q[3];
@@ -22,15 +19,8 @@ def statespace_lapm(q, u, inputs):
       L/(m*H) - Lc/(m*H),
       ua + m*g*x
    ];
-   
-   # capture point variables
-   CP  = x + dx/w;
-   CMP = H - H/g*ddq[0];
-   
-   # capture point dynamics (x)
-   dCMP = w*(CP - CMP);
 
-   return [dx, dLc, ddq[0], ddq[1], dCMP, 0];
+   return [dx, dLc, ddq[0], ddq[1]];
 
 # LAPM animation function
 def animation_lapm(T, q, inputs):
@@ -85,7 +75,7 @@ def animation_lapm(T, q, inputs):
 def plotStates_lapm(T, q):
    qT = np.transpose(q);
    
-   fig, statePlot = plt.subplots(1,3);
+   fig, statePlot = plt.subplots(1,2);
    
    # CoM x-distance
    statePlot[0].plot(T, qT[0], label="x");
@@ -98,11 +88,6 @@ def plotStates_lapm(T, q):
    statePlot[1].plot(T, qT[3], label="dLc");
    statePlot[1].set_title("Angular Momentum (L)");
    statePlot[1].legend();
-   
-   # capture point dynamics
-   statePlot[2].plot(T, qT[4], label="CP");
-   statePlot[2].set_title("Capture Point Dynamics (CP)");
-   statePlot[2].legend();
 
    return statePlot;
    
