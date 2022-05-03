@@ -7,8 +7,8 @@ from statespace_lapm import *
 
 def Cq(qd, q):
    Cq = [
-      100*(qd[0] - q[0])**2 + (qd[2] - q[2])**2,
-       10*(qd[1] - q[1])**2 + (qd[3] - q[3])**2
+      100*(qd[0] - q[0])**2 + 10*(qd[2] - q[2])**2,
+       10*(qd[1] - q[1])**2 +    (qd[3] - q[3])**2
    ];
    
    return np.sum(Cq);
@@ -36,7 +36,7 @@ def Ccmp(u, inputs):
    return np.sum(Ccmp);
 
 class mpc_var:
-   sim_time     = 5;
+   sim_time     = 3;
    model        = statespace_lapm;
    cost_state   = Cq;
    cost_input   = Cu;
@@ -83,4 +83,7 @@ ans = input("\nSee animation? [y/n] ");
 if ans == 'y':
    animation_lapm(T, q, inputs);
 
-nno.save_results("prevRun_data.pickle", mpc_results);
+if nno.save_results("prevRun_data.pickle", mpc_results):
+   print("\nRun data saved...");
+
+

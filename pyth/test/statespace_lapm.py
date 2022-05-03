@@ -56,6 +56,8 @@ def animation_lapm(T, q, inputs):
       plt.plot([x0, xtrue], [y0, ytrue], linestyle=':', label="CoM - True");
       plt.plot([xlapm], [ylapm], marker='o', 
          markerfacecolor='k', markeredgecolor='k', markersize=m/10);
+      plt.plot([xtrue], [ytrue], marker='o', 
+         markerfacecolor='g', markeredgecolor='g', markersize=m/15);
       
       plt.plot([x0-L/4, x0+L/4], [y0, y0], 'k');
       plt.plot([xlapm, xlapm], [y0-d/2, y0+d/2], color='g', label="CP - Current");
