@@ -38,7 +38,7 @@ def Ccmp(u, inputs):
    return np.sum(Ccmp);
 
 class mpc_var:
-   sim_time     = 3;
+   sim_time     = 2;
    model        = statespace_lapm;
    cost_state   = Cq;
    cost_input   = Cu;
@@ -73,12 +73,16 @@ T = mpc_results[0];
 q = mpc_results[1];
 u = mpc_results[2];
 C = mpc_results[3];
+brk = mpc_results[5];
+t = mpc_results[6];
 
 ans = input("\nSee state, input, and cost plots? [y/n] ");
 if ans == 'y':
    statePlot = plotStates_lapm(T, q);
    inputPlot = plotInputs_lapm(T, u);
    costPlot  = plotCost_lapm(T, C);
+   runTimePlot = plotRunTime_lapm(T, t);
+   brkFreqPlot = plotBrkFreq_lapm(brk);
    plt.show();
 
 ans = input("\nSee animation? [y/n] ");
