@@ -7,32 +7,34 @@ from statespace_lapm import *
 
 def Cq(qd, q):
    Cq = [
-      100*(qd[0] - q[0])**2 + 10*(qd[2] - q[2])**2,
+      100*(qd[0] - q[0])**2 +  1*(qd[2] - q[2])**2,
        10*(qd[1] - q[1])**2 +    (qd[3] - q[3])**2
    ];
-   
+
    return np.sum(Cq);
 
 def Cu(u, du):
    umax = [60, 150];
-   
+
    Cu = [
       1e-5*(du[0])**2 - np.log(umax[0]**2 - u[0]**2) + np.log(umax[0]**2),
       1e-5*(du[1])**2# - np.log(umax[1]**2 - u[1]**2) + np.log(umax[1]**2)
    ];
-   
+
    return np.sum(Cu);
-   
+
 def Ccmp(u, inputs):
    dmax = inputs.CP_maxdistance;
    g = inputs.gravity_acc;
    m = inputs.joint_masses[0];
-   
+
+   utip = m*g*dmax;
+
    Ccmp = [
-      -np.log((m*g*dmax)**2 - u[0]**2) + np.log((m*g*dmax)**2),
+      -np.log(utip**2 - u[0]**2) + np.log(utip**2),
       0
    ];
-   
+
    return np.sum(Ccmp);
 
 class mpc_var:
@@ -85,5 +87,3 @@ if ans == 'y':
 
 if nno.save_results("prevRun_data.pickle", mpc_results):
    print("\nRun data saved...");
-
-
