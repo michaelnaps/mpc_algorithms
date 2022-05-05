@@ -1,6 +1,7 @@
 import sys
 
 sys.path.insert(0, '/home/michaelnaps/prog/mpc_algorithms/pyth/.');
+sys.path.insert(0, 'models/.');
 
 import nno
 from statespace_lapm import *
