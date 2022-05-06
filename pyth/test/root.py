@@ -79,12 +79,12 @@ t = mpc_results[6];
 
 ans = input("\nSee state, input, and cost plots? [y/n] ");
 if ans == 'y':
-    statePlot = plotStates_lapm(T, q);
-    inputPlot = plotInputs_lapm(T, u);
-    costPlot  = plotCost_lapm(T, C);
-    brkFreqPlot = plotBrkFreq_lapm(brk);
-    runTimePlot = plotRunTime_lapm(T, t);
-    plt.show();
+   statePlot = plotStates_lapm(T, q);
+   inputPlot = plotInputs_lapm(T, u);
+   costPlot  = plotCost_lapm(T, C);
+   brkFreqPlot = plotBrkFreq_lapm(brk);
+   runTimePlot = plotRunTime_lapm(T, t);
+   plt.show();
 
 ans = input("\nSee animation? [y/n] ");
 if ans == 'y':

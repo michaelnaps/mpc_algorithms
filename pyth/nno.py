@@ -101,7 +101,8 @@ def newtons(mpc_var, q0, u0, uinit, inputs, output=0):
          print("|g|:          ", gnorm);
          print("New Cost:     ", Cn);
          print("New Input: ");
-         for i in range(P*N):  print("              ", un[i]);
+         for i in range(0, N*P, 2):
+             print(un[i], un[i+1]);
 
       # break conditions
       if (count == 6):
@@ -137,7 +138,7 @@ def cost(mpc_var, q0, u0, u, inputs):
    du = [[0 for j in range(Nu)] for i in range(P)];
    du[0] = [uc[0][i] - u0[i] for i in range(Nu)];
    for i in range(1, P):
-     for j in range(Nu):
+      for j in range(Nu):
          du[i][j] = uc[i][j] - uc[i-1][j];
 
    # Cost of each input over the designated windows
@@ -191,8 +192,8 @@ def hessian(mpc_var, q, u0, u, inputs):
 
       # enforce symmetry
       for j in range(i, N):
-          H[i][j] = (gp1[j] - gn1[j])/(2*h);
-          H[j][i] = H[i][j];
+         H[i][j] = (gp1[j] - gn1[j])/(2*h);
+         H[j][i] = H[i][j];
 
    return H;
 
@@ -209,26 +210,26 @@ def load_results(filename):
    return mpc_results;
 
 def report_results(filename):
-    mpc_results = load_results(filename);
+   mpc_results = load_results(filename);
 
-    T = mpc_results[0];
-    q = mpc_results[1];
-    u = mpc_results[2];
-    C = mpc_results[3];
-    brk = mpc_results[5];
-    t = mpc_results[6];
+   T = mpc_results[0];
+   q = mpc_results[1];
+   u = mpc_results[2];
+   C = mpc_results[3];
+   brk = mpc_results[5];
+   t = mpc_results[6];
 
-    ans = input("\nSee state, input, and cost plots? [y/n] ");
-    if ans == 'y':
-        statePlot = plotStates_lapm(T, q);
-        inputPlot = plotInputs_lapm(T, u);
-        costPlot  = plotCost_lapm(T, C);
-        brkFreqPlot = plotBrkFreq_lapm(brk);
-        runTimePlot = plotRunTime_lapm(T, t);
-        plt.show();
+   ans = input("\nSee state, input, and cost plots? [y/n] ");
+   if ans == 'y':
+      statePlot = plotStates_lapm(T, q);
+      inputPlot = plotInputs_lapm(T, u);
+      costPlot  = plotCost_lapm(T, C);
+      brkFreqPlot = plotBrkFreq_lapm(brk);
+      runTimePlot = plotRunTime_lapm(T, t);
+      plt.show();
 
-    ans = input("\nSee animation? [y/n] ");
-    if ans == 'y':
-       animation_lapm(T, q, inputs);
+   ans = input("\nSee animation? [y/n] ");
+   if ans == 'y':
+      animation_lapm(T, q, inputs);
 
-   return mpc;
+   return mpc_results;`
