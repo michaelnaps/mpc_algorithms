@@ -49,7 +49,7 @@ def mpc_root(mpc_var, q0, u0, inputs, output=0):
       brklist[i] = opt_results[3];
       t_run[i]   = 1000*elapsed;
 
-      if output:  print("Elapsed Time:  %0.3f\n" % (t_run[i]));
+      if output:  print("Elapsed Time:\n              ", t_run[i]);
 
       # inverse dynamics: lapm -> 3link (digit)
 
@@ -102,7 +102,7 @@ def newtons(mpc_var, q0, u0, uinit, inputs, output=0):
          print("New Cost:     ", Cn);
          print("New Input: ");
          for i in range(0, N*P, 2):
-             print(un[i], un[i+1]);
+             print("              ", un[i], un[i+1]);
 
       # break conditions
       if (count == 6):
@@ -232,4 +232,4 @@ def report_results(filename):
    if ans == 'y':
       animation_lapm(T, q, inputs);
 
-   return mpc_results;`
+   return mpc_results;

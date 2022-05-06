@@ -44,8 +44,8 @@ class mpc_var:
    cost_state   = Cq;
    cost_input   = Cu;
    cost_CMP     = Ccmp;
-   PH_length    = 20;
-   knot_length  = 2;
+   PH_length    = 10;
+   knot_length  = 4;
    time_step    = 0.025;
    appx_zero    = 1e-6;
    step_size    = 1e-3;
