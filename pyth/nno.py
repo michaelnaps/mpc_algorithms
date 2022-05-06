@@ -99,12 +99,12 @@ def newtons(mpc_var, q0, u0, uinit, inputs, output=0):
       if output:
          # print("Gradient:  ", g);
          print("|g|:          ", gnorm);
+         print("New Cost:     ", Cn);
          print("New Input: ");
          for i in range(P*N):  print("              ", un[i]);
-         print("New Cost:     ", Cn);
 
       # break conditions
-      if (count == 1000):
+      if (count == 6):
          brk = -1;
          break;
 
