@@ -158,13 +158,13 @@ def cost(mpc_var, q0, u0, u, inputs):
    return np.sum(C);
 
 
-def gradient(mpc_var, q, u0, u, inputs):
+def gradient(mpc_var, q, u0, u, inputs, rownum=1):
    # variable setup
    N = mpc_var.num_inputs*mpc_var.PH_length;
    h = mpc_var.step_size;
    g = [0 for i in range(N)];
 
-   for i in range(N):
+   for i in range(rownum-1, N):
       un1 = [u[j] - (i==j)*h for j in range(N)];
       up1 = [u[j] + (i==j)*h for j in range(N)];
 
@@ -180,16 +180,19 @@ def hessian(mpc_var, q, u0, u, inputs):
    # variable setup
    N = mpc_var.num_inputs*mpc_var.PH_length;
    h = mpc_var.step_size;
-   H = [0 for i in range(N)];
+   H = [[0 for i in range(N)] for j in range(N)];
 
    for i in range(N):
       un1 = [u[j] - (i==j)*h for j in range(N)];
       up1 = [u[j] + (i==j)*h for j in range(N)];
 
-      gn1 = gradient(mpc_var, q, u0, un1, inputs);
-      gp1 = gradient(mpc_var, q, u0, up1, inputs);
+      gn1 = gradient(mpc_var, q, u0, un1, inputs, i);
+      gp1 = gradient(mpc_var, q, u0, up1, inputs, i);
 
-      H[i] = [(gp1[j] - gn1[j])/(2*h) for j in range(N)];
+      # enforce symmetry
+      for j in range(i, N):
+          H[i][j] = (gp1[j] - gn1[j])/(2*h);
+          H[j][i] = H[i][j];
 
    return H;
 
