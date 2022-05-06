@@ -44,7 +44,7 @@ class mpc_var:
    cost_state   = Cq;
    cost_input   = Cu;
    cost_CMP     = Ccmp;
-   PH_length    = 10;
+   PH_length    = 20;
    knot_length  = 2;
    time_step    = 0.025;
    appx_zero    = 1e-6;
@@ -82,8 +82,8 @@ if ans == 'y':
     statePlot = plotStates_lapm(T, q);
     inputPlot = plotInputs_lapm(T, u);
     costPlot  = plotCost_lapm(T, C);
-    runTimePlot = plotRunTime_lapm(T, t);
     brkFreqPlot = plotBrkFreq_lapm(brk);
+    runTimePlot = plotRunTime_lapm(T, t);
     plt.show();
 
 ans = input("\nSee animation? [y/n] ");
