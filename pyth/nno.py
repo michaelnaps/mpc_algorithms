@@ -179,6 +179,7 @@ def gradient(mpc_var, q, u0, u, inputs, rownum=1):
 
 def hessian(mpc_var, q, u0, u, inputs):
    # variable setup
+   hessian = mpc_var.hessian;
    N = mpc_var.num_inputs*mpc_var.PH_length;
    h = mpc_var.step_size;
    H = [[0 for i in range(N)] for j in range(N)];
@@ -186,7 +187,6 @@ def hessian(mpc_var, q, u0, u, inputs):
    for i in range(N):
       un1 = [u[j] - (i==j)*h for j in range(N)];
       up1 = [u[j] + (i==j)*h for j in range(N)];
-
       gn1 = gradient(mpc_var, q, u0, un1, inputs, i);
       gp1 = gradient(mpc_var, q, u0, up1, inputs, i);
 

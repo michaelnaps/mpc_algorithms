@@ -5,6 +5,7 @@ sys.path.insert(0, 'models/.');
 
 import nno
 from statespace_lapm import *
+import matplotlib.pyplot as plt
 
 def Cq(qd, q):
    Cq = [
@@ -44,8 +45,8 @@ class mpc_var:
    cost_state   = Cq;
    cost_input   = Cu;
    cost_CMP     = Ccmp;
-   PH_length    = 10;
-   knot_length  = 4;
+   PH_length    = 4;
+   knot_length  = 2;
    time_step    = 0.025;
    appx_zero    = 1e-6;
    step_size    = 1e-3;
@@ -53,6 +54,7 @@ class mpc_var:
    num_inputs   = 2;
    input_bounds = [1000 for i in range(num_inputs*PH_length)];
    des_config   = [0, 0, 0, 0];
+   hessian      = 0;
 
 class inputs:
    # Constants and State Variables
