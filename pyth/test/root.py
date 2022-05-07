@@ -19,7 +19,7 @@ def Cu(u, du):
    umax = [60, 150];
 
    Cu = [
-      1e-5*(du[0])**2 - np.log(umax[0]**2 - u[0]**2) + np.log(umax[0]**2),
+      1e-5*(du[0])**2,# - np.log(umax[0]**2 - u[0]**2) + np.log(umax[0]**2),
       1e-5*(du[1])**2# - np.log(umax[1]**2 - u[1]**2) + np.log(umax[1]**2)
    ];
 
@@ -45,8 +45,8 @@ class mpc_var:
    cost_state   = Cq;
    cost_input   = Cu;
    cost_CMP     = Ccmp;
-   PH_length    = 4;
-   knot_length  = 2;
+   PH_length    = 20;
+   knot_length  = 1;
    time_step    = 0.025;
    appx_zero    = 1e-6;
    step_size    = 1e-3;
@@ -58,7 +58,6 @@ class mpc_var:
 
 class inputs:
    # Constants and State Variables
-   num_joints           = 3;
    gravity_acc          = -9.81;
    damping_coefficients = [0];
    joint_masses         = [80];
