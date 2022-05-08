@@ -62,7 +62,7 @@ def newtons(mpc_var, q0, u0, uinit, inputs, output=0):
    P    = mpc_var.PH_length;
    N    = mpc_var.num_inputs;
    eps  = mpc_var.appx_zero;
-   umax = mpc_var.input_bounds;
+   imax = mpc_var.max_iter;
 
    # loop variable setup
    uc = uinit;
@@ -105,18 +105,12 @@ def newtons(mpc_var, q0, u0, uinit, inputs, output=0):
              print("              ", un[i], un[i+1]);
 
       # break conditions
-      if (count == 6):
+      if (count == imax):
          brk = -1;
          break;
 
       # update loop variables
       uc = un;  Cc = Cn;
-
-   for i in range(P*N):
-      if un[i] > umax[i]:
-         un[i] = umax[i];
-      elif un[i] < -umax[i]:
-         un[i] = -umax[i];
 
    return (un, Cn, count, brk);
 
@@ -151,10 +145,10 @@ def cost(mpc_var, q0, u0, u, inputs):
    C = [0 for i in range(P+1)];
 
    for i in range(P+1):
-      C[i] = C[i] + Cq(qd, q[i]);
+      C[i] = C[i] + Cq(qd, q[i]);  # state cost
       if i != P:
-         C[i] = C[i] + Cu(uc[i], du[i]);
-         C[i] = C[i] + Ccmp(uc[i], inputs);
+         C[i] = C[i] + Cu(uc[i], du[i], inputs);  # input costs
+         C[i] = C[i] + Ccmp(uc[i], inputs);  # CMP costs
 
    return np.sum(C);
 
@@ -206,30 +200,5 @@ def save_results(filename, mpc_results):
 def load_results(filename):
    with open(filename, 'rb') as save_file:
       mpc_results = pickle.load(save_file);
-
-   return mpc_results;
-
-def report_results(filename):
-   mpc_results = load_results(filename);
-
-   T = mpc_results[0];
-   q = mpc_results[1];
-   u = mpc_results[2];
-   C = mpc_results[3];
-   brk = mpc_results[5];
-   t = mpc_results[6];
-
-   ans = input("\nSee state, input, and cost plots? [y/n] ");
-   if ans == 'y':
-      statePlot = plotStates_lapm(T, q);
-      inputPlot = plotInputs_lapm(T, u);
-      costPlot  = plotCost_lapm(T, C);
-      brkFreqPlot = plotBrkFreq_lapm(brk);
-      runTimePlot = plotRunTime_lapm(T, t);
-      plt.show();
-
-   ans = input("\nSee animation? [y/n] ");
-   if ans == 'y':
-      animation_lapm(T, q, inputs);
 
    return mpc_results;

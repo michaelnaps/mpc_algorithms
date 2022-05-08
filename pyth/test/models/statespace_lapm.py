@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import pickle
 
 def statespace_lapm(q, u, inputs):
    # constant variables
@@ -95,24 +96,55 @@ def plotStates_lapm(T, q):
 
    return statePlot;
 
-def plotInputs_lapm(T, u):
-   uT = np.transpose(u);
+def plotInputs_lapm(T, u, id=-1):
+   if id == -1:
+      Tspan = T;
+      uT = np.transpose(u);
+   else:
+      P = int(len(u[0])/2);
+      dt = T[1] - T[0];
+
+      Tspan = [i*dt for i in range(P)];
+
+      ua = [u[id+1][i] for i in range(0,2*(P),2)];
+      Lc = [u[id+1][i] for i in range(1,2*(P),2)];
+
+      uT = np.transpose([[0, 0] for i in range(P)]);
+      uT[0] = ua;  uT[1] = Lc;
 
    fig, inputPlot = plt.subplots(1,2);
 
-   inputPlot[0].plot(T, uT[0]);
+   inputPlot[0].plot(Tspan, uT[0], label="Actual ua");
    inputPlot[0].set_title("Ankle Torque Trend")
    inputPlot[0].set_ylabel("Torque [Nm]");
    inputPlot[0].set_xlabel("Time [s]");
    inputPlot[0].grid();
 
-   inputPlot[1].plot(T, uT[1]);
+   inputPlot[1].plot(Tspan, uT[1], label="Actual Lc");
    inputPlot[1].set_title("Angular Momentum Trend")
    inputPlot[1].set_ylabel("Angular Momentum [Nm/s]");
    inputPlot[1].set_xlabel("Time [s]");
    inputPlot[1].grid();
 
    return inputPlot;
+
+def plotMPCComparison_lapm(T, u, id=0):
+   P = int(len(u[0])/2);
+   dt = T[1] - T[0];
+   T_mpc = [i*dt for i in range(P)];
+
+   print(u[id+1]);
+
+   ua_mpc = [u[id+1][i] for i in range(0,2*(P),2)];
+   Lc_mpc = [u[id+1][i] for i in range(1,2*(P),2)];
+
+   mpcPlot = plotInputs_lapm(T, u, id);
+
+   mpcPlot[0].plot(T_mpc, ua_mpc, linestyle='dashdot', label="MPC ua (t0={:.3f})".format(dt*(id)));
+   mpcPlot[1].plot(T_mpc, Lc_mpc, linestyle='dashdot', label="MPC Lc (t0={:.3f})".format(dt*(id)));
+   mpcPlot[0].legend();  mpcPlot[1].legend();
+
+   return mpcPlot;
 
 def plotCost_lapm(T, C):
    fig, costPlot = plt.subplots();
@@ -131,7 +163,7 @@ def plotBrkFreq_lapm(brk):
     unique, counts = np.unique(brk, return_counts=1);
 
     for i in range(len(unique)):
-        brkFreqPlot.plot([unique[i], unique[i]], [0, counts[i]], linewidth=3);
+        brkFreqPlot.bar([unique[i], unique[i]], [0, counts[i]], linewidth=3);
 
     plt.xlim([np.min(brk)-0.5, np.max(brk)+0.5]);
     brkFreqPlot.grid();
@@ -152,3 +184,30 @@ def plotRunTime_lapm(T, t):
    runTimePlot.grid();
 
    return runTimePlot;
+
+def loadResults_lapm(filename):
+   with open(filename, 'rb') as save_file:
+      mpc_results = pickle.load(save_file);
+
+   return mpc_results;
+
+def reportResults_lapm(filename):
+   mpc_results = loadResults_lapm(filename);
+
+   T = mpc_results[0];
+   q = mpc_results[1];
+   u = mpc_results[2];
+   C = mpc_results[3];
+   brk = mpc_results[5];
+   t = mpc_results[6];
+
+   ans = input("\nSee state, input, and cost plots? [y/n] ");
+   if ans == 'y':
+      statePlot = plotStates_lapm(T, q);
+      inputPlot = plotInputs_lapm(T, u);
+      costPlot  = plotCost_lapm(T, C);
+      brkFreqPlot = plotBrkFreq_lapm(brk);
+      runTimePlot = plotRunTime_lapm(T, t);
+      plt.show();
+
+   return mpc_results;

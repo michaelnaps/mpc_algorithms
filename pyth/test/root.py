@@ -15,11 +15,11 @@ def Cq(qd, q):
 
    return np.sum(Cq);
 
-def Cu(u, du):
-   umax = [60, 150];
+def Cu(u, du, inputs):
+   umax = inputs.input_bounds;
 
    Cu = [
-      1e-5*(du[0])**2,# - np.log(umax[0]**2 - u[0]**2) + np.log(umax[0]**2),
+      1e-5*(du[0])**2 - np.log(umax[0]**2 - u[0]**2) + np.log(umax[0]**2),
       1e-5*(du[1])**2# - np.log(umax[1]**2 - u[1]**2) + np.log(umax[1]**2)
    ];
 
@@ -45,16 +45,16 @@ class mpc_var:
    cost_state   = Cq;
    cost_input   = Cu;
    cost_CMP     = Ccmp;
-   PH_length    = 20;
-   knot_length  = 1;
+   PH_length    = 5;
+   knot_length  = 4;
    time_step    = 0.025;
    appx_zero    = 1e-6;
    step_size    = 1e-3;
    num_ssvar    = 2;
    num_inputs   = 2;
-   input_bounds = [1000 for i in range(num_inputs*PH_length)];
    des_config   = [0, 0, 0, 0];
    hessian      = 0;
+   max_iter     = 5;
 
 class inputs:
    # Constants and State Variables
@@ -63,6 +63,7 @@ class inputs:
    joint_masses         = [80];
    link_lengths         = [2.0];
    CP_maxdistance       = 0.1;
+   input_bounds         = [60, 150];
 
 q0 = [0-0.075, 0, 0, 0];
 u0 = [0 for i in range(mpc_var.num_inputs*mpc_var.PH_length)];
