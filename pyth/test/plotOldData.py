@@ -7,11 +7,6 @@ import nno
 from statespace_lapm import *
 import matplotlib.pyplot as plt
 
-mpc = nno.load_results("pickle_data/lapmRun_p20_k1_t2.pickle");
+(inputs, mpc_var, mpc_results) = loadResults_lapm("prevRun_data.pickle");
 
-T = mpc[0];
-u = mpc[2];
-
-mpcPlot = plotMPCComparison_lapm(T, u, 5);
-
-plt.show();
+_ = reportResults_lapm(inputs, mpc_var, mpc_results);

@@ -62,7 +62,7 @@ def animation_lapm(T, q, inputs):
 
         plt.plot([x0-L/4, x0+L/4], [y0, y0], 'k');
         plt.plot([xlapm, xlapm], [y0-d/2, y0+d/2], color='g', label="CP - Current");
-        plt.plot([x0-d, x0-d], [y0-d/2, y0+d/2], 'k', label="CP - Bounds");
+        plt.plot([x0-d, x0-d], [y0-d/2, y0+d/2], 'k');
         plt.plot([x0+d, x0+d], [y0-d/2, y0+d/2], 'k');
 
         plt.title("TPM Simulation: t = {:.3f}".format(T[i]));
@@ -158,13 +158,13 @@ def plotCost_lapm(T, C):
 def plotBrkFreq_lapm(brk):
     fig, brkFreqPlot = plt.subplots();
 
-    unique, counts = np.unique(brk, return_counts=1);
+    unique, counts = np.unique(brk[1:], return_counts=1);
 
     for i in range(len(unique)):
         brkFreqPlot.bar([unique[i], unique[i]], [0, counts[i]], linewidth=3);
 
     plt.xlim([np.min(brk)-0.5, np.max(brk)+0.5]);
-    brkFreqPlot.grid();
+    plt.xticks(unique);
 
     return brkFreqPlot;
 
@@ -175,7 +175,7 @@ def plotRunTime_lapm(T, t):
 
     runTimePlot.plot(T, t, label="Calc. Trend");
     runTimePlot.plot([T[0], T[-1]], [aveRunTime, aveRunTime], label="Average Calc. Time");
-    runTimePlot.set_title("MPC Runtime Computation Trend");
+    runTimePlot.set_title("MPC Computation Runtime Trend");
     runTimePlot.set_ylabel("Calc. Time [ms]");
     runTimePlot.set_xlabel("Time [s]");
     runTimePlot.legend();
@@ -183,19 +183,28 @@ def plotRunTime_lapm(T, t):
 
     return runTimePlot;
 
+def saveResults_lapm(filename, inputs, mpc_var, mpc_results):
+    with open(filename, "wb") as save_file:
+        pickle.dump([inputs, mpc_var, mpc_results], save_file);
+        # pickle.dump(mpc_var, save_file);
+        # pickle.dump(mpc_results, save_file);
+
+    return 1;
+
 def loadResults_lapm(filename):
-    with open(filename, 'rb') as save_file:
-        mpc_results = pickle.load(save_file);
+    with open(filename, "rb") as load_file:
+        inputs, mpc_var, mpc_results = pickle.load(load_file);
+        # mpc_var     = pickle.load(load_file);
+        # mpc_results = pickle.load(load_file);
 
-    return mpc_results;
+    return (inputs, mpc_var, mpc_results);
 
-def reportResults_lapm(filename):
-    mpc_results = loadResults_lapm(filename);
-
+def reportResults_lapm(inputs, mpc_var, mpc_results):
     T = mpc_results[0];
     q = mpc_results[1];
     u = mpc_results[2];
     C = mpc_results[3];
+    n = mpc_results[4];
     brk = mpc_results[5];
     t = mpc_results[6];
 
@@ -208,4 +217,8 @@ def reportResults_lapm(filename):
         runTimePlot = plotRunTime_lapm(T, t);
         plt.show();
 
-    return mpc_results;
+    ans = input("\nSee animation? [y/n] ");
+    if ans == 'y':
+        animation_lapm(T, q, inputs);
+
+    return 1;

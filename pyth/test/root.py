@@ -33,37 +33,41 @@ def Ccmp(u, inputs):
     utip = m*g*dmax;
 
     Ccmp = [
-        -np.log(utip**2 - u[0]**2) + np.log(utip**2),
+        #-np.log(utip**2 - u[0]**2) + np.log(utip**2),
+        100*(u[0]/utip)**2,
         0
     ];
 
     return np.sum(Ccmp);
 
-class mpc_var:
-    sim_time     = 2;
-    model        = statespace_lapm;
-    cost_state   = Cq;
-    cost_input   = Cu;
-    cost_CMP     = Ccmp;
-    PH_length    = 10;
-    knot_length  = 4;
-    time_step    = 0.025;
-    appx_zero    = 1e-6;
-    step_size    = 1e-3;
-    num_ssvar    = 2;
-    num_inputs   = 2;
-    des_config   = [0, 0, 0, 0];
-    hessian      = 0;
-    max_iter     = 5;
+class MPCVariables:
+    def __init__(self):
+        self.sim_time     = 2;
+        self.model        = statespace_lapm;
+        self.cost_state   = Cq;
+        self.cost_input   = Cu;
+        self.cost_CMP     = Ccmp;
+        self.PH_length    = 4;
+        self.knot_length  = 2;
+        self.time_step    = 0.025;
+        self.appx_zero    = 1e-6;
+        self.step_size    = 1e-3;
+        self.num_ssvar    = 2;
+        self.num_inputs   = 2;
+        self.des_config   = [0, 0, 0, 0];
+        self.max_iter     = 5;
 
-class inputs:
-    # Constants and State Variables
-    gravity_acc          = -9.81;
-    damping_coefficients = [0];
-    joint_masses         = [80];
-    link_lengths         = [2.0];
-    CP_maxdistance       = 0.1;
-    input_bounds         = [60, 150];
+class InputVariables:
+    def __init__(self):
+        self.gravity_acc          = -9.81;
+        self.damping_coefficients = [0];
+        self.joint_masses         = [80];
+        self.link_lengths         = [2.0];
+        self.CP_maxdistance       = 0.1;
+        self.input_bounds         = [60, 150];
+
+inputs  = InputVariables();
+mpc_var = MPCVariables();
 
 q0 = [0-0.075, 0, 0, 0];
 u0 = [0 for i in range(mpc_var.num_inputs*mpc_var.PH_length)];
@@ -86,11 +90,12 @@ if ans == 'y':
     costPlot  = plotCost_lapm(T, C);
     brkFreqPlot = plotBrkFreq_lapm(brk);
     runTimePlot = plotRunTime_lapm(T, t);
+    mpcPlot = plotMPCComparison_lapm(T, u);
     plt.show();
 
 ans = input("\nSee animation? [y/n] ");
 if ans == 'y':
     animation_lapm(T, q, inputs);
 
-if nno.save_results("prevRun_data.pickle", mpc_results):
+if saveResults_lapm("prevRun_data.pickle", inputs, mpc_var, mpc_results):
     print("\nRun data saved...");

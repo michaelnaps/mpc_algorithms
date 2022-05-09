@@ -74,7 +74,7 @@ def newtons(mpc_var, q0, u0, uinit, inputs, output=0):
         print("Initial Cost: ", Cc);
 
     count = 1;
-    brk = 0;
+    brk = -2*np.isnan(Cc);
     while (Cc > eps):
         # calculate the gradient around the current input
         g = gradient(mpc_var, q0, u0, uc, inputs);
@@ -95,6 +95,10 @@ def newtons(mpc_var, q0, u0, uinit, inputs, output=0):
         # simulate and calculate the new cost value
         Cn = cost(mpc_var, q0, u0, un, inputs);
         count += 1;  # iterate the loop counter
+
+        if (np.isnan(Cn)):
+            brk = -2;
+            break;
 
         if output:
             # print("Gradient:  ", g);
@@ -173,7 +177,6 @@ def gradient(mpc_var, q, u0, u, inputs, rownum=1):
 
 def hessian(mpc_var, q, u0, u, inputs):
     # variable setup
-    hessian = mpc_var.hessian;
     N = mpc_var.num_inputs*mpc_var.PH_length;
     h = mpc_var.step_size;
     H = [[0 for i in range(N)] for j in range(N)];
@@ -190,15 +193,3 @@ def hessian(mpc_var, q, u0, u, inputs):
             H[j][i] = H[i][j];
 
     return H;
-
-def save_results(filename, mpc_results):
-    with open(filename, 'wb') as save_file:
-        pickle.dump(mpc_results, save_file);
-
-    return 1;
-
-def load_results(filename):
-    with open(filename, 'rb') as save_file:
-        mpc_results = pickle.load(save_file);
-
-    return mpc_results;
