@@ -74,28 +74,4 @@ u0 = [0 for i in range(mpc_var.num_inputs*mpc_var.PH_length)];
 
 mpc_results = nno.mpc_root(mpc_var, q0, u0, inputs, 1);
 
-print("\nBreak List: ", mpc_results[5]);
-
-T = mpc_results[0];
-q = mpc_results[1];
-u = mpc_results[2];
-C = mpc_results[3];
-brk = mpc_results[5];
-t = mpc_results[6];
-
-ans = input("\nSee state, input, and cost plots? [y/n] ");
-if ans == 'y':
-    statePlot = plotStates_lapm(T, q);
-    inputPlot = plotInputs_lapm(T, u);
-    costPlot  = plotCost_lapm(T, C);
-    brkFreqPlot = plotBrkFreq_lapm(brk);
-    runTimePlot = plotRunTime_lapm(T, t);
-    mpcPlot = plotMPCComparison_lapm(T, u);
-    plt.show();
-
-ans = input("\nSee animation? [y/n] ");
-if ans == 'y':
-    animation_lapm(T, q, inputs);
-
-if saveResults_lapm("prevRun_data.pickle", inputs, mpc_var, mpc_results):
-    print("\nRun data saved...");
+reportResults_lapm(inputs, mpc_var, mpc_results);

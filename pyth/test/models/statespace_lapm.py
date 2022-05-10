@@ -199,7 +199,7 @@ def loadResults_lapm(filename):
 
     return (inputs, mpc_var, mpc_results);
 
-def reportResults_lapm(inputs, mpc_var, mpc_results):
+def staticPlots_lapm(mpc_results):
     T = mpc_results[0];
     q = mpc_results[1];
     u = mpc_results[2];
@@ -208,14 +208,25 @@ def reportResults_lapm(inputs, mpc_var, mpc_results):
     brk = mpc_results[5];
     t = mpc_results[6];
 
+    statePlot = plotStates_lapm(T, q);
+    inputPlot = plotInputs_lapm(T, u);
+    costPlot  = plotCost_lapm(T, C);
+    brkFreqPlot = plotBrkFreq_lapm(brk);
+    runTimePlot = plotRunTime_lapm(T, t);
+    plt.show(block=0);
+
+    input("Press enter to close static plots...");
+    plt.close('all');
+
+    return 1;
+
+def reportResults_lapm(inputs, mpc_var, mpc_results):
+    T = mpc_results[0];
+    q = mpc_results[1];
+
     ans = input("\nSee state, input, and cost plots? [y/n] ");
     if ans == 'y':
-        statePlot = plotStates_lapm(T, q);
-        inputPlot = plotInputs_lapm(T, u);
-        costPlot  = plotCost_lapm(T, C);
-        brkFreqPlot = plotBrkFreq_lapm(brk);
-        runTimePlot = plotRunTime_lapm(T, t);
-        plt.show();
+        staticPlots_lapm(mpc_results);
 
     ans = input("\nSee animation? [y/n] ");
     if ans == 'y':
