@@ -190,6 +190,6 @@ def hessian(mpc_var, q, u0, u, inputs):
         # enforce symmetry
         for j in range(i, N):
             H[i][j] = (gp1[j] - gn1[j])/(2*h);
-            H[j][i] = H[i][j];
+            if (i != j):  H[j][i] = H[i][j];
 
     return H;

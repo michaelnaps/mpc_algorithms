@@ -69,7 +69,7 @@ class InputVariables:
 inputs  = InputVariables();
 mpc_var = MPCVariables();
 
-q0 = [0-0.075, 0, 0, 0];
+q0 = [0-0.075, 0, -0.1, 0];
 u0 = [0 for i in range(mpc_var.num_inputs*mpc_var.PH_length)];
 
 mpc_results = nno.mpc_root(mpc_var, q0, u0, inputs, 1);
