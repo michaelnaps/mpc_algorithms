@@ -63,7 +63,10 @@ def newtons(mpc_var, q0, u0, uinit, inputs, output=0):
     N    = mpc_var.num_inputs;
     eps  = mpc_var.appx_zero;
     imax = mpc_var.max_iter;
-    a    = mpc_var.step_coeff;
+
+    # step size coefficient choice
+    alpha    = mpc_var.alpha;
+    a_method = mpc_var.a_method;
 
     # loop variable setup
     uc = uinit;
@@ -87,7 +90,9 @@ def newtons(mpc_var, q0, u0, uinit, inputs, output=0):
             break;
 
         # calculate the next iteration of the input
-        un = alpha_bkl(g, Cc, mpc_var, q0, u0, uc, inputs)[0];
+        if (a_method == "bkl"):  un = alpha_bkl(g, Cc, mpc_var, q0, u0, uc, inputs)[0];
+        elif (a_method == "bis"):  un = alpha_bis(g, Cc, mpc_var, q0, u0, uc, inputs)[0];
+        else:  uave = [uc[i] - alpha*g[i] for i in range(P*N)];
 
         # simulate and calculate the new cost value
         Cn = cost(mpc_var, q0, u0, un, inputs);
@@ -175,7 +180,7 @@ def alpha_bkl(g, C0, mpc_var, q0, u0, uc, inputs):
     P = mpc_var.PH_length;
     N = mpc_var.num_inputs;
     w = mpc_var.bkl_shrink;
-    a = mpc_var.step_coeff;
+    a = mpc_var.alpha;
     abkl = a;
 
     count = 0;
@@ -193,3 +198,49 @@ def alpha_bkl(g, C0, mpc_var, q0, u0, uc, inputs):
 
     print("Alpha: ", abkl);
     return (ubkl, Cbkl, abkl, count, brk);
+
+def alpha_bis(g, C0, mpc_var, q0, u0, uc, inputs):
+    P = mpc_var.PH_length;
+    N = mpc_var.num_inputs;
+    a = mpc_var.alpha;
+    eps = mpc_var.appx_zero;
+
+    # bisection variable setup
+    alow = a[0];  ahgh = a[1];
+    aave = (ahgh + alow)/2;
+
+    ulow = [uc[i] - alow*g[i] for i in range(P*N)];
+    uhgh = [uc[i] - ahgh*g[i] for i in range(P*N)];
+    uave = [uc[i] - aave*g[i] for i in range(P*N)];
+
+    Clow = cost(mpc_var, q0, u0, ulow, inputs);
+    Chgh = cost(mpc_var, q0, u0, uhgh, inputs);
+    Cave = cost(mpc_var, q0, u0, uave, inputs);
+
+    # bisection loop
+    count = 0;
+    brk = 0;
+    while (Cave > eps):
+        if (Clow < Chgh):
+            ahgh = aave;
+            Chgh = Cave;
+        else:
+            alow = aave;
+            Clow = Cave;
+
+        aave = (ahgh + alow)/2;
+        uave = [uc[i] - aave*g[i] for i in range(P*N)];
+        Cave = cost(mpc_var, q0, u0, uave, inputs);
+
+        if ((ahgh - alow) < eps):
+            brk = 1;
+            break;
+
+        count += 1;
+
+        if (count == 1000):
+            brk = -1;
+            break;
+
+    print("Alpha: ", aave);
+    return (uave, Cave, aave, count, brk);
