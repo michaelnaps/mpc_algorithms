@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pickle
 
-def statespace_lapm(q, u, inputs):
+def statespace_alip(q, u, inputs):
     # constant variables
     m = inputs.joint_masses[0];
     H = inputs.link_lengths[0];
@@ -23,8 +23,8 @@ def statespace_lapm(q, u, inputs):
 
     return [dx, dLc, ddq[0], ddq[1]];
 
-# LAPM animation function
-def animation_lapm(T, q, inputs):
+# alip animation function
+def animation_alip(T, q, inputs):
     # sim variables
     Nt = len(T);
     dt = T[1] - T[0];
@@ -47,21 +47,21 @@ def animation_lapm(T, q, inputs):
 
         x0 = 0; y0 = 0;
 
-        xlapm = x0 + x;
-        ylapm = y0 + H;
+        xalip = x0 + x;
+        yalip = y0 + H;
 
         xtrue = x0 + L*np.cos(th);
         ytrue = y0 + L*np.sin(th);
 
-        plt.plot([x0, xlapm], [y0, ylapm], linewidth=2, label="CoM - LAPM");
+        plt.plot([x0, xalip], [y0, yalip], linewidth=2, label="CoM - ALIP");
         plt.plot([x0, xtrue], [y0, ytrue], linestyle=':', label="CoM - True");
-        plt.plot([xlapm], [ylapm], marker='o',
+        plt.plot([xalip], [yalip], marker='o',
          markerfacecolor='k', markeredgecolor='k', markersize=m/10);
         plt.plot([xtrue], [ytrue], marker='o',
          markerfacecolor='g', markeredgecolor='g', markersize=m/15);
 
         plt.plot([x0-L/4, x0+L/4], [y0, y0], 'k');
-        plt.plot([xlapm, xlapm], [y0-d/2, y0+d/2], color='g', label="CP - Current");
+        plt.plot([xalip, xalip], [y0-d/2, y0+d/2], color='g', label="CP - Current");
         plt.plot([x0-d, x0-d], [y0-d/2, y0+d/2], 'k');
         plt.plot([x0+d, x0+d], [y0-d/2, y0+d/2], 'k');
 
@@ -75,7 +75,7 @@ def animation_lapm(T, q, inputs):
 
     return 1;
 
-def plotStates_lapm(T, q):
+def plotStates_alip(T, q):
     qT = np.transpose(q);
 
     fig, statePlot = plt.subplots(1,2);
@@ -96,7 +96,7 @@ def plotStates_lapm(T, q):
 
     return statePlot;
 
-def plotInputs_lapm(T, u, id=-1):
+def plotInputs_alip(T, u, id=-1):
     if id == -1:
         Tspan = T;
         uT = np.transpose(u);
@@ -128,7 +128,7 @@ def plotInputs_lapm(T, u, id=-1):
 
     return inputPlot;
 
-def plotMPCComparison_lapm(T, u, id=0):
+def plotMPCComparison_alip(T, u, id=0):
     P = int(len(u[0])/2);
     dt = T[1] - T[0];
     T_mpc = [i*dt for i in range(P)];
@@ -136,7 +136,7 @@ def plotMPCComparison_lapm(T, u, id=0):
     ua_mpc = [u[id+1][i] for i in range(0,2*(P),2)];
     Lc_mpc = [u[id+1][i] for i in range(1,2*(P),2)];
 
-    mpcPlot = plotInputs_lapm(T, u, id);
+    mpcPlot = plotInputs_alip(T, u, id);
 
     mpcPlot[0].plot(T_mpc, ua_mpc, linestyle='dashdot', label="MPC ua (t0={:.3f})".format(dt*(id)));
     mpcPlot[1].plot(T_mpc, Lc_mpc, linestyle='dashdot', label="MPC Lc (t0={:.3f})".format(dt*(id)));
@@ -144,7 +144,7 @@ def plotMPCComparison_lapm(T, u, id=0):
 
     return mpcPlot;
 
-def plotCost_lapm(T, C):
+def plotCost_alip(T, C):
     fig, costPlot = plt.subplots();
 
     costPlot.plot(T, C);
@@ -155,7 +155,7 @@ def plotCost_lapm(T, C):
 
     return costPlot;
 
-def plotBrkFreq_lapm(brk):
+def plotBrkFreq_alip(brk):
     fig, brkFreqPlot = plt.subplots();
 
     unique, counts = np.unique(brk[1:], return_counts=1);
@@ -168,7 +168,7 @@ def plotBrkFreq_lapm(brk):
 
     return brkFreqPlot;
 
-def plotRunTime_lapm(T, t):
+def plotRunTime_alip(T, t):
     fig, runTimePlot = plt.subplots();
 
     aveRunTime = np.mean(t);
@@ -183,7 +183,7 @@ def plotRunTime_lapm(T, t):
 
     return runTimePlot;
 
-def saveResults_lapm(filename, inputs, mpc_var, mpc_results):
+def saveResults_alip(filename, inputs, mpc_var, mpc_results):
     with open(filename, "wb") as save_file:
         pickle.dump([inputs, mpc_var, mpc_results], save_file);
         # pickle.dump(mpc_var, save_file);
@@ -191,7 +191,7 @@ def saveResults_lapm(filename, inputs, mpc_var, mpc_results):
 
     return 1;
 
-def loadResults_lapm(filename):
+def loadResults_alip(filename):
     with open(filename, "rb") as load_file:
         inputs, mpc_var, mpc_results = pickle.load(load_file);
         # mpc_var     = pickle.load(load_file);
@@ -199,7 +199,7 @@ def loadResults_lapm(filename):
 
     return (inputs, mpc_var, mpc_results);
 
-def staticPlots_lapm(mpc_results):
+def staticPlots_alip(mpc_results):
     T = mpc_results[0];
     q = mpc_results[1];
     u = mpc_results[2];
@@ -208,11 +208,11 @@ def staticPlots_lapm(mpc_results):
     brk = mpc_results[5];
     t = mpc_results[6];
 
-    statePlot = plotStates_lapm(T, q);
-    inputPlot = plotInputs_lapm(T, u);
-    costPlot  = plotCost_lapm(T, C);
-    brkFreqPlot = plotBrkFreq_lapm(brk);
-    runTimePlot = plotRunTime_lapm(T, t);
+    statePlot = plotStates_alip(T, q);
+    inputPlot = plotInputs_alip(T, u);
+    costPlot  = plotCost_alip(T, C);
+    brkFreqPlot = plotBrkFreq_alip(brk);
+    runTimePlot = plotRunTime_alip(T, t);
     plt.show(block=0);
 
     input("Press enter to close static plots...");
@@ -220,16 +220,16 @@ def staticPlots_lapm(mpc_results):
 
     return 1;
 
-def reportResults_lapm(inputs, mpc_var, mpc_results):
+def reportResults_alip(inputs, mpc_var, mpc_results):
     T = mpc_results[0];
     q = mpc_results[1];
 
     ans = input("\nSee state, input, and cost plots? [y/n] ");
     if ans == 'y':
-        staticPlots_lapm(mpc_results);
+        staticPlots_alip(mpc_results);
 
     ans = input("\nSee animation? [y/n] ");
     if ans == 'y':
-        animation_lapm(T, q, inputs);
+        animation_alip(T, q, inputs);
 
     return 1;

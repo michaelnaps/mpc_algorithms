@@ -4,7 +4,7 @@ sys.path.insert(0, '/home/michaelnaps/prog/mpc_algorithms/pyth/.');
 sys.path.insert(0, 'models/.');
 
 import nno
-from statespace_lapm import *
+from statespace_alip import *
 import matplotlib.pyplot as plt
 
 def Cq(qd, q):
@@ -43,7 +43,7 @@ def Ccmp(u, inputs):
 class MPCVariables:
     def __init__(self):
         self.sim_time     = 2;
-        self.model        = statespace_lapm;
+        self.model        = statespace_alip;
         self.cost_state   = Cq;
         self.cost_input   = Cu;
         self.cost_CMP     = Ccmp;
@@ -74,4 +74,4 @@ u0 = [0 for i in range(mpc_var.num_inputs*mpc_var.PH_length)];
 
 mpc_results = nno.mpc_root(mpc_var, q0, u0, inputs, 1);
 
-reportResults_lapm(inputs, mpc_var, mpc_results);
+reportResults_alip(inputs, mpc_var, mpc_results);
