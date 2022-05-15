@@ -42,7 +42,7 @@ def Ccmp(u, inputs):
 
 class MPCVariables:
     def __init__(self):
-        self.sim_time     = 2;
+        self.sim_time     = 5;
         self.model        = statespace_alip;
         self.cost_state   = Cq;
         self.cost_input   = Cu;
@@ -69,9 +69,10 @@ class InputVariables:
 inputs  = InputVariables();
 mpc_var = MPCVariables();
 
-q0 = [0-0.075, 0, -0.1, 0];
+q0 = [0, 0, 0, 0];
 u0 = [0 for i in range(mpc_var.num_inputs*mpc_var.PH_length)];
+u_d = [0.5, 1.5, [1000, 0]];
 
-mpc_results = nno.mpc_root(mpc_var, q0, u0, inputs, 1);
+mpc_results = nno.mpc_root(mpc_var, q0, u0, u_d, inputs, 1);
 
 reportResults_alip(inputs, mpc_var, mpc_results);

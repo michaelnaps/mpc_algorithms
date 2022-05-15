@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pickle
 
-def statespace_alip(q, u, inputs):
+def statespace_alip(q, u, u_d, inputs):
     # constant variables
     m = inputs.joint_masses[0];
     H = inputs.link_lengths[0];
@@ -12,18 +12,18 @@ def statespace_alip(q, u, inputs):
     x  = q[0];  Lc  = q[1];
     dx = q[2];  dLc = q[3];
 
-    # input variables
-    ua = u[0];  L = u[1];
+    # input/disturbance variables
+    ua = u[0];    L  = u[1];
+    ud = u_d[0];  Ld = u_d[1];
 
     # solve for statespace
     ddq = [
-        L/(m*H) - Lc/(m*H),
+        L/(m*H) - Lc/(m*H) + ud/(m*H),
         ua + m*g*x
     ];
 
     return [dx, dLc, ddq[0], ddq[1]];
 
-# alip animation function
 def animation_alip(T, q, inputs):
     # sim variables
     Nt = len(T);
