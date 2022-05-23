@@ -54,10 +54,13 @@ def mpc_root(mpc_var, q0, u0, u_d, inputs, output=0):
         # inverse dynamics: lapm -> 3link (digit)
 
         # disturbance
-        if (T[i] >= u_d[0]) & (T[i] <= u_d[1]):
-            u_disturb = u_d[2];
+        if (len(u_d) != 0):
+            if (T[i] >= u_d[0]) & (T[i] <= u_d[1]):
+                u_disturb = u_d[2];
+            else:
+                u_disturb = [0 for j in range(N)];
         else:
-            u_disturb = [0 for j in range(N)]
+            u_disturb = [0 for j in range(N)];
 
         qlist[i] = modeuler(mpc_var, qlist[i-1], ulist[i][:N], u_disturb, inputs)[1][1];
 

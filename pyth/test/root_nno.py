@@ -72,7 +72,7 @@ def main():
 
     q0 = [0, 0, 0, 0];
     u0 = [0 for i in range(mpc_var.num_inputs*mpc_var.PH_length)];
-    u_d = [0.5, 1.5, [1000, 0]];
+    u_d = [];
 
     mpc_results = nno.mpc_root(mpc_var, q0, u0, u_d, inputs, 1);
 
