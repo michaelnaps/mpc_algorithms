@@ -1,7 +1,6 @@
 # Package: nno.py
 # Created by: Michael Napoli
 # Created on: 3/27/2022
-# Last modified on: 3/27/2022
 
 
 import numpy as np
