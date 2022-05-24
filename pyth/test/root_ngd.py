@@ -4,8 +4,7 @@ sys.path.insert(0, '/home/michaelnaps/prog/mpc_algorithms/pyth/.');
 sys.path.insert(0, 'models/.');
 
 import ngd
-from statespace_lapm import *
-import matplotlib.pyplot as plt
+from statespace_alip import *
 
 def Cq(qd, q):
     Cq = [
@@ -43,11 +42,11 @@ def Ccmp(u, inputs):
 class MPCVariables:
     def __init__(self):
         self.sim_time    = 2;
-        self.model       = statespace_lapm;
+        self.model       = statespace_alip;
         self.cost_state  = Cq;
         self.cost_input  = Cu;
         self.cost_CMP    = Ccmp;
-        self.PH_length   = 4;
+        self.PH_length   = 10;
         self.knot_length = 2;
         self.time_step   = 0.025;
         self.appx_zero   = 1e-6;
@@ -55,10 +54,10 @@ class MPCVariables:
         self.num_ssvar   = 2;
         self.num_inputs  = 2;
         self.des_config  = [0, 0, 0, 0];
-        self.max_iter    = 1000;
-        self.bkl_shrink  = 0.9;
-        self.a_method    = "bis";
-        self.alpha       = [0, 25];
+        self.max_iter    = 10;
+        self.bkl_shrink  = 0.75;
+        self.a_method    = "bkl";
+        self.alpha       = 50; #[0, 25];
 
 class InputVariables:
     def __init__(self):
@@ -74,7 +73,8 @@ mpc_var = MPCVariables();
 
 q0 = [0-0.05, 0, 0, 0];
 u0 = [0 for i in range(mpc_var.num_inputs*mpc_var.PH_length)];
+ud = [];
 
-mpc_results = ngd.mpc_root(mpc_var, q0, u0, inputs, 1);
+mpc_results = ngd.mpc_root(mpc_var, q0, u0, ud, inputs, 1);
 
-reportResults_lapm(inputs, mpc_var, mpc_results);
+reportResults_alip(inputs, mpc_var, mpc_results);

@@ -148,7 +148,7 @@ def cost(mpc_var, q0, u0, u, inputs):
             du[i][j] = uc[i][j] - uc[i-1][j];
 
     # disturbance variable stand-in
-    u_d = [[0 for j in range(Nu)] for i in range(P)];
+    u_d = [0 for j in range(Nu)];
 
     # Cost of each input over the designated windows
     # simulate over the prediction horizon and sum cost
