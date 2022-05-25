@@ -54,10 +54,10 @@ class MPCVariables:
         self.num_ssvar   = 2;
         self.num_inputs  = 2;
         self.des_config  = [0, 0, 0, 0];
-        self.max_iter    = 10;
+        self.max_iter    = 100;
         self.bkl_shrink  = 0.75;
         self.a_method    = "bkl";
-        self.alpha       = 50; #[0, 25];
+        self.alpha       = 25; #[0, 25];
 
 class InputVariables:
     def __init__(self):
