@@ -55,7 +55,7 @@ def mpc_root(mpc_var, q0, u0, u_d, inputs, output=0):
         # disturbance
         if (len(u_d) != 0):
             if (T[i] >= u_d[0]) & (T[i] <= u_d[1]):
-                u_disturb = u_d[2];
+                u_disturb = [u_d[j+2] for j in range(N)];
             else:
                 u_disturb = [0 for j in range(N)];
         else:
@@ -155,7 +155,7 @@ def cost(mpc_var, q0, u0, u, inputs):
     q = [[0 for i in range(2*N)] for j in range(P+1)];
     q[0] = q0;
     for i in range(P):
-        q[i+1] = modeuler(mpc_var, q[i], uc[i], u_d[i], inputs)[1][-1];
+        q[i+1] = modeuler(mpc_var, q[i], uc[i], u_d, inputs)[1][-1];
 
     C = [0 for i in range(P+1)];
 
