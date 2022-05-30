@@ -46,8 +46,8 @@ class MPCVariables:
         self.cost_state  = Cq;
         self.cost_input  = Cu;
         self.cost_CMP    = Ccmp;
-        self.PH_length   = 10;
-        self.knot_length = 2;
+        self.PH_length   = 20;
+        self.knot_length = 1;
         self.time_step   = 0.025;
         self.appx_zero   = 1e-6;
         self.step_size   = 1e-3;
@@ -55,9 +55,9 @@ class MPCVariables:
         self.num_inputs  = 2;
         self.des_config  = [0, 0, 0, 0];
         self.max_iter    = 100;
-        self.bkl_shrink  = 0.75;
+        self.bkl_shrink  = 0.9;
         self.a_method    = "bkl";
-        self.alpha       = 25; #[0, 25];
+        self.alpha       = 1; #[0, 25];
 
 class InputVariables:
     def __init__(self):
