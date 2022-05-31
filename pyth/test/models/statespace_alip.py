@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pickle
 
-def statespace_alip(q, u, u_d, inputs):
+def statespace_alip(q, u, inputs):
     # constant variables
     m = inputs.joint_masses[0];
     H = inputs.link_lengths[0];
@@ -14,11 +14,11 @@ def statespace_alip(q, u, u_d, inputs):
 
     # input/disturbance variables
     ua = u[0];    L  = u[1];
-    ud = u_d[0];  Ld = u_d[1];
+#    ud = u_d[0];  Ld = u_d[1];
 
     # solve for statespace
     ddq = [
-        L/(m*H) - Lc/(m*H) + ud/(m*H),
+        L/(m*H) - Lc/(m*H),# + ud/(m*H),
         ua + m*g*x
     ];
 
@@ -220,7 +220,7 @@ def staticPlots_alip(mpc_results):
 
     return 1;
 
-def reportResults_alip(inputs, mpc_var, mpc_results):
+def reportResults_alip(mpc_results, inputs):
     T = mpc_results[0];
     q = mpc_results[1];
 

@@ -10,12 +10,11 @@ import pickle
 from modeuler import *
 
 
-def mpc_root(mpc_var, q0, u0, u_d, inputs, output=0):
+def mpc_root(mpc_var, q0, u0, inputs, output=0):
     # MPC variable declaration
     N  = mpc_var.num_inputs;
     P  = mpc_var.PH_length;
     dt = mpc_var.time_step;
-    eps = mpc_var.appx_zero;
     tspan = mpc_var.sim_time;
 
     # simulation time variables
@@ -52,16 +51,7 @@ def mpc_root(mpc_var, q0, u0, u_d, inputs, output=0):
 
         # inverse dynamics: lapm -> 3link (digit)
 
-        # disturbance
-        if (len(u_d) != 0):
-            if (T[i] >= u_d[0]) & (T[i] <= u_d[1]):
-                u_disturb = [u_d[j+2] for j in range(N)];
-            else:
-                u_disturb = [0 for j in range(N)];
-        else:
-            u_disturb = [0 for j in range(N)];
-
-        qlist[i] = modeuler(mpc_var, qlist[i-1], ulist[i][:N], u_disturb, inputs)[1][1];
+        qlist[i] = modeuler(mpc_var, qlist[i-1], ulist[i][:N], inputs)[1][1];
 
     return (T, qlist, ulist, Clist, nlist, brklist, t_run);
 
@@ -147,15 +137,12 @@ def cost(mpc_var, q0, u0, u, inputs):
         for j in range(Nu):
             du[i][j] = uc[i][j] - uc[i-1][j];
 
-    # disturbance variable stand-in
-    u_d = [0 for j in range(Nu)];
-
     # Cost of each input over the designated windows
     # simulate over the prediction horizon and sum cost
     q = [[0 for i in range(2*N)] for j in range(P+1)];
     q[0] = q0;
     for i in range(P):
-        q[i+1] = modeuler(mpc_var, q[i], uc[i], u_d, inputs)[1][-1];
+        q[i+1] = modeuler(mpc_var, q[i], uc[i], inputs)[1][-1];
 
     C = [0 for i in range(P+1)];
 
