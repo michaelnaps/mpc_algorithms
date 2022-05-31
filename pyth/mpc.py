@@ -9,15 +9,15 @@ import time
 import pickle
 
 class system:
-    def __init__(self, solver, costFunction, user_inputs, num_inputs, num_ssvar,            # mandatory arguments
-                 modelFunction=[], PH_length=1, knot_length=1, time_step=0.025,  # optional arguments
+    def __init__(self, solver, costFunction, modelFunction, user_inputs,
+                 num_inputs, num_ssvar, PH_length=1, knot_length=1, time_step=0.025,
                  appx_zero=1e-6, step_size=1e-3, max_iter=10):
         self.solver = solver;
         self.cost   = costFunction;
+        self.model  = modelFunction;
         self.inputs = user_inputs;
         self.u_num  = num_inputs;
         self.q_num  = num_ssvar;
-        self.model  = modelFunction;
         self.PH     = PH_length;
         self.k      = knot_length;
         self.dt     = time_step;
@@ -165,7 +165,7 @@ class system:
         dt = self.dt;
         inputs = self.inputs;
 
-        dt_min = 1e-3;
+        dt_min = 0.1;
         if (dt >= dt_min):
             adj = int(dt/dt_min);
         else:

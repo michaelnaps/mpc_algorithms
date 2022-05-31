@@ -82,16 +82,15 @@ def main():
     inputs = InputVariables([0, 0]);
 
     # mpc variables
-    num_inputs = 2;
-    num_ssvar = 2;
-    PH_length = 4;
-    knot_length = 2;
+    num_inputs  = 2;
+    num_ssvar   = 2;
+    PH_length   = 4;
+    knot_length = 10;
 
     q0 = [0-0.01, 0, 0, 0];
     u0 = [0 for i in range(num_inputs*PH_length)];
 
-    mpc_var = mpc.system('nno', cost, inputs, num_inputs, num_ssvar, statespace_alip, PH_length, knot_length);
-
+    mpc_var = mpc.system('nno', cost, statespace_alip, inputs, num_inputs, num_ssvar, PH_length, knot_length);
     sim_results = mpc_var.sim_root(2, q0, u0, 1);
 
     reportResults_alip(sim_results, inputs);
