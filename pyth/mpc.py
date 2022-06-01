@@ -25,6 +25,15 @@ class system:
         self.h      = step_size;
         self.n_max  = max_iter;
 
+        self._dt_min = 1e-3;
+
+    def setMinTimeStep(self, min_time_step):
+        self._dt_min = min_time_step;
+        return 1;
+
+    def getMinTimeStep(self):
+        return self._dt_min;
+
     def solve(self, q0, uinit, output=0):
         t = time.time();
         (u, C, n, brk) = self.nno(q0, uinit, output);
@@ -163,9 +172,9 @@ class system:
         P  = self.PH;
         k  = self.k;
         dt = self.dt;
+        dt_min = self._dt_min;
         inputs = self.inputs;
-
-        dt_min = 0.1;
+        
         if (dt >= dt_min):
             adj = int(dt/dt_min);
         else:
