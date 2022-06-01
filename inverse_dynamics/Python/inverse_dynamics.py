@@ -1,6 +1,7 @@
 import numpy as np
 import cvxopt as co
 import cvxopt.solvers as opt
+from MathFunctionsCpp import MathExpressions
 
 def convert(id_var, q):
     # model variables
@@ -22,10 +23,6 @@ def convert(id_var, q):
     q_a = m1_state(q, u_model1, m1_inputs);
     (Ja, dJa) = m1_jacobian(q, m1_inputs);
 
-    # convert matrices to cvxopt matrix type
-    M  = co.matrix(M);     E   = co.matrix(E);
-    Ja = co.matrix(Ja).T;  dJa = co.matrix(dJa).T;
-
     # desired state variables
     q_d   = co.matrix(id_var.m2_desired);
     dq_d  = Z;
@@ -35,7 +32,14 @@ def convert(id_var, q):
     q_a  = co.matrix(q_a);
     dq_a = Ja*co.matrix(ddq[0:N]);
 
-    # PID controller (temporary)
+    L = MathExpressions.centroidal_momentum(q_a, dq_a);
+    print(L);
+
+    # convert matrices to cvxopt matrix type
+    M  = co.matrix(M);     E   = co.matrix(E);
+    Ja = co.matrix(Ja).T;  dJa = co.matrix(dJa).T;
+
+    # PD controller (temporary)
     kp = 100;  kd = 20;
     u_PD = kp*(q_a - q_d) + kd*(dq_a - dq_d);
     ud = dJa*dq_a - ddq_d + u_PD;
