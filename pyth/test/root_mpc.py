@@ -82,13 +82,13 @@ def main():
     # mpc variables
     num_inputs  = 2;
     num_ssvar   = 2;
-    PH_length   = 4;
+    PH_length   = 5;
     knot_length = 2;
 
-    q0 = [0-0.01, 0, 0, 0];
+    q0 = [0-0.05, 0, 0, 0];
     u0 = [0 for i in range(num_inputs*PH_length)];
 
-    mpc_var = mpc.system('nno', cost, statespace_alip, inputs, num_inputs, num_ssvar, PH_length, knot_length, 0.1);
+    mpc_var = mpc.system('nno', cost, statespace_alip, inputs, num_inputs, num_ssvar, PH_length, knot_length);
     mpc_var.setMinTimeStep(1);
 
     sim_results = mpc_var.sim_root(2, q0, u0, updateFunction, 1);

@@ -167,18 +167,18 @@ class system:
 
         return q;
 
-    def modeuler(self, q0, u):
+    def modeuler(self, q0, u, knot_length=-1):
         N  = self.q_num;
         P  = self.PH;
-        k  = self.k;
         dt = self.dt;
         dt_min = self._dt_min;
         inputs = self.inputs;
-        
-        if (dt >= dt_min):
-            adj = int(dt/dt_min);
-        else:
-            adj = 1;
+
+        if (knot_length == -1):  k = self.k;
+        else:  k = knot_length;
+
+        if (dt >= dt_min):  adj = int(dt/dt_min);
+        else:  adj = 1;
 
         km = k*adj;  dtm = dt/adj;
         q  = [[0 for j in range(2*N)] for i in range(k+1)];
@@ -236,7 +236,7 @@ class system:
 
             # inverse dynamics: lapm -> 3link (digit)
 
-            qlist[i] = self.modeuler(qlist[i-1], ulist[i][:N])[1][1];
+            qlist[i] = self.modeuler(qlist[i-1], ulist[i][:N], 1)[1][1];
 
             if (update != 0):  self.inputs = update(self, qlist[i], ulist[i]);
 
