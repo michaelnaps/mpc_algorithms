@@ -183,21 +183,20 @@ def plotRunTime_alip(T, t):
 
     return runTimePlot;
 
-def saveResults_alip(filename, inputs, mpc_var, mpc_results):
+def saveResults_alip(filename, mpc_results):
     with open(filename, "wb") as save_file:
-        pickle.dump([inputs, mpc_var, mpc_results], save_file);
+        pickle.dump(mpc_results, save_file);
         # pickle.dump(mpc_var, save_file);
         # pickle.dump(mpc_results, save_file);
 
+    print("\nResults saved...");
     return 1;
 
 def loadResults_alip(filename):
     with open(filename, "rb") as load_file:
-        inputs, mpc_var, mpc_results = pickle.load(load_file);
-        # mpc_var     = pickle.load(load_file);
-        # mpc_results = pickle.load(load_file);
+        mpc_results = pickle.load(load_file);
 
-    return (inputs, mpc_var, mpc_results);
+    return mpc_results;
 
 def staticPlots_alip(mpc_results):
     T = mpc_results[0];
@@ -220,16 +219,15 @@ def staticPlots_alip(mpc_results):
 
     return 1;
 
-def reportResults_alip(mpc_results, inputs):
+def reportResults_alip(mpc_results, inputs=0):
     T = mpc_results[0];
     q = mpc_results[1];
 
     ans = input("\nSee state, input, and cost plots? [y/n] ");
-    if ans == 'y':
-        staticPlots_alip(mpc_results);
+    if (ans == 'y'):  staticPlots_alip(mpc_results);
 
-    ans = input("\nSee animation? [y/n] ");
-    if ans == 'y':
-        animation_alip(T, q, inputs);
+    if (inputs != 0):
+        ans = input("\nSee animation? [y/n] ");
+        if (ans == 'y'):  animation_alip(T, q, inputs);
 
     return 1;

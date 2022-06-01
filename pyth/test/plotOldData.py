@@ -7,6 +7,6 @@ import nno
 from statespace_alip import *
 import matplotlib.pyplot as plt
 
-(inputs, mpc_var, mpc_results) = loadResults_alip("pickle_data/lapmRun_ngd_p10_k2_t2.pickle");
+mpc_results = loadResults_alip("prevRun_data.pickle");
 
-_ = reportResults_alip(inputs, mpc_var, mpc_results);
+_ = reportResults_alip(mpc_results);
