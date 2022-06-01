@@ -189,7 +189,7 @@ class system:
 
         return (T, q);
 
-    def sim_root(self, sim_time, q0, u0, output=0):
+    def sim_root(self, sim_time, q0, u0, update=0, output=0):
         # mpc variables
         N  = self.u_num;
         P  = self.PH;
@@ -228,5 +228,7 @@ class system:
             # inverse dynamics: lapm -> 3link (digit)
 
             qlist[i] = self.modeuler(qlist[i-1], ulist[i][:N])[1][1];
+
+            if (update != 0):  self.inputs = update(self, qlist[i], ulist[i]);
 
         return (T, qlist, ulist, Clist, nlist, brklist, tlist);
