@@ -156,9 +156,9 @@ def animation_3link(T, q, inputs):
         q2 = q[i][1];
         q3 = q[i][2];
 
-        xAnkle = 0;                              yAnkle = 0;
-        xKnee  = xAnkle + L1*np.cos(q1);        yKnee  = yAnkle + L1*np.sin(q1);
-        xHip   = xKnee + L2*np.cos(q1+q2);     yHip   = yKnee + L2*np.sin(q1+q2);
+        xAnkle = 0;                           yAnkle = 0;
+        xKnee  = xAnkle + L1*np.cos(q1);      yKnee  = yAnkle + L1*np.sin(q1);
+        xHip   = xKnee + L2*np.cos(q1+q2);    yHip   = yKnee + L2*np.sin(q1+q2);
         xHead  = xHip + L3*np.cos(q1+q2+q3);  yHead  = yHip + L3*np.sin(q1+q2+q3);
 
         plt.plot([xAnkle, xKnee], [yAnkle, yKnee]);
