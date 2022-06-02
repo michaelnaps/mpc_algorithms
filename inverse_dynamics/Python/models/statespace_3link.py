@@ -19,7 +19,7 @@ def statespace_3link(q, u, inputs):
     q1 = q[0];  q2 = q[1];  q3 = q[2];
     q4 = q[3];  q5 = q[4];  q6 = q[5];
 
-    u1 = u[0];  u2 = u[1];  u3 = u[2];#  u3 = u[2];
+    u1 = u[0];  u2 = u[1];  u3 = u[2];
     c1 = c[0];  c2 = c[1];  c3 = c[2];
 
     # State Space Equations
@@ -86,6 +86,7 @@ def CoM_3link(q, u, inputs):
     q_com = q1 + q2 + q3;
 
     return (x_com, z_com, q_com);
+    #return (z_com, q_com);
 
 def J_CoM_3link(q, inputs):
     # Constants and State Variables
@@ -134,6 +135,9 @@ def J_CoM_3link(q, inputs):
 
     J  = [J_x_com, J_z_com, J_q_com];
     dJ = [dJ_x_com, dJ_z_com, dJ_q_com];
+
+    #J  = [J_z_com, J_q_com];
+    #dJ = [dJ_z_com, dJ_q_com];
 
     return (J, dJ);
 

@@ -36,7 +36,7 @@ class IDVariables:
         self.m1_state = CoM_3link;
         self.m1_jacob = J_CoM_3link;
 
-        self.m2_desired = [0, 0.5, math.pi/2];
+        self.m2_desired = [0, 0.5, math.pi/2, 0];
         # self.m2_inputs  = inputs_alip;
 
 class InputVariables:
@@ -54,14 +54,14 @@ def main():
     mpc_var = MPCVariables();
 
     # simulation time variables
-    sim_time = 3;  dt = 0.025;
+    sim_time = 0.05;  dt = 0.025;
     Nt = int(sim_time/dt) + 1;
     T = [i*dt for i in range(Nt)];
 
     # state variables
     u = [[0 for j in range(inputs_3link.num_inputs)] for i in range(Nt)];
     q = [[0 for j  in range(2*inputs_3link.num_inputs)] for i in range(Nt)];
-    q[0] = [math.pi/4, math.pi/2, -math.pi/4, 0, 0, 0];
+    q[0] = [0.707584436725356, 1.726423780139082, -0.863211890069541, 0, 0, 0];
 
     for i in range(1,Nt):
         u[i] = id.convert(id_var, q[i-1]);
