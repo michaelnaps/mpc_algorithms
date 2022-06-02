@@ -52,7 +52,7 @@ def statespace_3link(q, u, inputs):
 
     return ([q[3], q[4], q[5], dq[0], dq[1], dq[2]], Mdq, E);
 
-def CoM_3link(q, u, inputs):
+def CoM_3link(q, inputs):
     # Constants and State Variables
     N = inputs.num_inputs;
     g = inputs.gravity_acc;
@@ -60,12 +60,10 @@ def CoM_3link(q, u, inputs):
     m = inputs.joint_masses;
     L = inputs.link_lengths;
 
-    m1 = m[0];      m2 = m[1];      m3 = m[2];
-    L1 = L[0];      L2 = L[1];      L3 = L[2];
-    r1 = L1/2;      r2 = L2/2;      r3 = L3/2;
-
+    m1 = m[0];  m2 = m[1];  m3 = m[2];
+    L1 = L[0];  L2 = L[1];  L3 = L[2];
+    r1 = L1/2;  r2 = L2/2;  r3 = L3/2;
     q1 = q[0];  q2 = q[1];  q3 = q[2];
-    q4 = q[3];  q5 = q[4];  q6 = q[5];
 
     # compute center of mass components
     x1 = 0;  z1 = 0;
@@ -96,9 +94,9 @@ def J_CoM_3link(q, inputs):
     m = inputs.joint_masses;
     L = inputs.link_lengths;
 
-    m1 = m[0];      m2 = m[1];      m3 = m[2];
-    L1 = L[0];      L2 = L[1];      L3 = L[2];
-    r1 = L1/2;      r2 = L2/2;      r3 = L3/2;
+    m1 = m[0];  m2 = m[1];  m3 = m[2];
+    L1 = L[0];  L2 = L[1];  L3 = L[2];
+    r1 = L1/2;  r2 = L2/2;  r3 = L3/2;
 
     q1 = q[0];  q2 = q[1];  q3 = q[2];
     q4 = q[3];  q5 = q[4];  q6 = q[5];

@@ -17,26 +17,31 @@ def convert(id_var, q):
     m1_jacobian = id_var.m1_jacob;
 
     # initial guess and zero matrices
-    Z  = co.matrix([0 for i in range(N+1)]);
-    Z3 = co.matrix([[Z], [Z], [Z], [Z]]);
+    Z  = co.matrix([0 for i in range(N)]);
+    Z3 = co.matrix([[Z], [Z], [Z]]);
+    I = co.matrix([[float(i==j) for j in range(N)] for i in range(N)]);
     u_model1 = [0, 0, 0];
 
     (_, M, E) = m1_dynamics(q, u_model1, m1_inputs);
-    q_a = m1_state(q, u_model1, m1_inputs);
+    q_a = m1_state(q, m1_inputs);
     (Ja, dJa) = m1_jacobian(q, m1_inputs);
 
     # convert matrices to cvxopt matrix type
-    M  = co.matrix(M);     E   = co.matrix(E);
-    Ja = co.matrix(Ja).T;  dJa = co.matrix(dJa).T;
+    M = co.matrix(M);  J_a  = co.matrix(Ja).T;
+    E = co.matrix(E);  dJ_a = co.matrix(dJa).T;
 
     # desired state variables
-    q_d   = co.matrix(id_var.m2_desired);
+    dq    = co.matrix(q[N:2*N]);
+    q_d   = co.matrix(id_var.m2_desired)[:N];
+    L_d   = id_var.m2_desired[N];
     dq_d  = Z;
     ddq_d = Z;
 
     # actual state variables
     q_a  = co.matrix(q_a);
-    dq_a = Ja*co.matrix(q[N:2*N]);
+    dq_a = J_a*co.matrix(q[N:2*N]);
+
+    print(q_a);  print(dq_a);
 
     # centroidal momentum calculations
     np_q = np.array(q[0:N]);
@@ -45,27 +50,23 @@ def convert(id_var, q):
     J_L  = co.matrix(mathexp.J_centroidal_momentum(np_q));
     dJ_L = co.matrix(mathexp.dJ_centroidal_momentum(np_q, np_dq));
 
-    # include centroidal momentum in state vectors
-    q_a = co.matrix([q_a, L]);
-    dq_a = co.matrix([dq_a, 0]);
-    J_a = co.matrix([Ja, J_L.T]);
-    dJ_a = co.matrix([dJa, dJ_L]);
-
-    print(q_a);  print(dq_a);
-    print(q_d);  print(dq_d);
-    print(dJ_a);  print(ddq_d);
-
     # PD controller (temporary)
-    kp = co.matrix(np.diag([200, 50, 100, 20]));
-    kd = co.matrix(np.diag([20, 20, 0, 0]));
+    kp = co.matrix(np.diag([200, 50, 100]));
+    kd = co.matrix(np.diag([20, 20, 0]));
     u_PD = kp*(q_a - q_d) + kd*(dq_a - dq_d);
-    print(u_PD);  print(dJ_a*dq_a);
-    u = dJ_a*dq_a - ddq_d + u_PD;
+    u_q = dJ_a*dq - ddq_d + u_PD;
+    u_L = dJ_L*dq + 20*(L - L_d);
+
+    J = co.matrix([J_a, J_L.T]);
+    u = co.matrix([u_q, u_L]);
+
+    print("L =\n", L);  print("J_L =\n", J_L);  print("dJ_L =\n", dJ_L);
+
+    print("J =\n", J);  print("u =", u)
 
     # QP Optimization
-    I = co.matrix([[float(i==j) for j in range(N)] for i in range(N)]);
-    H = co.matrix([[J_a.T*J_a, Z3], [Z3, Z3]]);
-    g = co.matrix([2*(J_a.T*u), Z]);
+    H = co.matrix([[J.T*J, Z3], [Z3, Z3]]);
+    g = co.matrix([2*(J.T*u), Z]);
     A = co.matrix([[M], [-I]], (3,6));
     b = E;
 
