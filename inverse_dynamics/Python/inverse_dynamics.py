@@ -22,6 +22,12 @@ def convert(id_var, q):
     I = co.matrix([[float(i==j) for j in range(N)] for i in range(N)]);
     u_model1 = [0, 0, 0];
 
+    # current joint states
+    x  = co.matrix(q[:N]);
+    dx = co.matrix(q[N:2*N]);
+
+    print("x =", x);  print("dx =", dx);
+
     (_, M, E) = m1_dynamics(q, u_model1, m1_inputs);
     q_a = m1_state(q, m1_inputs);
     (Ja, dJa) = m1_jacobian(q, m1_inputs);
@@ -31,7 +37,6 @@ def convert(id_var, q):
     E = co.matrix(E);  dJ_a = co.matrix(dJa).T;
 
     # desired state variables
-    dq    = co.matrix(q[N:2*N]);
     q_d   = co.matrix(id_var.m2_desired)[:N];
     L_d   = id_var.m2_desired[N];
     dq_d  = Z;
@@ -41,21 +46,21 @@ def convert(id_var, q):
     q_a  = co.matrix(q_a);
     dq_a = J_a*co.matrix(q[N:2*N]);
 
-    print(q_a);  print(dq_a);
+    print("q_a =", q_a);  print("dq_a =", dq_a);
 
     # centroidal momentum calculations
-    np_q = np.array(q[0:N]);
-    np_dq = np.array(q[N:2*N]);
-    L    = co.matrix(mathexp.centroidal_momentum(np_q, np_dq));
-    J_L  = co.matrix(mathexp.J_centroidal_momentum(np_q));
-    dJ_L = co.matrix(mathexp.dJ_centroidal_momentum(np_q, np_dq));
+    np_x = np.array(x);
+    np_dx = np.array(dx);
+    L    = co.matrix(mathexp.centroidal_momentum(np_x, np_dx));
+    J_L  = co.matrix(mathexp.J_centroidal_momentum(np_x));
+    dJ_L = co.matrix(mathexp.dJ_centroidal_momentum(np_x, np_dx));
 
     # PD controller (temporary)
     kp = co.matrix(np.diag([200, 50, 100]));
     kd = co.matrix(np.diag([20, 20, 0]));
     u_PD = kp*(q_a - q_d) + kd*(dq_a - dq_d);
-    u_q = dJ_a*dq - ddq_d + u_PD;
-    u_L = dJ_L*dq + 20*(L - L_d);
+    u_q = dJ_a*dx - ddq_d + u_PD;
+    u_L = dJ_L*dx + 20*(L - L_d);
 
     J = co.matrix([J_a, J_L.T]);
     u = co.matrix([u_q, u_L]);
@@ -70,7 +75,10 @@ def convert(id_var, q):
     A = co.matrix([[M], [-I]], (3,6));
     b = E;
 
-    # print(H, g, A, b)
+    print("H =\n", H);
+    print("g =\n", g);
+    print("A =\n", A);
+    print("b =\n", b);
 
     Aie = None;
     bie = None;
@@ -79,5 +87,7 @@ def convert(id_var, q):
     ub =  3000*co.matrix(umax);
 
     u_model1 = opt.qp(H, g, Aie, bie, A, b)['x'][3:6];
+
+    print("u_result =", u_model1);
 
     return [u_model1[i] for i in range(N)];

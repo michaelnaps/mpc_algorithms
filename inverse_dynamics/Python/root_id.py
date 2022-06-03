@@ -32,11 +32,10 @@ class IDVariables:
     def __init__(self, m1_inputs):
         self.model1   = m1_inputs;
         self.m1_dyn   = statespace_3link;
-        self.m1_Jdim  = 3;
         self.m1_state = CoM_3link;
         self.m1_jacob = J_CoM_3link;
 
-        self.m2_desired = [0, 0.95, math.pi/2, 0];
+        self.m2_desired = [0, 1, math.pi/2, 0];
         # self.m2_inputs  = inputs_alip;
 
 class InputVariables:
@@ -45,7 +44,7 @@ class InputVariables:
         self.gravity_acc          = -9.81;
         self.damping_coefficients = [0, 0, 0];
         self.joint_masses         = [5, 5, 30];
-        self.link_lengths         = [0.4, 0.4, 0.6];
+        self.link_lengths         = [0.5, 0.5, 0.6];
         self.input_bounds         = [1, 1, 1];
 
 def main():

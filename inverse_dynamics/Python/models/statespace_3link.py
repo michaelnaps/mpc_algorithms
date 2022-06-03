@@ -55,8 +55,6 @@ def statespace_3link(q, u, inputs):
 def CoM_3link(q, inputs):
     # Constants and State Variables
     N = inputs.num_inputs;
-    g = inputs.gravity_acc;
-    c = inputs.damping_coefficients;
     m = inputs.joint_masses;
     L = inputs.link_lengths;
 
