@@ -2,6 +2,7 @@ import numpy as np
 import cvxopt as co
 import cvxopt.solvers as opt
 from MathFunctionsCpp import MathExpressions
+import math
 
 def convert(id_var, q):
     mathexp = MathExpressions();
@@ -80,8 +81,44 @@ def convert(id_var, q):
     print("A =\n", A);
     print("b =\n", b);
 
-    Aie = None;
-    bie = None;
+    # control barrier functions
+    # Aie = None;
+    # bie = None;
+    gm1 = 2;  gm2 = 2;
+
+    h_con = -co.matrix([
+        q_a[0] + 0.1,
+        -q_a[0] + 0.1,
+        q_a[1] - 0.5,
+        q_a[1] + 1,
+        q_a[2] - math.pi/2 + 1,
+        -q_a[2] + math.pi/2 + 1
+    ]);
+    J_con = -co.matrix([
+        J_a[0,:],
+        -J_a[0,:],
+        J_a[1,:],
+        -J_a[1,:],
+        J_a[2,:],
+        -J_a[2,:],
+    ]);
+    dJ_con = -co.matrix([
+        dJ_a[0,:],
+        -dJ_a[0,:],
+        dJ_a[1,:],
+        -dJ_a[1,:],
+        dJ_a[2,:],
+        -dJ_a[2,:],
+    ]);
+
+    print("h_con =\n", h_con);
+    print("J_con =\n", J_con);
+    print("dJ_con =\n", dJ_con);
+
+    Aie = co.matrix([[J_con], [Z3, Z3]]);
+    bie = -(dJ_con + gm1*J_con)*dx - gm2*(J_con*dx + gm1*h_con);
+
+    print("Aie =\n", Aie);  print("bie =\n", bie)
 
     lb = -3000*co.matrix(umax);
     ub =  3000*co.matrix(umax);

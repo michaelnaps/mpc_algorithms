@@ -53,7 +53,7 @@ def main():
     mpc_var = MPCVariables();
 
     # simulation time variables
-    sim_time = 0.025;  dt = 0.025;
+    sim_time = 1;  dt = 0.025;
     Nt = int(sim_time/dt) + 1;
     T = [i*dt for i in range(Nt)];
 
@@ -65,7 +65,7 @@ def main():
     for i in range(1,Nt):
         u[i] = id.convert(id_var, q[i-1]);
         q[i] = modeuler(mpc_var, q[i-1], u[i], inputs_3link)[1][-1];
-    """
+
     ans = input("\nShow static plots? [y/n] ");
     if ans == 'y':
         statePlot = plotStates_3link(T, q);
@@ -75,6 +75,6 @@ def main():
     ans = input("\nShow animation? [y/n] ");
     if ans == 'y':
         animation_3link(T, q, inputs_3link);
-    """
+
 if __name__ == "__main__":
     main();
