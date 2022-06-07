@@ -29,13 +29,15 @@ def convert(id_var, q):
 
     print("x =", x);  print("dx =", dx);
 
-    (_, M, E) = m1_dynamics(q, u_model1, m1_inputs);
+    (_, M, E) = m1_dynamics(q, u_model1, m1_inputs);  print(E);
     q_a = m1_state(q, m1_inputs);
     (Ja, dJa) = m1_jacobian(q, m1_inputs);
 
     # convert matrices to cvxopt matrix type
     M = co.matrix(M);  J_a  = co.matrix(Ja).T;
     E = co.matrix(E);  dJ_a = co.matrix(dJa).T;
+
+    print("J_a =\n", J_a);  print("dJ_a =\n", dJ_a);
 
     # desired state variables
     q_d   = co.matrix(id_var.m2_desired)[:N];
@@ -60,15 +62,17 @@ def convert(id_var, q):
     kp = co.matrix(np.diag([200, 50, 100]));
     kd = co.matrix(np.diag([20, 20, 0]));
     u_PD = kp*(q_a - q_d) + kd*(dq_a - dq_d);
+
     u_q = dJ_a*dx - ddq_d + u_PD;
     u_L = dJ_L*dx + 20*(L - L_d);
 
-    J = co.matrix([J_a, J_L.T]);
-    u = co.matrix([u_q, u_L]);
+    J  = co.matrix([J_a, J_L.T]);
+    dJ = co.matrix([dJ_a, dJ_L]);
+    u  = co.matrix([u_q, u_L]);
 
     print("L =\n", L);  print("J_L =\n", J_L);  print("dJ_L =\n", dJ_L);
 
-    print("J =\n", J);  print("u =", u)
+    print("J =\n", J);  print("dJ =\n", dJ);  print("u =\n", u)
 
     # QP Optimization
     H = co.matrix([[J.T*J, Z3], [Z3, Z3]]);
@@ -90,7 +94,7 @@ def convert(id_var, q):
         q_a[0] + 0.1,
         -q_a[0] + 0.1,
         q_a[1] - 0.5,
-        q_a[1] + 1,
+        -q_a[1] + 1,
         q_a[2] - math.pi/2 + 1,
         -q_a[2] + math.pi/2 + 1
     ]);

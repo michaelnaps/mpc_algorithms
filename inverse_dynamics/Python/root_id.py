@@ -35,7 +35,7 @@ class IDVariables:
         self.m1_state = CoM_3link;
         self.m1_jacob = J_CoM_3link;
 
-        self.m2_desired = [0, 1, math.pi/2, 0];
+        self.m2_desired = [0, 0.95, math.pi/2, 0];
         # self.m2_inputs  = inputs_alip;
 
 class InputVariables:
@@ -60,12 +60,12 @@ def main():
     # state variables
     u = [[0 for j in range(inputs_3link.num_inputs)] for i in range(Nt)];
     q = [[0 for j  in range(2*inputs_3link.num_inputs)] for i in range(Nt)];
-    q[0] = [0.707584436725356, 1.726423780139082, -0.863211890069541, 0, 0, 0];
+    q[0] = [0.707584436725356, 1.726423780139082, -0.863211890069541, 0.1, 0.1, 0.1];
 
     for i in range(1,Nt):
         u[i] = id.convert(id_var, q[i-1]);
         q[i] = modeuler(mpc_var, q[i-1], u[i], inputs_3link)[1][-1];
-
+    """
     ans = input("\nShow static plots? [y/n] ");
     if ans == 'y':
         statePlot = plotStates_3link(T, q);
@@ -75,6 +75,6 @@ def main():
     ans = input("\nShow animation? [y/n] ");
     if ans == 'y':
         animation_3link(T, q, inputs_3link);
-
+    """
 if __name__ == "__main__":
     main();
