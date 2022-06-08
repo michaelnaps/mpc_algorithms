@@ -10,7 +10,7 @@ def statespace_3link(q, u, inputs):
     c = inputs.damping_coefficients;
     m = inputs.joint_masses;
     L = inputs.link_lengths;
-
+    
     m1 = m[0];      m2 = m[1];      m3 = m[2];
     L1 = L[0];      L2 = L[1];      L3 = L[2];
     r1 = L1/2;      r2 = L2/2;      r3 = L3/2;

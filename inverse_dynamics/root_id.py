@@ -53,7 +53,7 @@ def main():
     mpc_var = MPCVariables();
 
     # simulation time variables
-    sim_time = 1;  dt = 0.025;
+    sim_time = 0.025;  dt = 0.025;
     Nt = int(sim_time/dt) + 1;
     T = [i*dt for i in range(Nt)];
 
