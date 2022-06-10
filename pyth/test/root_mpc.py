@@ -9,8 +9,8 @@ import matplotlib.pyplot as plt
 
 def Cq(qd, q):
     Cq = [
-        100*(qd[0] - q[0])**2 +  1*(qd[2] - q[2])**2,
-         10*(qd[1] - q[1])**2 +    (qd[3] - q[3])**2
+        100*(qd[0] - q[0])**2,
+         10*(qd[1] - q[1])**2
     ];
 
     return np.sum(Cq);
@@ -85,7 +85,7 @@ def main():
     PH_length   = 5;
     knot_length = 2;
 
-    q0 = [0-0.05, 0, 0, 0];
+    q0 = [0-0.05, 0];
     u0 = [0 for i in range(num_inputs*PH_length)];
 
     mpc_var = mpc.system('nno', cost, statespace_alip, inputs, num_inputs, num_ssvar, PH_length, knot_length);

@@ -10,19 +10,17 @@ def statespace_alip(q, u, inputs):
 
     # state variables
     x  = q[0];  Lc  = q[1];
-    dx = q[2];  dLc = q[3];
 
     # input/disturbance variables
     ua = u[0];    L  = u[1];
-#    ud = u_d[0];  Ld = u_d[1];
 
     # solve for statespace
     ddq = [
-        L/(m*H) - Lc/(m*H),# + ud/(m*H),
+        L/(m*H) - Lc/(m*H),
         ua + m*g*x
     ];
 
-    return [dx, dLc, ddq[0], ddq[1]];
+    return [ddq[0], ddq[1]];
 
 def animation_alip(T, q, inputs):
     # sim variables
@@ -82,16 +80,12 @@ def plotStates_alip(T, q):
 
     # CoM x-distance
     statePlot[0].plot(T, qT[0], label="x");
-    statePlot[0].plot(T, qT[2], label="dx");
     statePlot[0].set_title("Position (x)");
-    statePlot[0].legend();
     statePlot[0].grid();
 
     # angular momentum
     statePlot[1].plot(T, qT[1], label="Lc");
-    statePlot[1].plot(T, qT[3], label="dLc");
     statePlot[1].set_title("Angular Momentum (L)");
-    statePlot[1].legend();
     statePlot[1].grid();
 
     return statePlot;

@@ -49,6 +49,7 @@ class InputVariables:
 def main():
     inputs_3link = InputVariables();
     id_var = IDVariables(inputs_3link);
+    mpc_var = MPCVariables();
 
     # simulation time variables
     sim_time = 1;  dt = 0.025;
@@ -58,7 +59,7 @@ def main():
     # state variables
     u = [[0 for j in range(2*inputs_3link.num_inputs)] for i in range(Nt)];
     q = [0 for i in range(Nt)];
-    q[0] = [0.707584436725356, 1.726423780139082, -0.863211890069541, 0.1, 0.1, 0.1];
+    q[0] = [0.707584436725356, 1.726423780139082, -0.863211890069541, 0, 0, 0];
 
     for i in range(1,Nt):
         u[i] = id.convert(id_var, q[i-1], u[i-1]);
