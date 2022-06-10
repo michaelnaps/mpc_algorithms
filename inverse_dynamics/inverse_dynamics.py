@@ -1,10 +1,11 @@
 import numpy as np
-import cvxopt as co
-import cvxopt.solvers as opt
+# import cvxopt as co
+# import cvxopt.solvers as opt
+from qpsolvers import solve_qp
 from MathFunctionsCpp import MathExpressions
 import math
 
-def convert(id_var, q):
+def convert(id_var, q, u0):
     mathexp = MathExpressions();
 
     # model variables
@@ -18,117 +19,138 @@ def convert(id_var, q):
     m1_jacobian = id_var.m1_jacob;
 
     # initial guess and zero matrices
-    Z  = co.matrix([0 for i in range(N)]);
-    Z3 = co.matrix([[Z], [Z], [Z]]);
-    I = co.matrix([[float(i==j) for j in range(N)] for i in range(N)]);
+    Z = np.array([0 for i in range(N)]);
+    Z3 = np.array([[0 for j in range(N)] for i in range(N)]);
+    I = np.array([[float(i==j) for j in range(N)] for i in range(N)]);
     u_model1 = [0, 0, 0];
 
     # current joint states
-    x  = co.matrix(q[:N]);
-    dx = co.matrix(q[N:2*N]);
+    x  = np.array(q[:N]);     x.shape  = (N,1);
+    dx = np.array(q[N:2*N]);  dx.shape = (N,1);
 
-    print("x =", x);  print("dx =", dx);
+    # print("\nx =", x);  # print("\ndx =", dx);
 
-    (_, M, E) = m1_dynamics(q, u_model1, m1_inputs);  print(E);
-    q_a = m1_state(q, m1_inputs);
-    (Ja, dJa) = m1_jacobian(q, m1_inputs);
+    M = np.array(m1_dynamics(q, u_model1, m1_inputs)[1]);
+    q_a = np.array(m1_state(q, m1_inputs));
+    (J_a, dJ_a) = np.array(m1_jacobian(q, m1_inputs));
 
-    # convert matrices to cvxopt matrix type
-    M = co.matrix(M);  J_a  = co.matrix(Ja).T;
-    E = co.matrix(E);  dJ_a = co.matrix(dJa).T;
+    # calculate the drift vector
+    C = Z3;
+    C = C + mathexp.Cmat_1(x, dx);
+    C = C + mathexp.Cmat_2(x, dx);
+    C = C + mathexp.Cmat_3(x, dx);
+    C = np.matmul(C, dx);
+    G = mathexp.Ge_vec(x);
+    E = -(C + G);
 
-    print("J_a =\n", J_a);  print("dJ_a =\n", dJ_a);
+    # print("\nJ_a =\n", J_a);  # print("\ndJ_a =\n", dJ_a);
 
     # desired state variables
-    q_d   = co.matrix(id_var.m2_desired)[:N];
+    q_d   = np.array(id_var.m2_desired)[:N];
+    q_d.shape = (N,1);
     L_d   = id_var.m2_desired[N];
-    dq_d  = Z;
-    ddq_d = Z;
+    dq_d  = Z;  dq_d.shape  = (N,1);
+    ddq_d = Z;  ddq_d.shape = (N,1);
 
     # actual state variables
-    q_a  = co.matrix(q_a);
-    dq_a = J_a*co.matrix(q[N:2*N]);
+    q_a  = np.array(m1_state(q, m1_inputs));  q_a.shape = (N,1);
+    dq_a = np.matmul(J_a, dx);
 
-    print("q_a =", q_a);  print("dq_a =", dq_a);
+    # print("\nq_a =\n", q_a);  # print("\ndq_a =\n", dq_a);
 
     # centroidal momentum calculations
-    np_x = np.array(x);
-    np_dx = np.array(dx);
-    L    = co.matrix(mathexp.centroidal_momentum(np_x, np_dx));
-    J_L  = co.matrix(mathexp.J_centroidal_momentum(np_x));
-    dJ_L = co.matrix(mathexp.dJ_centroidal_momentum(np_x, np_dx));
+    L    = mathexp.centroidal_momentum(x, dx);
+    J_L  = mathexp.J_centroidal_momentum(x);
+    dJ_L = mathexp.dJ_centroidal_momentum(x, dx);
 
     # PD controller (temporary)
-    kp = co.matrix(np.diag([200, 50, 100]));
-    kd = co.matrix(np.diag([20, 20, 0]));
-    u_PD = kp*(q_a - q_d) + kd*(dq_a - dq_d);
+    kp = np.diag([200, 50, 100]);
+    kd = np.diag([20, 20, 0]);
+    u_PD = np.matmul(kp, (q_a - q_d)) + np.matmul(kd, (dq_a - dq_d));
 
-    u_q = dJ_a*dx - ddq_d + u_PD;
-    u_L = dJ_L*dx + 20*(L - L_d);
+    u_q = np.matmul(dJ_a, dx) - ddq_d + u_PD;
+    u_L = np.matmul(dJ_L, dx) + 20*(L - L_d);
 
-    J  = co.matrix([J_a, J_L.T]);
-    dJ = co.matrix([dJ_a, dJ_L]);
-    u  = co.matrix([u_q, u_L]);
+    # print("\nu_PD =\n", u_PD);
+    # print("\nu_q =\n", u_q);
+    # print("\nu_L =\n", u_L);
 
-    print("L =\n", L);  print("J_L =\n", J_L);  print("dJ_L =\n", dJ_L);
+    J  = np.vstack((J_a, J_L.T));
+    dJ = np.vstack((dJ_a, dJ_L));
+    u  = np.append(u_q, u_L);  u.shape = (len(u), 1);
 
-    print("J =\n", J);  print("dJ =\n", dJ);  print("u =\n", u)
+
+    # print("\nL =\n", L);  # print("\nJ_L =\n", J_L);  # print("\ndJ_L =\n", dJ_L);
+
+    # print("\nJ =\n", J);  # print("\ndJ =\n", dJ);  # print("\nu =\n", u)
 
     # QP Optimization
-    H = co.matrix([[J.T*J, Z3], [Z3, Z3]]);
-    g = co.matrix([2*(J.T*u), Z]);
-    A = co.matrix([[M], [-I]], (3,6));
-    b = E;
+    H = np.vstack((np.append(np.matmul(J.transpose(), J), Z3, axis=1), np.append(Z3, Z3, axis=1)));
+    g = np.append(2*np.matmul(J.transpose(), u), np.zeros(N));  g.shape = (len(g),);
+    A = np.append(M, -I, axis=1);
+    b = E;  b.shape = (len(b),);
 
-    print("H =\n", H);
-    print("g =\n", g);
-    print("A =\n", A);
-    print("b =\n", b);
+    # print("\nH =\n", H);
+    # print("\ng =\n", g);
+    # print("\nA =\n", A);
+    # print("\nb =\n", b);
 
     # control barrier functions
     # Aie = None;
     # bie = None;
     gm1 = 2;  gm2 = 2;
 
-    h_con = -co.matrix([
+    h_con = -np.array([
         q_a[0] + 0.1,
         -q_a[0] + 0.1,
         q_a[1] - 0.5,
         -q_a[1] + 1,
         q_a[2] - math.pi/2 + 1,
         -q_a[2] + math.pi/2 + 1
+    ]);  h_con.shape = (len(h_con), 1);
+    J_con = -np.array([
+        J_a[0],
+        -J_a[0],
+        J_a[1],
+        -J_a[1],
+        J_a[2],
+        -J_a[2]
     ]);
-    J_con = -co.matrix([
-        J_a[0,:],
-        -J_a[0,:],
-        J_a[1,:],
-        -J_a[1,:],
-        J_a[2,:],
-        -J_a[2,:],
-    ]);
-    dJ_con = -co.matrix([
-        dJ_a[0,:],
-        -dJ_a[0,:],
-        dJ_a[1,:],
-        -dJ_a[1,:],
-        dJ_a[2,:],
-        -dJ_a[2,:],
+    dJ_con = -np.array([
+        dJ_a[0],
+        -dJ_a[0],
+        dJ_a[1],
+        -dJ_a[1],
+        dJ_a[2],
+        -dJ_a[2]
     ]);
 
-    print("h_con =\n", h_con);
-    print("J_con =\n", J_con);
-    print("dJ_con =\n", dJ_con);
+    # print("\nh_con =\n", h_con);  # print("\nJ_con =\n", J_con);  # print("\ndJ_con =\n", dJ_con);
 
-    Aie = co.matrix([[J_con], [Z3, Z3]]);
-    bie = -(dJ_con + gm1*J_con)*dx - gm2*(J_con*dx + gm1*h_con);
+    lb = -np.array([2000, 2000, 2000, 40, 1000, 500]);
+    lb.shape = (len(lb),);
+    ub = -lb;
 
-    print("Aie =\n", Aie);  print("bie =\n", bie)
+    # print("\nlb =\n", lb);  # print("\nub =\n", ub)
 
-    lb = -3000*co.matrix(umax);
-    ub =  3000*co.matrix(umax);
+    G = np.append(J_con, np.transpose(np.append(Z3, Z3, axis=1)), axis=1);
+    h = -np.matmul((dJ_con + gm1*J_con), dx) - gm2*(np.matmul(J_con, dx) + gm1*h_con);
+    h.shape = (len(h),)
 
-    u_model1 = opt.qp(H, g, Aie, bie, A, b)['x'][3:6];
+    # print("\nG =\n", G);  # print("\nh =\n", h)
 
-    print("u_result =", u_model1);
+    print("\nMatrices Dimensions:");
+    print("H.shape =", H.shape);
+    print("g.shape =", g.shape);
+    print("G.shape =", G.shape);
+    print("h.shape =", h.shape);
+    print("A.shape =", A.shape);
+    print("b.shape =", b.shape);
+    print("lb.shape =", lb.shape);
+    print("ub.shape =", ub.shape);
+
+    u_model1 = solve_qp(H, g, G, h, A, b, lb, ub, solver='cvxopt')[N:2*N];
+
+    print("\nu_result =", u_model1);
 
     return [u_model1[i] for i in range(N)];

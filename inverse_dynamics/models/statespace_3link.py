@@ -41,7 +41,6 @@ def statespace_3link(q, u, inputs):
         L2*g*m3*np.cos(q1 + q2) + c1*L1*q4 - u1 + g*m2*r2*np.cos(q1 + q2) + L1*g*m2*np.cos(q1) + L1*g*m3*np.cos(q1) + g*m1*r1*np.cos(q1) + g*m3*r3*np.cos(q1 + q2 + q3) - L1*m3*r3*q5**2*np.sin(q2 + q3) - L1*m3*r3*q6**2*np.sin(q2 + q3) - L1*L2*m3*q5**2*np.sin(q2) - L1*m2*r2*q5**2*np.sin(q2) - L2*m3*r3*q6**2*np.sin(q3) - 2*L1*m3*r3*q4*q5*np.sin(q2 + q3) - 2*L1*m3*r3*q4*q6*np.sin(q2 + q3) - 2*L1*m3*r3*q5*q6*np.sin(q2 + q3) - 2*L1*L2*m3*q4*q5*np.sin(q2) - 2*L1*m2*r2*q4*q5*np.sin(q2) - 2*L2*m3*r3*q4*q6*np.sin(q3) - 2*L2*m3*r3*q5*q6*np.sin(q3)
     ];
 
-    M   = np.flip(M);
     Mdq = [M[2], M[1], M[0]];
     Mdq = [[-Mdq[i][j] for j in range(N)] for i in range(N)]
 
