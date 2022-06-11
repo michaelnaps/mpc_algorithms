@@ -24,7 +24,9 @@ def statespace_3link(q, u, inputs):
 
     # State Space Equations
     # Equation: E*ddq = M (rearrange for ddq)
-    Mdq = MassMatrix_3link(q, u, inputs);
+    M = MassMatrix_3link(q, u, inputs);
+    M = [M[2], M[1], M[0]];
+    M = [[-M[i][j] for j in range(N)] for i in range(N)];
 
     E = [
         -(g*m3*r3*np.cos(q1 + q2 + q3) + c3*L3*q6 - u3 + L1*m3*r3*q4**2*np.sin(q2 + q3) + L2*m3*r3*q4**2*np.sin(q3) + L2*m3*r3*q5**2*np.sin(q3) + 2*L2*m3*r3*q4*q5*np.sin(q3)),
@@ -32,10 +34,7 @@ def statespace_3link(q, u, inputs):
         L2*g*m3*np.cos(q1 + q2) + c1*L1*q4 - u1 + g*m2*r2*np.cos(q1 + q2) + L1*g*m2*np.cos(q1) + L1*g*m3*np.cos(q1) + g*m1*r1*np.cos(q1) + g*m3*r3*np.cos(q1 + q2 + q3) - L1*m3*r3*q5**2*np.sin(q2 + q3) - L1*m3*r3*q6**2*np.sin(q2 + q3) - L1*L2*m3*q5**2*np.sin(q2) - L1*m2*r2*q5**2*np.sin(q2) - L2*m3*r3*q6**2*np.sin(q3) - 2*L1*m3*r3*q4*q5*np.sin(q2 + q3) - 2*L1*m3*r3*q4*q6*np.sin(q2 + q3) - 2*L1*m3*r3*q5*q6*np.sin(q2 + q3) - 2*L1*L2*m3*q4*q5*np.sin(q2) - 2*L1*m2*r2*q4*q5*np.sin(q2) - 2*L2*m3*r3*q4*q6*np.sin(q3) - 2*L2*m3*r3*q5*q6*np.sin(q3)
     ];
 
-    E = np.flip(E);
-    Edq = [-E[i] for i in range(N)];
-
-    dq = np.linalg.solve(Mdq, Edq);
+    dq = -1*np.linalg.solve(M, E);
 
     return [q[3], q[4], q[5], dq[0], dq[1], dq[2]];
 
@@ -72,7 +71,7 @@ def MassMatrix_3link(q, u, inputs):
     M[2][2] = -I3 - m3*r3**2 - L1*m3*r3*np.cos(q2 + q3) - L2*m3*r3*np.cos(q3);
 
     Mdq = [M[2], M[1], M[0]];
-    Mdq = [[-Mdq[i][j] for j in range(N)] for i in range(N)]
+    Mdq = [[-Mdq[i][j] for j in range(N)] for i in range(N)];
 
     return Mdq;
 

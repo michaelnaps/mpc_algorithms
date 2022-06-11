@@ -25,7 +25,7 @@ def Cu(u, du, inputs):
 
     Cu = [
         1e-5*(du[0])**2 - np.log(umax[0]**2 - u[0]**2) + np.log(umax[0]**2),
-        1e-5*(du[1])**2 # - np.log(umax[1]**2 - u[1]**2) + np.log(umax[1]**2)
+        1e-5*(du[1])**2# + (u[1]/umax[1])**2 #- np.log(umax[1]**2 - u[1]**2) + np.log(umax[1]**2)
     ];
 
     return np.sum(Cu);
@@ -70,11 +70,10 @@ def cost(mpc_var, q, u, inputs):
 class InputsALIP:
     def __init__(self, prev_input):
         self.gravity_acc          = -9.81;
-        self.damping_coefficients = [0];
-        self.joint_masses         = [80];
+        self.joint_masses         = [40];
         self.link_lengths         = [0.95];
         self.CP_maxdistance       = 0.1;
-        self.input_bounds         = [200, 200];
+        self.input_bounds         = [100, 500];
         self.prev_input           = prev_input;
 
 class Inputs3link:
@@ -84,7 +83,6 @@ class Inputs3link:
         self.damping_coefficients = [0, 0, 0];
         self.joint_masses         = [5, 5, 30];
         self.link_lengths         = [0.5, 0.5, 0.6];
-        self.input_bounds         = [1, 1, 1];
 
 class IDVariables:
     def __init__(self, m1_inputs):
@@ -103,13 +101,13 @@ if __name__ == "__main__":
     # mpc variable parameters
     num_inputs  = 2;
     num_ssvar   = 2;
-    PH_length   = 5;
-    knot_length = 2;
+    PH_length   = 10;
+    knot_length = 1;
     time_step   = 0.025;
 
-    # initial state and input
-    q0 = [0-0.05, 0];
-    u0 = [0 for i in range(num_inputs*PH_length)];
+    # desired state constants
+    height = 0.95;
+    theta  = math.pi/2;
 
     # MPC class variable
     mpc_alip = mpc.system('nno', cost, statespace_alip, inputs_alip, num_inputs, num_ssvar, PH_length, knot_length, time_step);
@@ -128,14 +126,10 @@ if __name__ == "__main__":
     u_3link = [[0 for j in range(N_3link)] for i in range(Nt)];
 
     # initial state
-    q_3link[0] = [0.707584436725356, 1.726423780139082, -0.863211890069541, 0.1, 0.1, 0.1];
-
-    # desired state constants
-    height = 0.95;
-    theta  = math.pi/2;
+    q_3link[0] = [0.357571103645510, 2.426450446298773, -1.213225223149386, 0, 0, 0];
 
     # used only for modeuler function
-    mpc_3link = mpc.system('nno', cost, statespace_3link, inputs_3link, N_3link, 2*N_3link, 1, 1, time_step);
+    sim_3link = mpc.system('nno', cost, statespace_3link, inputs_3link, N_3link, 2*N_3link, 1, 1, time_step);
 
     # simulation loop
     for i in range(1,Nt):
@@ -149,17 +143,19 @@ if __name__ == "__main__":
         print("q_alip =\n", q_alip[i-1]);
 
         # solve the MPC problem w/ warmstarting
+        inputs_alip = InputsALIP(u_alip[i-1][:num_inputs]);
+        mpc_alip.setModelInputs(inputs_alip);
         (u_alip[i], C, n, brk, elapsed) = mpc_alip.solve(q_alip[i-1], u_alip[i-1]);
 
         print("u_alip =\n", u_alip[i][:2]);
         print("COST =", C);
 
         # convert input: alip -> 3link
-        q_desired = [u_alip[1][0], height, theta, u_alip[1][1]];
+        q_desired = [u_alip[i][0], height, theta, u_alip[i][1]];
         u_3link[i] = id.convert(id_3link, q_desired, q_3link[i-1], u_3link[i-1]);
 
         print("u_3link =\n", u_3link[i]);
 
-        q_3link[i] = mpc_3link.modeuler(q_3link[i-1], u_3link[i], 1)[1][-1];
+        q_3link[i] = sim_3link.modeuler(q_3link[i-1], u_3link[i], 1)[1][-1];
 
         print("q_3link =\n", q_3link[i]);

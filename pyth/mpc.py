@@ -27,6 +27,10 @@ class system:
 
         self._dt_min = 1e-3;
 
+    def setModelInputs(self, user_inputs):
+        self.inputs = user_inputs;
+        return 1;
+
     def setMinTimeStep(self, min_time_step):
         self._dt_min = min_time_step;
         return 1;
