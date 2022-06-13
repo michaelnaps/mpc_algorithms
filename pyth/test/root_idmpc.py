@@ -114,13 +114,16 @@ if __name__ == "__main__":
     mpc_alip.setMinTimeStep(1);
 
     # simulation variables
-    sim_time = 1;  sim_dt = time_step;
-    Nt = int(sim_time/time_step) + 1;
+    sim_time = 0.6;  sim_dt = time_step;
+    Nt = round(sim_time/time_step + 1);
     T = [i*sim_dt for i in range(Nt)];
+
+    print(Nt);  print(T);
 
     # loop variables
     N_3link = inputs_3link.num_inputs;
     q_alip  = [[0 for i in range(num_ssvar)] for i in range(Nt)];
+    q_desired = [[0 for i in range(2*num_ssvar)] for i in range(Nt)];
     q_3link = [[0 for i in range(2*N_3link)] for i in range(Nt)];
     u_alip  = [[0 for j in range(num_inputs*PH_length)] for i in range(Nt)];
     u_3link = [[0 for j in range(N_3link)] for i in range(Nt)];
@@ -150,12 +153,24 @@ if __name__ == "__main__":
         print("u_alip =\n", u_alip[i][:2]);
         print("COST =", C);
 
+        if (math.isnan(C)):
+            break;
+
         # convert input: alip -> 3link
-        q_desired = [u_alip[i][0], height, theta, u_alip[i][1]];
-        u_3link[i] = id.convert(id_3link, q_desired, q_3link[i-1], u_3link[i-1]);
+        q_desired[i] = [u_alip[i][0], height, theta, u_alip[i][1]];
+        u_3link[i] = id.convert(id_3link, q_desired[i], q_3link[i], u_3link[i-1]);
 
         print("u_3link =\n", u_3link[i]);
 
         q_3link[i] = sim_3link.modeuler(q_3link[i-1], u_3link[i], 1)[1][-1];
 
         print("q_3link =\n", q_3link[i]);
+
+    print(q_alip[0]);
+    print(q_3link[0]);
+
+    desiredStatePlot = plotStates_alip(T, [[q_desired[i][0], q_desired[i][3]] for i in range(Nt)]);
+    statePlot = plotStates_alip(T, q_alip);
+    plt.show();
+
+    animation_3link(T, q_3link, inputs_3link);
