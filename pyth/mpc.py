@@ -27,6 +27,10 @@ class system:
 
         self._dt_min = 1e-3;
 
+        self._alpha = 1;
+        self._bkl_shrink = 0.1;
+        self._a_method = 'none';
+
     def setModelInputs(self, user_inputs):
         self.inputs = user_inputs;
         return 1;
@@ -38,10 +42,31 @@ class system:
     def getMinTimeStep(self):
         return self._dt_min;
 
+    def setAlpha(self, a):
+        self._alpha = a;
+        return 1;
+
+    def getAlpha(self):
+        return self._alpha;
+
+    def setAlphaMethod(self, method, shrink=0.1):
+        self._a_method = method;
+        self._bkl_shink = shrink;
+        return 1;
+
+    def getAlphaMethod(self):
+        return self._a_method;
+
     def solve(self, q0, uinit, output=0):
-        t = time.time();
-        (u, C, n, brk) = self.nno(q0, uinit, output);
-        elapsed = 1000*(time.time() - t);
+
+        if (self.solver == 'nno'):
+            t = time.time();
+            (u, C, n, brk) = self.nno(q0, uinit, output);
+            elapsed = 1000*(time.time() - t);
+        if (self.solver == 'ngd'):
+            t = time.time();
+            (u, C, n, brk) = self.ngd(q0, uinit, output);
+            elapsed = 1000*(time.time() - t);
 
         return (u, C, n, brk, elapsed);
 
@@ -109,6 +134,71 @@ class system:
 
         return (un, Cn, count, brk);
 
+    def ngd(self, q0, uinit, output=0):
+        # MPC constants initialization
+        N      = self.u_num;
+        P      = self.PH;
+        eps    = self.zero;
+        imax   = self.n_max;
+        inputs = self.inputs;
+
+        # step size coefficient choice
+        alpha = self._alpha;
+        a_method = self._a_method;
+
+        # loop variable setup
+        uc = uinit;
+        q  = self.simulate(q0, uc);
+        Cc = self.cost(self, q, uc, inputs);
+        un = uc;  Cn = Cc;
+
+        if output:
+            print("Opt. Start:");
+            print("Initial Cost: ", Cc);
+
+        count = 1;
+        brk = -2*np.isnan(Cc);
+        while (Cc > eps):
+            # calculate the gradient around the current input
+            g = self.gradient(q0, uc);
+            gnorm = np.sqrt(np.sum([g[i]**2 for i in range(N)]));
+
+            # check if gradient-norm is an approx. of zero
+            if (gnorm < eps):
+                brk = 1;
+                break;
+
+            # calculate the next iteration of the input
+            if (a_method == "bkl"):  (un, Cn, _, _, _) = self.alpha_bkl(g, Cc, q0, uc);
+            else:
+                un = [uc[i] - alpha*g[i] for i in range(P*N)];
+                q  = self.simulate(q0, un);
+                Cn = self.cost(self, q, un, inputs);
+
+            count += 1;  # iterate the loop counter
+
+            if (np.isnan(Cn)):
+                brk = -2;
+                break;
+
+            if output:
+                # print("Gradient:  ", g);
+                print("|g|:          ", gnorm);
+                print("New Cost:     ", Cn);
+                print("New Input: ");
+                for i in range(0, N*P, N):
+                    print("              ", un[i], un[i+1]);
+
+            # break conditions
+            if (count > imax):
+                brk = -1;
+                break;
+
+            # update loop variables
+            uc = un;  Cc = Cn;
+
+        return (un, Cn, count, brk);
+
     def gradient(self, q0, u, rownum=1):
         # variable setup
         N = self.u_num*self.PH;
@@ -150,6 +240,31 @@ class system:
 
         return H;
 
+    def alpha_bkl(self, g, C, q0, uc):
+        P = self.PH;
+        N = self.u_num;
+        eps = self.zero;
+        a = self._alpha;
+        w = self._bkl_shrink;
+        inputs = self.inputs;
+
+        count = 0;
+        brk = -1;
+        while ((count != 1000) & (a > eps)):
+            ubkl = [uc[i] - a*g[i] for i in range(P*N)];
+            q  = self.simulate(q0, ubkl);
+            Cbkl = self.cost(self, q, ubkl, inputs);
+            count += 1;
+
+            if (Cbkl < C):
+                brk = 0;
+                break;
+
+            a *= (1 - w);
+
+        print(a);
+        return (ubkl, Cbkl, a, count, brk);
+
     def simulate(self, q0, u):
         # mpc variables
         N  = self.q_num;
@@ -158,9 +273,6 @@ class system:
 
         # reshape input variable
         uc = np.reshape(u, [P, Nu]);
-
-        # disturbance variable stand-in
-        u_d = [0 for j in range(Nu)];
 
         # Cost of each input over the designated windows
         # simulate over the prediction horizon and sum cost

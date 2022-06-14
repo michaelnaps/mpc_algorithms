@@ -138,9 +138,9 @@ def convert(id_var, q_desired, q, u0, output=0):
         print("\nJ_con =\n", J_con);
         print("\ndJ_con =\n", dJ_con);
 
-    lb = np.array([-2000, -2000, -2000, q_desired[0], -1000, -1000]);
+    lb = np.array([-2000, -2000, -2000, -q_desired[0], -1000, -1000]);
     lb.shape = (len(lb),);
-    ub = np.array([2000, 2000, 2000, q_desired[0], 1000, 1000]);
+    ub = np.array([2000, 2000, 2000, -q_desired[0], 1000, 1000]);
     ub.shape = (len(ub),);
 
     if output:
