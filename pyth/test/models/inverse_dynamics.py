@@ -164,7 +164,7 @@ def convert(id_var, q_desired, q, u0, output=0):
         print("lb.shape =", lb.shape);
         print("ub.shape =", ub.shape);
 
-    u_model1 = solve_qp(H, g, G, h, A, b, lb, ub, solver='quadprog')[N:2*N];
+    u_model1 = solve_qp(H, g, G, h, A, b, lb, ub, solver='cvxopt')[N:2*N];
 
     if output:
         print("\nu_result =", u_model1);
