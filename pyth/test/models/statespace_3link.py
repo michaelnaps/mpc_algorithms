@@ -1,7 +1,6 @@
 import numpy as np
 import time
 import matplotlib.pyplot as plt
-import matplotlib.animation as anim
 
 def statespace_3link(q, u, inputs):
     # Constants and State Variables
@@ -160,7 +159,7 @@ def J_CoM_3link(q, inputs):
 
     return (J, dJ);
 
-def animation_3link(T, q, inputs):
+def animation_3link(T, q, inputs, save=0, filename="image.png"):
     Nt = len(T);
     dt = T[1] - T[0];
 
@@ -168,7 +167,16 @@ def animation_3link(T, q, inputs):
     L2 = inputs.link_lengths[1];
     L3 = inputs.link_lengths[2];
 
-    axesLimits = [-(L1+L2+L3+0.5), (L1+L2+L3+0.5)];
+    m1 = inputs.joint_masses[0];
+    m2 = inputs.joint_masses[1];
+    m3 = inputs.joint_masses[2];
+    m  = m1 + m2 + m3;
+
+    xLimits = [-(L1+L2+L3)/2+0.6, (L1+L2+L3)/2];
+    yLimits = [-(L1+L2+L3)/4+0.3, (L1+L2+L3)*0.75];
+
+    if save:
+        plt.figure(figsize=(4,5.2), dpi=80);
 
     for i in range(Nt):
         plt.clf();
@@ -182,15 +190,29 @@ def animation_3link(T, q, inputs):
         xHip   = xKnee + L2*np.cos(q1+q2);    yHip   = yKnee + L2*np.sin(q1+q2);
         xHead  = xHip + L3*np.cos(q1+q2+q3);  yHead  = yHip + L3*np.sin(q1+q2+q3);
 
+        (x_com, y_com, _) = CoM_3link(q[i], inputs);
+
         plt.plot([xAnkle, xKnee], [yAnkle, yKnee]);
         plt.plot([xKnee, xHip], [yKnee, yHip]);
         plt.plot([xHip, xHead], [yHip, yHead]);
+        plt.plot([xKnee], [yKnee], linestyle="none",
+                 marker='.', markerfacecolor='k', markeredgecolor='k', markersize=m1, label="Joint Mass");
+        plt.plot([xHip], [yHip], linestyle="none",
+                  marker='.', markerfacecolor='k', markeredgecolor='k', markersize=m2);
+        plt.plot([xHead], [yHead], linestyle="none",
+                  marker='.', markerfacecolor='k', markeredgecolor='k', markersize=m3);
+        plt.plot([x_com], [y_com], linestyle="none",
+                  marker='s', markerfacecolor='m', markeredgecolor='m', markersize=m/10, label="COM");
+        plt.legend();
 
         plt.title("TPM Simulation: t = {:.3f}".format(T[i]));
-        plt.xlim(axesLimits);
-        plt.ylim(axesLimits);
+        plt.xticks(color='w');  plt.yticks(color='w');
+        plt.xlim(xLimits);  plt.ylim(yLimits);
         plt.grid();
         plt.pause(dt);
+
+    if save:
+        plt.savefig(filename, format="png", dpi=800);
 
     input("Press Enter to close animation...");
 
