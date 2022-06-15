@@ -85,7 +85,7 @@ def plotStates_alip(T, q):
 
     # angular momentum
     statePlot[1].plot(T, qT[1], label="Lc");
-    statePlot[1].set_title("Angular Momentum (L)");
+    statePlot[1].set_title("Angular Momentum about the Pivot (L)");
     statePlot[1].grid();
 
     return statePlot;
@@ -109,13 +109,13 @@ def plotInputs_alip(T, u, id=-1):
     fig, inputPlot = plt.subplots(1,2);
 
     inputPlot[0].plot(Tspan, uT[0], label="Actual ua");
-    inputPlot[0].set_title("Ankle Torque Trend")
+    inputPlot[0].set_title("Ankle Torque (u_a)")
     inputPlot[0].set_ylabel("Torque [Nm]");
     inputPlot[0].set_xlabel("Time [s]");
     inputPlot[0].grid();
 
     inputPlot[1].plot(Tspan, uT[1], label="Actual Lc");
-    inputPlot[1].set_title("Angular Momentum Trend")
+    inputPlot[1].set_title("Angular Momentum about the COM (L_c)")
     inputPlot[1].set_ylabel("Angular Momentum [Nm/s]");
     inputPlot[1].set_xlabel("Time [s]");
     inputPlot[1].grid();

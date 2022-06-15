@@ -114,7 +114,7 @@ if __name__ == "__main__":
     mpc_alip.setMinTimeStep(1);
 
     # simulation variables
-    sim_time = 0.6;  sim_dt = time_step;
+    sim_time = 0.025;  sim_dt = time_step;
     Nt = round(sim_time/time_step + 1);
     T = [i*sim_dt for i in range(Nt)];
 
@@ -149,6 +149,7 @@ if __name__ == "__main__":
         inputs_alip = InputsALIP(u_alip[i-1][:num_inputs]);
         mpc_alip.setModelInputs(inputs_alip);
         (u_alip[i], C, n, brk, elapsed) = mpc_alip.solve(q_alip[i-1], u_alip[i-1]);
+        x_desired = mpc_alip.simulate(q_alip[i-1], u_alip[i])[1][0];
 
         print("u_alip =\n", u_alip[i][:2]);
         print("COST =", C);
@@ -157,8 +158,8 @@ if __name__ == "__main__":
             break;
 
         # convert input: alip -> 3link
-        q_desired[i] = [u_alip[i][0], height, theta, u_alip[i][1]];
-        u_3link[i] = id.convert(id_3link, q_desired[i], q_3link[i], u_3link[i-1]);
+        q_desired[i] = [x_desired, height, theta, u_alip[i][1]];
+        u_3link[i] = id.convert(id_3link, q_desired[i], q_3link[i], u_3link[i-1], 1);
 
         print("u_3link =\n", u_3link[i]);
 

@@ -32,7 +32,7 @@ def convert(id_var, q_desired, q, u0, output=0):
 
     M = np.array(m1_massMatrix(q, u_model1, m1_inputs));
     (J_a, dJ_a) = np.array(m1_jacobian(q, m1_inputs));
-    J_a = J_a[1:N];  dJ_a = dJ_a[1:N];
+    J_a = J_a;  dJ_a = dJ_a;
 
     # calculate the drift vector
     C = Z3;
@@ -47,7 +47,7 @@ def convert(id_var, q_desired, q, u0, output=0):
         print("\nJ_a =\n", J_a);  print("\ndJ_a =\n", dJ_a);
 
     # actual state variables
-    q_a  = np.array(m1_state(q, m1_inputs))[1:N];
+    q_a  = np.array(m1_state(q, m1_inputs));
     q_a.shape = (len(q_a),1);
     dq_a = np.matmul(J_a, dx);
     dq_a.shape = (len(dq_a),1);
@@ -57,11 +57,11 @@ def convert(id_var, q_desired, q, u0, output=0):
         print("\ndq_a =\n", dq_a);
 
     # desired state variables
-    q_d   = np.array(q_desired)[1:len(q_a)+1];
+    q_d   = np.array(q_desired)[:len(q_a)];
     q_d.shape = (len(q_d),1);
-    L_d   = q_desired[len(q_a)+1];
-    dq_d  = Z[:2];  dq_d.shape  = (len(q_d),1);
-    ddq_d = Z[:2];  ddq_d.shape = (len(q_d),1);
+    L_d   = q_desired[len(q_a)];
+    dq_d  = Z;  dq_d.shape  = (len(q_d),1);
+    ddq_d = Z;  ddq_d.shape = (len(q_d),1);
 
     if output:
         print("\nq_d =\n", q_d);
@@ -74,8 +74,8 @@ def convert(id_var, q_desired, q, u0, output=0):
     dJ_L = mathexp.dJ_centroidal_momentum(x, dx)[0];
 
     # PD controller (temporary)
-    kp = np.diag([50, 100]);
-    kd = np.diag([20, 0]);
+    kp = np.diag([50, 50, 100]);
+    kd = np.diag([20, 20, 0]);
     u_PD = np.matmul(kp, (q_a - q_d)) + np.matmul(kd, (dq_a - dq_d));
 
     u_q = np.matmul(dJ_a, dx) - ddq_d + u_PD;
@@ -138,10 +138,9 @@ def convert(id_var, q_desired, q, u0, output=0):
         print("\nJ_con =\n", J_con);
         print("\ndJ_con =\n", dJ_con);
 
-    lb = np.array([-2000, -2000, -2000, -q_desired[0], -1000, -1000]);
+    lb = -np.array([2000, 2000, 2000, 1000, 1000, 1000]);
     lb.shape = (len(lb),);
-    ub = np.array([2000, 2000, 2000, -q_desired[0], 1000, 1000]);
-    ub.shape = (len(ub),);
+    ub = -lb;
 
     if output:
         print("\nlb =\n", lb);
@@ -165,7 +164,7 @@ def convert(id_var, q_desired, q, u0, output=0):
         print("lb.shape =", lb.shape);
         print("ub.shape =", ub.shape);
 
-    u_model1 = solve_qp(H, g, G, h, A, b, lb, ub, solver='cvxopt')[N:2*N];
+    u_model1 = solve_qp(H, g, G, h, A, b, lb, ub, solver='quadprog')[N:2*N];
 
     if output:
         print("\nu_result =", u_model1);

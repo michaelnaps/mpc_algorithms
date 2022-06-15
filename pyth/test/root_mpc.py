@@ -6,6 +6,7 @@ sys.path.insert(0, 'models/.');
 import mpc
 from statespace_alip import *
 import matplotlib.pyplot as plt
+import random as rd
 
 def Cq(qd, q):
     Cq = [
@@ -85,15 +86,16 @@ def main():
     PH_length   = 5;
     knot_length = 2;
 
-    q0 = [0-0.05, 0];
+    disturb = rd.uniform(0,1);
+    q0 = [0-disturb, 0];
     u0 = [0 for i in range(num_inputs*PH_length)];
 
-    mpc_var = mpc.system('ngd', cost, statespace_alip, inputs, num_inputs, num_ssvar, PH_length, knot_length);
+    mpc_var = mpc.system('nno', cost, statespace_alip, inputs, num_inputs, num_ssvar, PH_length, knot_length);
     mpc_var.setAlpha(25);
     mpc_var.setAlphaMethod('bkl');
-    mpc_var.setMinTimeStep(1);
+    mpc_var.setMinTimeStep(1);  # very large (no adjustment)
 
-    sim_results = mpc_var.sim_root(2, q0, u0, updateFunction, 1);
+    sim_results = mpc_var.sim_root(10, q0, u0, updateFunction, 1);
 
     reportResults_alip(sim_results, inputs);
     saveResults_alip("prevRun_data.pickle", sim_results);
