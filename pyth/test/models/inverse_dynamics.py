@@ -62,19 +62,29 @@ def convert(id_var, q_desired, q, u0, output=0):
     # desired state variables
     q_d   = np.array(q_desired)[:len(q_a)];
     q_d.shape = (len(q_d),1);
-    L_d   = q_desired[len(q_a)];
+    Lc_d   = q_desired[len(q_a)];
     dq_d  = Z;  dq_d.shape  = (len(q_d),1);
     ddq_d = Z;  ddq_d.shape = (len(q_d),1);
 
     if output:
         print("\nq_d =\n", q_d);
-        print("\nL_d =\n", L_d);
+        print("\nLc_d =\n", Lc_d);
         print("\ndq_d =\n", dq_d);
 
     # centroidal momentum calculations
-    L    = mathexp.centroidal_momentum(x, dx);
-    J_L  = mathexp.J_centroidal_momentum(x);
-    dJ_L = mathexp.dJ_centroidal_momentum(x, dx)[0];
+    Lc    = mathexp.centroidal_momentum(x, dx);
+    J_Lc  = mathexp.J_centroidal_momentum(x);
+    dJ_Lc = mathexp.dJ_centroidal_momentum(x, dx)[0];
+
+    # base momentum
+    # L    = mathexp.base_momentum(x, dx);
+    # J_L  = mathexp.J_base_momentum(x, dx);
+    # dJ_L = mathexp.dJ_base_momentum(x, dx);
+
+    # if output:
+    #     print("\nL =\n", L);
+    #     print("\nJ_L =\n", J_L);
+    #     print("\ndJ_L =\n", dJ_L);
 
     # PD controller (temporary)
     kp = np.diag([50, 50, 100]);
@@ -82,21 +92,21 @@ def convert(id_var, q_desired, q, u0, output=0):
     u_PD = np.matmul(kp, (q_a - q_d)) + np.matmul(kd, (dq_a - dq_d));
 
     u_q = np.matmul(dJ_a, dx) - ddq_d + u_PD;
-    u_L = np.matmul(dJ_L, dx) + 20*(L - L_d);
+    u_Lc = np.matmul(dJ_Lc, dx) + 20*(Lc - Lc_d);
 
     if output:
         print("\nu_PD =\n", u_PD);
         print("\nu_q =\n", u_q);
-        print("\nu_L =\n", u_L);
+        print("\nu_Lc =\n", u_Lc);
 
-    J  = np.vstack((J_a, J_L.T));
-    dJ = np.vstack((dJ_a, dJ_L));
-    u  = np.append(u_q, u_L);  u.shape = (len(u), 1);
+    J  = np.vstack((J_a, J_Lc.T));
+    dJ = np.vstack((dJ_a, dJ_Lc));
+    u  = np.append(u_q, u_Lc);  u.shape = (len(u), 1);
 
     if output:
-        print("\nL =\n", L);
-        print("\nJ_L =\n", J_L);
-        print("\ndJ_L =\n", dJ_L);
+        print("\nLc =\n", Lc);
+        print("\nJ_Lc =\n", J_Lc);
+        print("\ndJ_Lc =\n", dJ_Lc);
 
         print("\nJ =\n", J);
         print("\ndJ =\n", dJ);

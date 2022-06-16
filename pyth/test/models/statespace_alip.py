@@ -89,20 +89,16 @@ def plotStates_alip(T, q):
     return statePlot;
 
 def plotInputs_alip(T, u, id=-1):
+    uT = np.transpose(u);
+
     if id == -1:
         Tspan = T;
-        uT = np.transpose(u);
     else:
         P = int(len(u[0])/2);
         dt = T[1] - T[0];
-
         Tspan = [i*dt for i in range(P)];
 
-        ua = [u[id+1][i] for i in range(0,2*(P),2)];
-        Lc = [u[id+1][i] for i in range(1,2*(P),2)];
-
-        uT = np.transpose([[0, 0] for i in range(P)]);
-        uT[0] = ua;  uT[1] = Lc;
+        uT = [uT[0][id:P+id], uT[1][id:P+id]];
 
     fig, inputPlot = plt.subplots(1,2);
 

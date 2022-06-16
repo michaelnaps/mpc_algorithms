@@ -78,7 +78,7 @@ class InputsALIP:
         self.joint_masses         = [40];
         self.link_lengths         = [0.95];
         self.CP_maxdistance       = 0.1;
-        self.input_bounds         = [100, 50];
+        self.input_bounds         = [200, 200];
         self.prev_input           = prev_input;
 
 class Inputs3link:
@@ -106,9 +106,9 @@ if __name__ == "__main__":
     # mpc variable parameters
     num_inputs  = 2;
     num_ssvar   = 2;
-    PH_length   = 5;
+    PH_length   = 20;
     knot_length = 2;
-    time_step   = 0.025;
+    time_step   = 0.01;
 
     # desired state constants
     height = 0.95;
@@ -116,7 +116,7 @@ if __name__ == "__main__":
 
     # MPC class variable
     mpc_alip = mpc.system('ngd', cost, statespace_alip, inputs_alip, num_inputs, num_ssvar, PH_length, knot_length, time_step);
-    mpc_alip.setAlpha(25);
+    mpc_alip.setAlpha(10);
     mpc_alip.setAlphaMethod('bkl');
     mpc_alip.setMinTimeStep(1);
 
@@ -124,8 +124,6 @@ if __name__ == "__main__":
     sim_time = 1;  sim_dt = time_step;
     Nt = round(sim_time/time_step + 1);
     T = [i*sim_dt for i in range(Nt)];
-
-    print(Nt);  print(T);
 
     # loop variables
     N_3link = inputs_3link.num_inputs;
@@ -150,38 +148,24 @@ if __name__ == "__main__":
         L = mathexp.base_momentum(q_3link[i-1][:N_3link], q_3link[i-1][N_3link:2*N_3link])[0][0];
         q_alip[i-1]  = [x_c, L];
 
-        print("q_alip =\n", q_alip[i-1]);
-
         # solve the MPC problem w/ warmstarting
         inputs_alip = InputsALIP(u_alip[i-1][:num_inputs]);
         mpc_alip.setModelInputs(inputs_alip);
-        (u_alip[i], C, n, brk, elapsed) = mpc_alip.solve(q_alip[i-1], u_alip[i-1]);
-        x_desired = mpc_alip.simulate(q_alip[i-1], u_alip[i])[1][0];
-
-        print("u_alip =\n", u_alip[i][:2]);
-        print("COST =", C);
+        (u_alip[i-1], C, n, brk, elapsed) = mpc_alip.solve(q_alip[i-1], u_alip[i-1]);
+        x_desired = mpc_alip.simulate(q_alip[i-1], u_alip[i-1])[1][0];
 
         if (math.isnan(C)):
             break;
 
-        q_desired[i] = [x_desired, height, theta, u_alip[i][1]];
-        print("q_desired =\n", q_desired[i]);
+        q_desired[i-1] = [x_desired, height, theta, u_alip[i-1][1]];
 
         # convert input: alip -> 3link
-        u_3link[i] = id.convert(id_3link, q_desired[i], q_3link[i-1], u_3link[i-1]);
+        u_3link[i-1] = id.convert(id_3link, q_desired[i-1], q_3link[i-1], u_3link[i-1]);
 
-        print("u_3link =\n", u_3link[i]);
+        q_3link[i] = modeuler(statespace_3link, sim_dt, sim_dt, q_3link[i-1], u_3link[i-1], inputs_3link)[1][-1];
 
-        q_3link[i] = modeuler(statespace_3link, 0.025, 0.025, q_3link[i-1], u_3link[i], inputs_3link)[1][-1];
-
-        print("q_3link =\n", q_3link[i]);
-
-    print(q_alip[0]);
-    print(q_3link[0]);
-
-    desiredStatePlot = plotStates_alip(T, [[q_desired[i][0], q_desired[i][3]] for i in range(Nt)]);
-    statePlot = plotStates_alip(T, q_alip);
+    comparisonPlot = plotMPCComparison_alip(T, u_alip);
     plt.show();
 
-    ans = input("\nSee animation? [y/n] ");
-    if (ans == 'y'):  animation_3link(T, q_3link, inputs_3link);
+    # ans = input("\nSee animation? [y/n] ");
+    # if (ans == 'y'):  animation_3link(T, q_3link, inputs_3link);
