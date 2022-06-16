@@ -1,8 +1,11 @@
 import numpy as np
+from MathFunctionsCpp import MathExpressions
 import time
 import matplotlib.pyplot as plt
 
 def statespace_3link(q, u, inputs):
+    mathexp = MathExpressions();
+
     # Constants and State Variables
     N = inputs.num_inputs;
     g = inputs.gravity_acc;
@@ -22,20 +25,35 @@ def statespace_3link(q, u, inputs):
     c1 = c[0];  c2 = c[1];  c3 = c[2];
 
     # State Space Equations
-    # Equation: E*ddq = M (rearrange for ddq)
+    # Equation: M*ddq = E (rearrange for ddq)
     M = MassMatrix_3link(q, u, inputs);
-    M = [M[2], M[1], M[0]];
-    M = [[-M[i][j] for j in range(N)] for i in range(N)];
+    # M = [M[2], M[1], M[0]];
+    # M = [[-M[i][j] for j in range(N)] for i in range(N)];
 
-    E = [
-        -(g*m3*r3*np.cos(q1 + q2 + q3) + c3*L3*q6 - u3 + L1*m3*r3*q4**2*np.sin(q2 + q3) + L2*m3*r3*q4**2*np.sin(q3) + L2*m3*r3*q5**2*np.sin(q3) + 2*L2*m3*r3*q4*q5*np.sin(q3)),
-        L2*g*m3*np.cos(q1 + q2) + c2*L2*q5 - u2 + g*m2*r2*np.cos(q1 + q2) + g*m3*r3*np.cos(q1 + q2 + q3) + L1*m3*r3*q4**2*np.sin(q2 + q3) + L1*L2*m3*q4**2*np.sin(q2) + L1*m2*r2*q4**2*np.sin(q2) - L2*m3*r3*q6**2*np.sin(q3) - 2*L2*m3*r3*q4*q6*np.sin(q3) - 2*L2*m3*r3*q5*q6*np.sin(q3),
-        L2*g*m3*np.cos(q1 + q2) + c1*L1*q4 - u1 + g*m2*r2*np.cos(q1 + q2) + L1*g*m2*np.cos(q1) + L1*g*m3*np.cos(q1) + g*m1*r1*np.cos(q1) + g*m3*r3*np.cos(q1 + q2 + q3) - L1*m3*r3*q5**2*np.sin(q2 + q3) - L1*m3*r3*q6**2*np.sin(q2 + q3) - L1*L2*m3*q5**2*np.sin(q2) - L1*m2*r2*q5**2*np.sin(q2) - L2*m3*r3*q6**2*np.sin(q3) - 2*L1*m3*r3*q4*q5*np.sin(q2 + q3) - 2*L1*m3*r3*q4*q6*np.sin(q2 + q3) - 2*L1*m3*r3*q5*q6*np.sin(q2 + q3) - 2*L1*L2*m3*q4*q5*np.sin(q2) - 2*L1*m2*r2*q4*q5*np.sin(q2) - 2*L2*m3*r3*q4*q6*np.sin(q3) - 2*L2*m3*r3*q5*q6*np.sin(q3)
-    ];
+    # E = [
+    #    g*m3*r3*np.cos(q1 + q2 + q3) + c3*L3*q6 - u3 + L1*m3*r3*q4**2*np.sin(q2 + q3) + L2*m3*r3*q4**2*np.sin(q3) + L2*m3*r3*q5**2*np.sin(q3) + 2*L2*m3*r3*q4*q5*np.sin(q3),
+    #    L2*g*m3*np.cos(q1 + q2) + c2*L2*q5 - u2 + g*m2*r2*np.cos(q1 + q2) + g*m3*r3*np.cos(q1 + q2 + q3) + L1*m3*r3*q4**2*np.sin(q2 + q3) + L1*L2*m3*q4**2*np.sin(q2) + L1*m2*r2*q4**2*np.sin(q2) - L2*m3*r3*q6**2*np.sin(q3) - 2*L2*m3*r3*q4*q6*np.sin(q3) - 2*L2*m3*r3*q5*q6*np.sin(q3),
+    #    L2*g*m3*np.cos(q1 + q2) + c1*L1*q4 - u1 + g*m2*r2*np.cos(q1 + q2) + L1*g*m2*np.cos(q1) + L1*g*m3*np.cos(q1) + g*m1*r1*np.cos(q1) + g*m3*r3*np.cos(q1 + q2 + q3) - L1*m3*r3*q5**2*np.sin(q2 + q3) - L1*m3*r3*q6**2*np.sin(q2 + q3) - L1*L2*m3*q5**2*np.sin(q2) - L1*m2*r2*q5**2*np.sin(q2) - L2*m3*r3*q6**2*np.sin(q3) - 2*L1*m3*r3*q4*q5*np.sin(q2 + q3) - 2*L1*m3*r3*q4*q6*np.sin(q2 + q3) - 2*L1*m3*r3*q5*q6*np.sin(q2 + q3) - 2*L1*L2*m3*q4*q5*np.sin(q2) - 2*L1*m2*r2*q4*q5*np.sin(q2) - 2*L2*m3*r3*q4*q6*np.sin(q3) - 2*L2*m3*r3*q5*q6*np.sin(q3)
+    #];
+
+    # print(q);
+    x = np.array([q1,q2,q3]).reshape(3,1);
+    dx = np.array([q4,q5,q6]).reshape(3,1);
+    # print(dx);
+
+    C = np.zeros(3).reshape(3,1);  # print(C);
+    C = C + mathexp.Cmat_1(x, dx);
+    C = C + mathexp.Cmat_2(x, dx);
+    C = C + mathexp.Cmat_3(x, dx);
+    C = np.matmul(C, dx);
+    G = mathexp.Ge_vec(x);
+    E = -(C + G);
 
     dq = -1*np.linalg.solve(M, E);
 
-    return [q[3], q[4], q[5], dq[0], dq[1], dq[2]];
+    # print(dq[0][0], dq[1][0], dq[2][0])
+
+    return [q[3], q[4], q[5], dq[0][0], dq[1][0], dq[2][0]];
 
 def MassMatrix_3link(q, u, inputs):
     # Constants and State Variables
@@ -172,8 +190,12 @@ def animation_3link(T, q, inputs, save=0, filename="image.png"):
     m3 = inputs.joint_masses[2];
     m  = m1 + m2 + m3;
 
-    xLimits = [-(L1+L2+L3)/2+0.6, (L1+L2+L3)/2];
-    yLimits = [-(L1+L2+L3)/4+0.3, (L1+L2+L3)*0.75];
+    if save:
+        xLimits = [-(L1+L2+L3)/2+0.6, (L1+L2+L3)/2];
+        yLimits = [-(L1+L2+L3)/4+0.3, (L1+L2+L3)*0.75];
+    else:
+        xLimits = [-(L1+L2+L3)/2, (L1+L2+L3)/2];
+        yLimits = [-(L1+L2+L3)/2, (L1+L2+L3)*0.75];
 
     if save:
         plt.figure(figsize=(4,5.2), dpi=80);

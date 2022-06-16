@@ -44,6 +44,7 @@ def convert(id_var, q_desired, q, u0, output=0):
     E = -(C + G);
 
     if output:
+        print("\nE =\n", E);  print("\nM =\n", M);
         print("\nJ_a =\n", J_a);  print("\ndJ_a =\n", dJ_a);
 
     # actual state variables
@@ -85,13 +86,13 @@ def convert(id_var, q_desired, q, u0, output=0):
         print("\ndJ_L =\n", dJ_L);
 
     # PD controller (temporary)
-    kp = np.diag([50, 50, 100]);
+    kp = np.diag([200, 50, 100]);
     kd = np.diag([20, 20, 0]);
     u_PD = np.matmul(kp, (q_a - q_d)) + np.matmul(kd, (dq_a - dq_d));
 
     u_q = np.matmul(dJ_a, dx) - ddq_d + u_PD;
     u_Lc = np.matmul(dJ_Lc, dx) + 100*(Lc - Lc_d);
-    u_L = np.matmul(dJ_L, dx) + 20*L_d;
+    u_L = np.matmul(dJ_L, dx) + 20*(L - L_d);
 
     if output:
         print("\nu_PD =\n", u_PD);
@@ -162,7 +163,7 @@ def convert(id_var, q_desired, q, u0, output=0):
         print("\nJ_con =\n", J_con);
         print("\ndJ_con =\n", dJ_con);
 
-    lb = -100*np.array([2000, 2000, 2000, 1000, 1000, 1000]);
+    lb = -np.array([2000, 2000, 2000, 40, 1000, 500]);
     lb.shape = (len(lb),);
     ub = -lb;
 

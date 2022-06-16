@@ -5,7 +5,7 @@
 # Purpose: To calculate the states of a given model
 #   over a predetermined prediction horizon.
 def modeuler(statespace, sim_time, dt, q0, u, inputs, dt_min=1e-3):
-    k = int(sim_time/dt + 1);
+    k = int(sim_time/dt);
     N = len(q0);
 
     if (dt >= dt_min):
