@@ -152,9 +152,10 @@ if __name__ == "__main__":
 
         # solve MPC problem
         (u_alip[i], C, n, brk, elapsed) = mpc_alip.solve(q_alip[i], u_alip[i]);
-        x_desired = mpc_alip.simulate(q_alip[i], u_alip[i])[1][0];
+        q_temp = mpc_alip.simulate(q_alip[i], u_alip[i])[1];
+        x_desired = q_temp[0];  L_desired = q_temp[1];
 
-        print([u_alip[i][1], time_step*u_alip[i][0]]);
+        print([u_alip[i][1], x_desired, L_desired);
 
         if (math.isnan(C)):
             print("ERROR: Cost is nan after optimization...");
@@ -162,7 +163,7 @@ if __name__ == "__main__":
         else:
             print(C);
 
-        q_desired[i] = [x_desired, height, theta, u_alip[i][1], sim_dt*u_alip[i][0]];
+        q_desired[i] = [x_desired, height, theta, u_alip[i][1], L_desired];
 
         # convert input: alip -> 3link
         u_3link[i] = id.convert(id_3link, q_desired[i], q_3link[i], u_3link[i]);
