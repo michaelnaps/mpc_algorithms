@@ -5,9 +5,6 @@ from qpsolvers import solve_qp
 from MathFunctionsCpp import MathExpressions
 import math
 
-def is_positivedefinite(A):
-    return np.all(np.linalg.eigvals(A) > 0);
-
 def convert(id_var, q_desired, q, u0, output=0):
     mathexp = MathExpressions();
 
@@ -62,7 +59,8 @@ def convert(id_var, q_desired, q, u0, output=0):
     # desired state variables
     q_d   = np.array(q_desired)[:len(q_a)];
     q_d.shape = (len(q_d),1);
-    Lc_d   = q_desired[len(q_a)];
+    Lc_d   = q_desired[-2];
+    L_d    = q_desired[-1];
     dq_d  = Z;  dq_d.shape  = (len(q_d),1);
     ddq_d = Z;  ddq_d.shape = (len(q_d),1);
 
@@ -77,14 +75,14 @@ def convert(id_var, q_desired, q, u0, output=0):
     dJ_Lc = mathexp.dJ_centroidal_momentum(x, dx)[0];
 
     # base momentum
-    # L    = mathexp.base_momentum(x, dx);
-    # J_L  = mathexp.J_base_momentum(x, dx);
-    # dJ_L = mathexp.dJ_base_momentum(x, dx);
+    L    = mathexp.base_momentum(x, dx);
+    J_L  = mathexp.J_base_momentum(x);
+    dJ_L = mathexp.dJ_base_momentum(x, dx)[0];
 
-    # if output:
-    #     print("\nL =\n", L);
-    #     print("\nJ_L =\n", J_L);
-    #     print("\ndJ_L =\n", dJ_L);
+    if output:
+        print("\nL =\n", L);
+        print("\nJ_L =\n", J_L);
+        print("\ndJ_L =\n", dJ_L);
 
     # PD controller (temporary)
     kp = np.diag([50, 50, 100]);
@@ -92,12 +90,19 @@ def convert(id_var, q_desired, q, u0, output=0):
     u_PD = np.matmul(kp, (q_a - q_d)) + np.matmul(kd, (dq_a - dq_d));
 
     u_q = np.matmul(dJ_a, dx) - ddq_d + u_PD;
-    u_Lc = np.matmul(dJ_Lc, dx) + 20*(Lc - Lc_d);
+    u_Lc = np.matmul(dJ_Lc, dx) + 100*(Lc - Lc_d);
+    u_L = np.matmul(dJ_L, dx) + 20*L_d;
 
     if output:
         print("\nu_PD =\n", u_PD);
         print("\nu_q =\n", u_q);
         print("\nu_Lc =\n", u_Lc);
+        print("\nu_L =\n", u_L)
+
+
+    # J  = np.vstack((J_a, J_Lc.T, J_L.T));
+    # dJ = np.vstack((dJ_a, dJ_Lc, dJ_L));
+    # u  = np.append(u_q, np.append(u_Lc, u_L));  u.shape = (len(u), 1);
 
     J  = np.vstack((J_a, J_Lc.T));
     dJ = np.vstack((dJ_a, dJ_Lc));
@@ -128,22 +133,28 @@ def convert(id_var, q_desired, q, u0, output=0):
     gm1 = 2;  gm2 = 2;
 
     h_con = -np.array([
-        q_a[0] - 0.5,
-        -q_a[0] + 1,
-        q_a[1] - math.pi/2 + 1,
-        -q_a[1] + math.pi/2 + 1
+        q_a[0] + 0.1,
+        -q_a[0] + 0.1,
+        q_a[1] - 0.5,
+        -q_a[1] + 1,
+        q_a[2] - math.pi/2 + 1,
+        -q_a[2] + math.pi/2 + 1
     ]);  h_con.shape = (len(h_con),1);
     J_con = -np.array([
         J_a[0],
         -J_a[0],
         J_a[1],
-        -J_a[1]
+        -J_a[1],
+        J_a[2],
+        -J_a[2]
     ]);
     dJ_con = -np.array([
         dJ_a[0],
         -dJ_a[0],
         dJ_a[1],
-        -dJ_a[1]
+        -dJ_a[1],
+        dJ_a[2],
+        -dJ_a[2]
     ]);
 
     if output:
@@ -151,7 +162,7 @@ def convert(id_var, q_desired, q, u0, output=0):
         print("\nJ_con =\n", J_con);
         print("\ndJ_con =\n", dJ_con);
 
-    lb = -np.array([2000, 2000, 2000, 500, 500, 500]);
+    lb = -100*np.array([2000, 2000, 2000, 1000, 1000, 1000]);
     lb.shape = (len(lb),);
     ub = -lb;
 
@@ -159,7 +170,7 @@ def convert(id_var, q_desired, q, u0, output=0):
         print("\nlb =\n", lb);
         print("\nub =\n", ub)
 
-    G = np.append(J_con, np.zeros(4*3).reshape(4,3), axis=1);
+    G = np.append(J_con, np.zeros(6*3).reshape(6,3), axis=1);
     h = -np.matmul((dJ_con + gm1*J_con), dx) - gm2*(np.matmul(J_con, dx) + gm1*h_con);
     h.shape = (len(h),)
 
@@ -177,11 +188,15 @@ def convert(id_var, q_desired, q, u0, output=0):
         print("lb.shape =", lb.shape);
         print("ub.shape =", ub.shape);
 
-        print("\nMatrix H is positive definite:", is_positivedefinite(H));
+    u_model1 = solve_qp(H, g, G, h, A, b, lb, ub, solver='cvxopt');
 
-    u_model1 = solve_qp(H, g, G, h, A, b, lb, ub, solver='cvxopt')[N:2*N];
+    if (u_model1 is None):
+        return u_model1;
+
+    u_result = [u_model1[i] for i in range(N,2*N)];
 
     if output:
         print("\nu_result =", u_model1);
+        print("\nu_3link =", u_result);
 
-    return [u_model1[i] for i in range(N)];
+    return u_result;

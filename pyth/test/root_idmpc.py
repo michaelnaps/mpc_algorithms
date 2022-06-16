@@ -78,7 +78,7 @@ class InputsALIP:
         self.joint_masses         = [40];
         self.link_lengths         = [0.95];
         self.CP_maxdistance       = 0.1;
-        self.input_bounds         = [200, 200];
+        self.input_bounds         = [1000, 1000];
         self.prev_input           = prev_input;
 
 class Inputs3link:
@@ -106,9 +106,9 @@ if __name__ == "__main__":
     # mpc variable parameters
     num_inputs  = 2;
     num_ssvar   = 2;
-    PH_length   = 20;
-    knot_length = 2;
-    time_step   = 0.01;
+    PH_length   = 10;
+    knot_length = 1;
+    time_step   = 0.025;
 
     # desired state constants
     height = 0.95;
@@ -121,8 +121,8 @@ if __name__ == "__main__":
     mpc_alip.setMinTimeStep(1);
 
     # simulation variables
-    sim_time = 1;  sim_dt = time_step;
-    Nt = round(sim_time/time_step + 1);
+    sim_time = 1;  sim_dt = 0.001;
+    Nt = round(sim_time/sim_dt + 1);
     T = [i*sim_dt for i in range(Nt)];
 
     # loop variables
@@ -136,36 +136,44 @@ if __name__ == "__main__":
     # initial state
     q_3link[0] = [0.921956390674820, 1.501329485340646, -0.825659654898840, 0, 0, 0];
 
-    # used only for modeuler function
-    sim_3link = mpc.system('nno', cost, statespace_3link, inputs_3link, N_3link, 2*N_3link, 1, 1, time_step);
-
     # simulation loop
-    for i in range(1,Nt):
+    for i in range(Nt-1):
         print("\nt =", i*sim_dt);
 
         # convert state: 3link -> alip
-        x_c = CoM_3link(q_3link[i-1], inputs_3link)[0];
-        L = mathexp.base_momentum(q_3link[i-1][:N_3link], q_3link[i-1][N_3link:2*N_3link])[0][0];
-        q_alip[i-1]  = [x_c, L];
+        (x_c, h_c, _) = CoM_3link(q_3link[i], inputs_3link);
+        L = mathexp.base_momentum(q_3link[i][:N_3link], q_3link[i][N_3link:2*N_3link])[0][0];
+        q_alip[i]  = [x_c, L];
 
-        # solve the MPC problem w/ warmstarting
-        inputs_alip = InputsALIP(u_alip[i-1][:num_inputs]);
+        # set alip model inputs
+        inputs_alip.prev_inputs  = u_alip[i-1][:num_inputs];
+        # inputs_alip.link_lengths = [h_c];
         mpc_alip.setModelInputs(inputs_alip);
-        (u_alip[i-1], C, n, brk, elapsed) = mpc_alip.solve(q_alip[i-1], u_alip[i-1]);
-        x_desired = mpc_alip.simulate(q_alip[i-1], u_alip[i-1])[1][0];
+
+        # solve MPC problem
+        (u_alip[i], C, n, brk, elapsed) = mpc_alip.solve(q_alip[i], u_alip[i]);
+        x_desired = mpc_alip.simulate(q_alip[i], u_alip[i])[1][0];
+
+        print([u_alip[i][1], time_step*u_alip[i][0]]);
 
         if (math.isnan(C)):
+            print("ERROR: Cost is nan after optimization...");
             break;
+        else:
+            print(C);
 
-        q_desired[i-1] = [x_desired, height, theta, u_alip[i-1][1]];
+        q_desired[i] = [x_desired, height, theta, u_alip[i][1], sim_dt*u_alip[i][0]];
 
         # convert input: alip -> 3link
-        u_3link[i-1] = id.convert(id_3link, q_desired[i-1], q_3link[i-1], u_3link[i-1]);
+        u_3link[i] = id.convert(id_3link, q_desired[i], q_3link[i], u_3link[i]);
 
-        q_3link[i] = modeuler(statespace_3link, sim_dt, sim_dt, q_3link[i-1], u_3link[i-1], inputs_3link)[1][-1];
+        if (u_3link[i] is None):
+            print("ERROR: ID-QP function returned None...");
+            break;
+        else:
+            print(u_3link[i]);
 
-    comparisonPlot = plotMPCComparison_alip(T, u_alip);
-    plt.show();
+        q_3link[i+1] = modeuler(statespace_3link, sim_dt, sim_dt, q_3link[i], u_3link[i], inputs_3link)[1][-1];
 
-    # ans = input("\nSee animation? [y/n] ");
-    # if (ans == 'y'):  animation_3link(T, q_3link, inputs_3link);
+    ans = input("\nSee animation? [y/n] ");
+    if (ans == 'y'):  animation_3link(T[:i+2], q_3link[:i+2], inputs_3link);
