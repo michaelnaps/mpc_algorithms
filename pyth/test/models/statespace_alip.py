@@ -8,11 +8,9 @@ def statespace_alip(q, u, inputs):
     H = inputs.link_lengths[0];
     g = inputs.gravity_acc;
 
-    # state variables
-    x  = q[0];  Lc  = q[1];
-
-    # input/disturbance variables
-    ua = u[0];    L  = u[1];
+    # state and input variables
+    x  = q[0];  Lc = q[1];
+    ua = u[0];  L  = u[1];
 
     # solve for statespace
     ddq = [

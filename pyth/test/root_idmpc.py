@@ -6,7 +6,7 @@ sys.path.insert(0, 'models/.');
 import mpc
 from statespace_alip import *
 from statespace_3link import *
-from modeuler import modeuler
+from modeuler import *
 from MathFunctionsCpp import MathExpressions
 import inverse_dynamics as id
 import math
@@ -23,9 +23,14 @@ def Cq(qd, q):
 def Cu(u, du, inputs):
     umax = inputs.input_bounds;
 
+    u_error = [
+        umax[0] - np.abs(u[0]),
+        umax[1] - np.abs(u[1])
+    ];
+
     Cu = [
-        1e-5*(du[0])**2 - np.log(umax[0]**2 - u[0]**2) + np.log(umax[0]**2),
-        1e-5*(du[1])**2# + (u[1]/umax[1])**2 #- np.log(umax[1]**2 - u[1]**2) + np.log(umax[1]**2)
+        1e-5*(du[0])**2 - np.log(u_error[0]) + np.log(umax[0]),
+        1e-5*(du[1])**2 - np.log(u_error[1]) + np.log(umax[1])
     ];
 
     return np.sum(Cu);
@@ -73,7 +78,7 @@ class InputsALIP:
         self.joint_masses         = [40];
         self.link_lengths         = [0.95];
         self.CP_maxdistance       = 0.1;
-        self.input_bounds         = [100, 500];
+        self.input_bounds         = [100, 50];
         self.prev_input           = prev_input;
 
 class Inputs3link:
@@ -101,8 +106,8 @@ if __name__ == "__main__":
     # mpc variable parameters
     num_inputs  = 2;
     num_ssvar   = 2;
-    PH_length   = 10;
-    knot_length = 1;
+    PH_length   = 5;
+    knot_length = 2;
     time_step   = 0.025;
 
     # desired state constants
@@ -110,11 +115,13 @@ if __name__ == "__main__":
     theta  = math.pi/2;
 
     # MPC class variable
-    mpc_alip = mpc.system('nno', cost, statespace_alip, inputs_alip, num_inputs, num_ssvar, PH_length, knot_length, time_step);
+    mpc_alip = mpc.system('ngd', cost, statespace_alip, inputs_alip, num_inputs, num_ssvar, PH_length, knot_length, time_step);
+    mpc_alip.setAlpha(25);
+    mpc_alip.setAlphaMethod('bkl');
     mpc_alip.setMinTimeStep(1);
 
     # simulation variables
-    sim_time = 0.025;  sim_dt = time_step;
+    sim_time = 1;  sim_dt = time_step;
     Nt = round(sim_time/time_step + 1);
     T = [i*sim_dt for i in range(Nt)];
 
@@ -129,7 +136,7 @@ if __name__ == "__main__":
     u_3link = [[0 for j in range(N_3link)] for i in range(Nt)];
 
     # initial state
-    q_3link[0] = [0.357571103645510, 2.426450446298773, -1.213225223149386, 0, 0, 0];
+    q_3link[0] = [0.921956390674820, 1.501329485340646, -0.825659654898840, 0, 0, 0];
 
     # used only for modeuler function
     sim_3link = mpc.system('nno', cost, statespace_3link, inputs_3link, N_3link, 2*N_3link, 1, 1, time_step);
@@ -157,13 +164,15 @@ if __name__ == "__main__":
         if (math.isnan(C)):
             break;
 
-        # convert input: alip -> 3link
         q_desired[i] = [x_desired, height, theta, u_alip[i][1]];
-        u_3link[i] = id.convert(id_3link, q_desired[i], q_3link[i], u_3link[i-1], 1);
+        print("q_desired =\n", q_desired[i]);
+
+        # convert input: alip -> 3link
+        u_3link[i] = id.convert(id_3link, q_desired[i], q_3link[i-1], u_3link[i-1]);
 
         print("u_3link =\n", u_3link[i]);
 
-        q_3link[i] = sim_3link.modeuler(q_3link[i-1], u_3link[i], 1)[1][-1];
+        q_3link[i] = modeuler(statespace_3link, 0.025, 0.025, q_3link[i-1], u_3link[i], inputs_3link)[1][-1];
 
         print("q_3link =\n", q_3link[i]);
 
@@ -174,4 +183,5 @@ if __name__ == "__main__":
     statePlot = plotStates_alip(T, q_alip);
     plt.show();
 
-    animation_3link(T, q_3link, inputs_3link);
+    ans = input("\nSee animation? [y/n] ");
+    if (ans == 'y'):  animation_3link(T, q_3link, inputs_3link);

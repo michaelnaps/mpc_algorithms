@@ -194,6 +194,10 @@ class system:
                 brk = -1;
                 break;
 
+            if (np.abs(Cc - Cn) < eps):
+                brk = 2;
+                break;
+
             # update loop variables
             uc = un;  Cc = Cn;
 
@@ -262,7 +266,6 @@ class system:
 
             a *= (1 - w);
 
-        print(a);
         return (ubkl, Cbkl, a, count, brk);
 
     def simulate(self, q0, u):

@@ -19,9 +19,14 @@ def Cq(qd, q):
 def Cu(u, du, inputs):
     umax = inputs.input_bounds;
 
+    u_error = [
+        umax[0] - np.abs(u[0]),
+        umax[1] - np.abs(u[1])
+    ];
+
     Cu = [
-        1e-5*(du[0])**2 - np.log(umax[0]**2 - u[0]**2) + np.log(umax[0]**2),
-        1e-5*(du[1])**2 # - np.log(umax[1]**2 - u[1]**2) + np.log(umax[1]**2)
+        1e-5*(du[0])**2 - np.log(u_error[0]) + np.log(umax[0]),
+        1e-5*(du[1])**2 - np.log(u_error[1]) + np.log(umax[1])
     ];
 
     return np.sum(Cu);
@@ -66,11 +71,10 @@ def cost(mpc_var, q, u, inputs):
 class InputVariables:
     def __init__(self, prev_input):
         self.gravity_acc          = -9.81;
-        self.damping_coefficients = [0];
         self.joint_masses         = [80];
         self.link_lengths         = [2.0];
         self.CP_maxdistance       = 0.1;
-        self.input_bounds         = [60, 150];
+        self.input_bounds         = [100, 50];
         self.prev_input           = prev_input;
 
 def updateFunction(mpc_var, q, u):
@@ -86,16 +90,16 @@ def main():
     PH_length   = 5;
     knot_length = 2;
 
-    disturb = rd.uniform(0,1);
+    disturb = 0.05*rd.uniform(0,1);
     q0 = [0-disturb, 0];
     u0 = [0 for i in range(num_inputs*PH_length)];
 
-    mpc_var = mpc.system('nno', cost, statespace_alip, inputs, num_inputs, num_ssvar, PH_length, knot_length);
+    mpc_var = mpc.system('ngd', cost, statespace_alip, inputs, num_inputs, num_ssvar, PH_length, knot_length);
     mpc_var.setAlpha(25);
     mpc_var.setAlphaMethod('bkl');
     mpc_var.setMinTimeStep(1);  # very large (no adjustment)
 
-    sim_results = mpc_var.sim_root(10, q0, u0, updateFunction, 1);
+    sim_results = mpc_var.sim_root(3, q0, u0, updateFunction, 1);
 
     reportResults_alip(sim_results, inputs);
     saveResults_alip("prevRun_data.pickle", sim_results);

@@ -5,6 +5,9 @@ from qpsolvers import solve_qp
 from MathFunctionsCpp import MathExpressions
 import math
 
+def is_positivedefinite(A):
+    return np.all(np.linalg.eigvals(A) > 0);
+
 def convert(id_var, q_desired, q, u0, output=0):
     mathexp = MathExpressions();
 
@@ -138,7 +141,7 @@ def convert(id_var, q_desired, q, u0, output=0):
         print("\nJ_con =\n", J_con);
         print("\ndJ_con =\n", dJ_con);
 
-    lb = -np.array([2000, 2000, 2000, 1000, 1000, 1000]);
+    lb = -np.array([2000, 2000, 2000, 500, 500, 500]);
     lb.shape = (len(lb),);
     ub = -lb;
 
@@ -163,6 +166,8 @@ def convert(id_var, q_desired, q, u0, output=0):
         print("b.shape =", b.shape);
         print("lb.shape =", lb.shape);
         print("ub.shape =", ub.shape);
+
+        print("\nMatrix H is positive definite:", is_positivedefinite(H));
 
     u_model1 = solve_qp(H, g, G, h, A, b, lb, ub, solver='cvxopt')[N:2*N];
 
