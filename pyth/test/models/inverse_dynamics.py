@@ -5,15 +5,17 @@ from qpsolvers import solve_qp
 from MathFunctionsCpp import MathExpressions
 import math
 
-def convert(id_var, q_desired, q, u0, output=0):
+def convert(id_var, q_desired, q, output=0):
     mathexp = MathExpressions();
 
+    print(q);
     # model variables
     m1_inputs = id_var.model1;
     N = m1_inputs.num_inputs;
 
     # state functions
     m1_massMatrix = id_var.m1_mass;
+    m1_driftVector = id_var.m1_drift;
     m1_state    = id_var.m1_state;
     m1_jacobian = id_var.m1_jacob;
 
@@ -21,7 +23,7 @@ def convert(id_var, q_desired, q, u0, output=0):
     Z = np.array([0 for i in range(N)]);
     Z3 = np.array([[0 for j in range(N)] for i in range(N)]);
     I = np.array([[float(i==j) for j in range(N)] for i in range(N)]);
-    u_model1 = np.array(u0);
+    u_model1 = Z3;
 
     # current joint states
     x  = np.array(q[:N]);     x.shape  = (N,1);
@@ -30,18 +32,11 @@ def convert(id_var, q_desired, q, u0, output=0):
     if output:
         print("\nx =", x);  print("\ndx =", dx);
 
-    M = np.array(m1_massMatrix(q, u_model1, m1_inputs));
+    # calculate the drift vector, mass matrix, and state jacobians
+    M = np.array(m1_massMatrix(q, m1_inputs));
+    E = np.array(m1_driftVector(q))
     (J_a, dJ_a) = np.array(m1_jacobian(q, m1_inputs));
     J_a = J_a;  dJ_a = dJ_a;
-
-    # calculate the drift vector
-    C = Z3;
-    C = C + mathexp.Cmat_1(x, dx);
-    C = C + mathexp.Cmat_2(x, dx);
-    C = C + mathexp.Cmat_3(x, dx);
-    C = np.matmul(C, dx);
-    G = mathexp.Ge_vec(x);
-    E = -(C + G);
 
     if output:
         print("\nE =\n", E);  print("\nM =\n", M);
@@ -60,8 +55,7 @@ def convert(id_var, q_desired, q, u0, output=0):
     # desired state variables
     q_d   = np.array(q_desired)[:len(q_a)];
     q_d.shape = (len(q_d),1);
-    Lc_d   = q_desired[-2];
-    L_d    = q_desired[-1];
+    Lc_d   = q_desired[-1];
     dq_d  = Z;  dq_d.shape  = (len(q_d),1);
     ddq_d = Z;  ddq_d.shape = (len(q_d),1);
 
@@ -76,14 +70,14 @@ def convert(id_var, q_desired, q, u0, output=0):
     dJ_Lc = mathexp.dJ_centroidal_momentum(x, dx)[0];
 
     # base momentum
-    L    = mathexp.base_momentum(x, dx);
-    J_L  = mathexp.J_base_momentum(x);
-    dJ_L = mathexp.dJ_base_momentum(x, dx)[0];
+    # L    = mathexp.base_momentum(x, dx);
+    # J_L  = mathexp.J_base_momentum(x);
+    # dJ_L = mathexp.dJ_base_momentum(x, dx)[0];
 
-    if output:
-        print("\nL =\n", L);
-        print("\nJ_L =\n", J_L);
-        print("\ndJ_L =\n", dJ_L);
+    # if output:
+        # print("\nL =\n", L);
+        # print("\nJ_L =\n", J_L);
+        # print("\ndJ_L =\n", dJ_L);
 
     # PD controller (temporary)
     kp = np.diag([200, 50, 100]);
@@ -91,14 +85,14 @@ def convert(id_var, q_desired, q, u0, output=0):
     u_PD = np.matmul(kp, (q_a - q_d)) + np.matmul(kd, (dq_a - dq_d));
 
     u_q = np.matmul(dJ_a, dx) - ddq_d + u_PD;
-    u_Lc = np.matmul(dJ_Lc, dx) + 100*(Lc - Lc_d);
-    u_L = np.matmul(dJ_L, dx) + 20*(L - L_d);
+    u_Lc = np.matmul(dJ_Lc, dx) + 20*(Lc - Lc_d);
+    # u_L = np.matmul(dJ_L, dx) + 20*(L - L_d);
 
     if output:
         print("\nu_PD =\n", u_PD);
         print("\nu_q =\n", u_q);
         print("\nu_Lc =\n", u_Lc);
-        print("\nu_L =\n", u_L)
+        # print("\nu_L =\n", u_L)
 
 
     # J  = np.vstack((J_a, J_Lc.T, J_L.T));
@@ -122,7 +116,7 @@ def convert(id_var, q_desired, q, u0, output=0):
     H = np.vstack((np.append(np.matmul(J.transpose(), J), Z3, axis=1), np.append(Z3, Z3, axis=1)));
     g = np.append(2*np.matmul(J.transpose(), u), np.zeros(N));  g.shape = (len(g),);
     A = np.append(M, -I, axis=1);
-    b = E;  b.shape = (len(b),);
+    b = -E;  b.shape = (len(b),);
 
     if output:
         print("\nH =\n", H);
@@ -189,15 +183,12 @@ def convert(id_var, q_desired, q, u0, output=0):
         print("lb.shape =", lb.shape);
         print("ub.shape =", ub.shape);
 
-    u_model1 = solve_qp(H, g, G, h, A, b, lb, ub, solver='cvxopt');
+    u_result = solve_qp(H, g, G, h, A, b, lb, ub, solver='cvxopt');
 
-    if (u_model1 is None):
-        return u_model1;
-
-    u_result = [u_model1[i] for i in range(N,2*N)];
+    if (u_result is None):
+        return u_result;
 
     if output:
-        print("\nu_result =", u_model1);
-        print("\nu_3link =", u_result);
+        print("\nu_result =", u_result);
 
-    return u_result;
+    return [u_result[i] for i in range(N,2*N)];

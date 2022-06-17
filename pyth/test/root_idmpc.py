@@ -93,6 +93,7 @@ class IDVariables:
     def __init__(self, m1_inputs):
         self.model1   = m1_inputs;
         self.m1_mass  = MassMatrix_3link;
+        self.m1_drift = DriftVector_3link;
         self.m1_state = CoM_3link;
         self.m1_jacob = J_CoM_3link;
 
@@ -122,7 +123,7 @@ if __name__ == "__main__":
     mpc_alip.setMinTimeStep(1);
 
     # simulation variables
-    sim_time = 1;  sim_dt = 0.001;
+    sim_time = 0.2;  sim_dt = 0.001;
     Nt = round(sim_time/sim_dt + 1);
     T = [i*sim_dt for i in range(Nt)];
 
@@ -141,12 +142,16 @@ if __name__ == "__main__":
     tlist = [0 for i in range(Nt)];
 
     # initial state
-    q_3link[0] = [0.357571103645510, 2.426450446298773, -1.213225223149386, 0.1, 0.1, 0.1];
+    q_3link[0] = [math.pi/4, math.pi/4, math.pi/4, 0, 0, 0];
+    q_3link[0] = [math.pi/3, math.pi/3, math.pi/3, 0, 0, 0];
+    q_3link[0] = [0.1, 0.2, 0.3, -0.1, 0.2, 0.2]
+    # q_3link[0]
+    # q_3link[0] = [0.357571103645510, 2.426450446298773, -1.213225223149386, 0.3, 0, 0];
 
     # simulation loop
     for i in range(Nt-1):
         print("\nt =", i*sim_dt);
-        
+
         # convert state: 3link -> alip
         (x_c, h_c, _) = CoM_3link(q_3link[i], inputs_3link);  print(h_c);
         L = mathexp.base_momentum(q_3link[i][:N_3link], q_3link[i][N_3link:2*N_3link])[0][0];
@@ -172,20 +177,22 @@ if __name__ == "__main__":
             print(Clist[i]);
         """
         # q_desired[i] = [x_desired, height, theta, u_alip[i][1], L_desired];
-        q_desired[i] = [0, height, theta, 0]#, L_desired];
+        q_desired[i] = [0, height, theta, 0];#, L_desired];
 
         # convert input: alip -> 3link
-        u_3link[i] = id.convert(id_3link, q_desired[i], q_3link[i], u_3link[i]);
+        u_3link[i] = id.convert(id_3link, q_desired[i], q_3link[i], 1);
+        print(u_3link[i]);
 
         if (u_3link[i] is None):
             print("ERROR: ID-QP function returned None...");
             break;
 
         q_3link[i+1] = modeuler(statespace_3link, sim_dt, sim_dt, q_3link[i], u_3link[i], inputs_3link)[1][-1];
-        print(q_3link[i+1]);
 
-    # ans = input("\nSee animation? [y/n] ");
-    # if (ans == 'y'):  animation_3link(T[:i+2], q_3link[:i+2], inputs_3link);
+        print("modeuler:", q_3link[i+1]);
+
+    ans = input("\nSee animation? [y/n] ");
+    if (ans == 'y'):  animation_3link(T[:i+2], q_3link[:i+2], inputs_3link);
 
     # alip_results = (T, q_alip, u_alip, Clist, nlist, brklist, tlist);
     # saveResults_alip("prevRun_IDMPC.pickle", alip_results)
