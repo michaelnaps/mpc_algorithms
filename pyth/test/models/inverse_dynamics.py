@@ -1,29 +1,20 @@
 import numpy as np
-# import cvxopt as co
-# import cvxopt.solvers as opt
 from qpsolvers import solve_qp
 from MathFunctionsCpp import MathExpressions
 import math
+from statespace_3link import *
 
-def convert(id_var, q_desired, q, output=0):
+def convert(inputs_3link, q_desired, q, output=0):
     mathexp = MathExpressions();
 
     print(q);
     # model variables
-    m1_inputs = id_var.model1;
-    N = m1_inputs.num_inputs;
-
-    # state functions
-    m1_massMatrix = id_var.m1_mass;
-    m1_driftVector = id_var.m1_drift;
-    m1_state    = id_var.m1_state;
-    m1_jacobian = id_var.m1_jacob;
+    N = inputs_3link.num_inputs;
 
     # initial guess and zero matrices
     Z = np.array([0 for i in range(N)]);
     Z3 = np.array([[0 for j in range(N)] for i in range(N)]);
     I = np.array([[float(i==j) for j in range(N)] for i in range(N)]);
-    u_model1 = Z3;
 
     # current joint states
     x  = np.array(q[:N]);     x.shape  = (N,1);
@@ -33,9 +24,9 @@ def convert(id_var, q_desired, q, output=0):
         print("\nx =", x);  print("\ndx =", dx);
 
     # calculate the drift vector, mass matrix, and state jacobians
-    M = np.array(m1_massMatrix(q, m1_inputs));
-    E = np.array(m1_driftVector(q))
-    (J_a, dJ_a) = np.array(m1_jacobian(q, m1_inputs));
+    M = np.array(MassMatrix_3link(q, inputs_3link));
+    E = np.array(DriftVector_3link(q))
+    (J_a, dJ_a) = np.array(J_CoM_3link(q, inputs_3link));
     J_a = J_a;  dJ_a = dJ_a;
 
     if output:
@@ -43,10 +34,8 @@ def convert(id_var, q_desired, q, output=0):
         print("\nJ_a =\n", J_a);  print("\ndJ_a =\n", dJ_a);
 
     # actual state variables
-    q_a  = np.array(m1_state(q, m1_inputs));
-    q_a.shape = (len(q_a),1);
-    dq_a = np.matmul(J_a, dx);
-    dq_a.shape = (len(dq_a),1);
+    q_a  = np.array(CoM_3link(q, inputs_3link));  q_a.shape = (len(q_a),1);
+    dq_a = np.matmul(J_a, dx);  dq_a.shape = (len(dq_a),1);
 
     if output:
         print("\nq_a =\n", q_a);
@@ -69,35 +58,18 @@ def convert(id_var, q_desired, q, output=0):
     J_Lc  = mathexp.J_centroidal_momentum(x);
     dJ_Lc = mathexp.dJ_centroidal_momentum(x, dx)[0];
 
-    # base momentum
-    # L    = mathexp.base_momentum(x, dx);
-    # J_L  = mathexp.J_base_momentum(x);
-    # dJ_L = mathexp.dJ_base_momentum(x, dx)[0];
-
-    # if output:
-        # print("\nL =\n", L);
-        # print("\nJ_L =\n", J_L);
-        # print("\ndJ_L =\n", dJ_L);
-
     # PD controller (temporary)
-    kp = np.diag([200, 50, 100]);
-    kd = np.diag([20, 20, 0]);
+    kp = np.diag([400, 400, 400]);
+    kd = np.diag([50, 50, 50]);
     u_PD = np.matmul(kp, (q_a - q_d)) + np.matmul(kd, (dq_a - dq_d));
 
     u_q = np.matmul(dJ_a, dx) - ddq_d + u_PD;
-    u_Lc = np.matmul(dJ_Lc, dx) + 20*(Lc - Lc_d);
-    # u_L = np.matmul(dJ_L, dx) + 20*(L - L_d);
+    u_Lc = 1*np.matmul(dJ_Lc, dx) + 160*(Lc - Lc_d);
 
     if output:
         print("\nu_PD =\n", u_PD);
         print("\nu_q =\n", u_q);
         print("\nu_Lc =\n", u_Lc);
-        # print("\nu_L =\n", u_L)
-
-
-    # J  = np.vstack((J_a, J_Lc.T, J_L.T));
-    # dJ = np.vstack((dJ_a, dJ_Lc, dJ_L));
-    # u  = np.append(u_q, np.append(u_Lc, u_L));  u.shape = (len(u), 1);
 
     J  = np.vstack((J_a, J_Lc.T));
     dJ = np.vstack((dJ_a, dJ_Lc));
@@ -125,7 +97,7 @@ def convert(id_var, q_desired, q, output=0):
         print("\nb =\n", b);
 
     # control barrier functions
-    gm1 = 2;  gm2 = 2;
+    gm1 = 10;  gm2 = 10;
 
     h_con = -np.array([
         q_a[0] + 0.1,
@@ -183,6 +155,8 @@ def convert(id_var, q_desired, q, output=0):
         print("lb.shape =", lb.shape);
         print("ub.shape =", ub.shape);
 
+    # G = None
+    # h = None
     u_result = solve_qp(H, g, G, h, A, b, lb, ub, solver='cvxopt');
 
     if (u_result is None):
