@@ -102,7 +102,7 @@ def main():
     sim_results = mpc_var.sim_root(3, q0, u0, updateFunction, 1);
 
     reportResults_alip(sim_results, inputs);
-    saveResults_alip("prevRun_data.pickle", sim_results);
+    # saveResults_alip("prevRun_data.pickle", sim_results);
 
 if __name__ == "__main__":
     main();

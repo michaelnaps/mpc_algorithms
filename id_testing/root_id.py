@@ -24,85 +24,80 @@ from gym.envs.registration import registry, register, make, spec
 
 
 class Inputs3link:
-	def __init__(self):
-		self.num_inputs           = 3;
-		self.gravity_acc          = -9.81;
-		self.damping_coefficients = [0, 0, 0];
-		self.joint_masses         = [5, 5, 30];
-		self.link_lengths         = [0.5, 0.5, 0.6];
+    def __init__(self):
+        self.num_inputs           = 3;
+        self.gravity_acc          = -9.81;
+        self.damping_coefficients = [0, 0, 0];
+        self.joint_masses         = [5, 5, 30];
+        self.link_lengths         = [0.5, 0.5, 0.6];
 
 
 if __name__ == "__main__":
 	#==================== Create custom MuJoCo Environment ====================#
-	render_mode = True
-	dynamics_randomization = False
-	apply_force = True
-	register(id='Pend3link-v0',
-			entry_point='mujoco_envs.pend_3link:Pend3LinkEnv',
-			kwargs =   {'dynamics_randomization': dynamics_randomization}) 	
-	env = gym.make('Pend3link-v0')
-	state = env.reset()
+    render_mode = True
+    dynamics_randomization = False
+    apply_force = True
+    register(id='Pend3link-v0',
+             entry_point='mujoco_envs.pend_3link:Pend3LinkEnv',
+             kwargs =   {'dynamics_randomization': dynamics_randomization})
+    env = gym.make('Pend3link-v0')
+    state = env.reset()
+
+    # initialize inputs and math expressions class
+    mathexp = MathExpressions();
+    inputs_3link = Inputs3link();
+
+    # desired state constants
+    height = 0.95;
+    theta  = math.pi/2;
+
+    # simulation variables
+    sim_time = 1.0;  sim_dt = env.dt;	#env.dt = 0.0005
+    Nt = round(sim_time/sim_dt + 1);
+    T = [i*sim_dt for i in range(Nt)];
+
+    # loop variables
+    N_3link = inputs_3link.num_inputs;
+    q_desired = [[0 for i in range(4)] for i in range(Nt)];
+    q_3link = [[0 for i in range(2*N_3link)] for i in range(Nt)];
+    u_3link = [[0 for j in range(N_3link)] for i in range(Nt)];
+    ddq = [[0 for j in range(N_3link)] for i in range(Nt)];
+
+    # Set initial state
+    # init_state = np.array([0.357571103645510, 2.426450446298773, -1.213225223149386, 0.3, 0, 0]) + np.random.randn(6)*0.01
+    init_state = np.array([0.7076, 1.7264, -0.8632, 0, 0, 0]) + np.random.randn(6)*0.01
+    q_3link[0] = init_state.tolist()
 
 
-	# initialize inputs and math expressions class
-	mathexp = MathExpressions();
-	inputs_3link = Inputs3link();
+    env.set_state(init_state[0:3],init_state[3:6])
+    # simulation loop
+    for i in range(Nt-1):
+        # print("\nt =", i*sim_dt);
 
-	# desired state constants
-	height = 0.95;
-	theta  = math.pi/2;
+        # # calculate current CoM position and L for monitoring
+        # (x_c, h_c, _) = CoM_3link(q_3link[i], inputs_3link);
+        # # print("com: ",x_c)
+        # L = mathexp.base_momentum(q_3link[i][:N_3link], q_3link[i][N_3link:2*N_3link])[0][0];
 
-	# simulation variables
-	sim_time = 5.0;  sim_dt = env.dt;	#env.dt = 0.0005
-	Nt = round(sim_time/sim_dt + 1);
-	T = [i*sim_dt for i in range(Nt)];
+        q_desired[i] = [0, height, theta, 0];
 
-	# loop variables
-	N_3link = inputs_3link.num_inputs;
-	q_desired = [[0 for i in range(4)] for i in range(Nt)];
-	q_3link = [[0 for i in range(2*N_3link)] for i in range(Nt)];
-	u_3link = [[0 for j in range(N_3link)] for i in range(Nt)];
-	ddq = [[0 for j in range(N_3link)] for i in range(Nt)];
+        # convert input: alip -> 3link
+        u_3link[i] = id.convert(inputs_3link, q_desired[i], q_3link[i], output=0);
 
-	# Set initial state
-	# init_state = np.array([0.357571103645510, 2.426450446298773, -1.213225223149386, 0.3, 0, 0]) + np.random.randn(6)*0.01
-	init_state = np.array([0.7076, 1.7264, -0.8632, 0, 0, 0]) + np.random.randn(6)*0.01
-	q_3link[0] = init_state.tolist()
-	
+        if (u_3link[i] is None):
+            # print("ERROR: ID-QP function returned None...");
+            u_3link[i] = [0,0,0]
+            break;
 
-	env.set_state(init_state[0:3],init_state[3:6])
-	# simulation loop
-	for i in range(Nt-1):
-		print("\nt =", i*sim_dt);
+        action = np.array(u_3link[i])
+        # print("action: ", action)
 
-		# # calculate current CoM position and L for monitoring
-		# (x_c, h_c, _) = CoM_3link(q_3link[i], inputs_3link);
-		# print("com: ",x_c)
-		# L = mathexp.base_momentum(q_3link[i][:N_3link], q_3link[i][N_3link:2*N_3link])[0][0];
+        next_state, _, _, _ = env.step(action)
+        q_3link[i+1] = next_state.tolist();  # print(q_3link[i+1]);
 
-		q_desired[i] = [0, height, theta, 0];
+        if render_mode:
+            env.render()
 
-		# convert input: alip -> 3link
-		u_3link[i], ddq[i] = id.convert(inputs_3link, q_desired[i], q_3link[i], output=0);
-
-		if (u_3link[i] is None):
-			print("ERROR: ID-QP function returned None...");
-			u_3link[i] = [0,0,0]
-			break;
-
-		# q_3link[i+1] = modeuler(statespace_3link, sim_dt, sim_dt, q_3link[i], u_3link[i], inputs_3link)[1][-1];
-
-		action = np.array(u_3link[i])
-		print("action: ", action)
-
-		next_state, _, _, _ = env.step(action)  
-		q_3link[i+1] = next_state.tolist()
-
-		if render_mode:
-			env.render()
-
-	# plt.plot(u_3link)
-	# plt.show()
-
-	# ans = input("\nSee animation? [y/n] ");
-	# if (ans == 'y'):  animation_3link(T[:i+2], q_3link[:i+2], inputs_3link);
+    statePlot = plotStates_3link(T, q_3link);
+    inputPlot = plotInputs_3link(T, u_3link);
+    plt.show();

@@ -3,8 +3,9 @@ from MathFunctionsCpp import MathExpressions
 import time
 import matplotlib.pyplot as plt
 
+mathexp = MathExpressions()
+
 def statespace_3link(q, u, inputs):
-    mathexp = MathExpressions();
 
     M = MassMatrix_3link(q, inputs);
     C = DriftVector_3link(q);
@@ -219,9 +220,31 @@ def plotStates_3link(T, q):
 
     fig, statePlot = plt.subplots(2,3);
 
-    statePlot[0,0].plot(T, qT[0]);  statePlot[1,0].plot(T, qT[3]);
-    statePlot[0,1].plot(T, qT[1]);  statePlot[1,1].plot(T, qT[4]);
-    statePlot[0,2].plot(T, qT[2]);  statePlot[1,2].plot(T, qT[5]);
+    statePlot[0,0].plot(T, qT[0]);
+    statePlot[0,0].set_title("Link 1");
+    statePlot[0,0].set_ylabel("Position [rad]");
+    statePlot[0,0].grid();
+
+    statePlot[1,0].plot(T, qT[3]);
+    statePlot[1,0].set_ylabel("Velocity [rad/s]")
+    statePlot[1,0].set_xlabel("Time [s]");
+    statePlot[1,0].grid();
+
+    statePlot[0,1].plot(T, qT[1]);
+    statePlot[0,1].set_title("Link 2");
+    statePlot[0,1].grid();
+
+    statePlot[1,1].plot(T, qT[4]);
+    statePlot[1,1].set_xlabel("Time [s]");
+    statePlot[1,1].grid();
+
+    statePlot[0,2].plot(T, qT[2]);
+    statePlot[0,2].set_title("Link 2");
+    statePlot[0,2].grid();
+
+    statePlot[1,2].plot(T, qT[5]);
+    statePlot[1,2].set_xlabel("Time [s]");
+    statePlot[1,2].grid();
 
     return statePlot;
 
@@ -231,8 +254,20 @@ def plotInputs_3link(T, u):
     fig, inputPlot = plt.subplots(1,3);
 
     inputPlot[0].plot(T, uT[0]);
+    inputPlot[0].set_title("Link 1");
+    inputPlot[0].set_ylabel("Torque [Nm]");
+    inputPlot[0].set_xlabel("Time [s]");
+    inputPlot[0].grid();
+
     inputPlot[1].plot(T, uT[1]);
+    inputPlot[1].set_title("Link 2");
+    inputPlot[1].set_xlabel("Time [s]");
+    inputPlot[1].grid();
+
     inputPlot[2].plot(T, uT[2]);
+    inputPlot[2].set_title("Link 3");
+    inputPlot[2].set_xlabel("Time [s]");
+    inputPlot[2].grid();
 
     return inputPlot;
 

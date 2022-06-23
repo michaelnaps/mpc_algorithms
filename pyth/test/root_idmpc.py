@@ -33,13 +33,13 @@ def Cu(u, du, inputs):
     umax = inputs.input_bounds;
 
     u_error = [
-        umax[0] - np.abs(u[0]),
-        umax[1] - np.abs(u[1])
+        umax[0]**2 - u[0]**2,
+        umax[1]**2 - u[1]**2
     ];
 
     Cu = [
-        1e-5*(du[0])**2 - np.log(u_error[0]) + np.log(umax[0]),
-        1e-5*(du[1])**2 - np.log(u_error[1]) + np.log(umax[1])
+        1e-5*(du[0])**2 - np.log(u_error[0]) + np.log(umax[0]**2),
+        1e-5*(du[1])**2 - np.log(u_error[1]) + np.log(umax[1]**2)
     ];
 
     return np.sum(Cu);
@@ -86,7 +86,7 @@ class InputsALIP:
         self.gravity_acc          = -9.81;
         self.joint_masses         = [40];
         self.link_lengths         = [0.95];
-        self.CP_maxdistance       = 0.1;
+        self.CP_maxdistance       = 0.5;
         self.input_bounds         = [40, 250];
         self.prev_input           = prev_input;
 
@@ -117,9 +117,9 @@ if __name__ == "__main__":
     # mpc variable parameters
     num_inputs  = 2;
     num_ssvar   = 2;
-    PH_length   = 5;
+    PH_length   = 10;
     knot_length = 2;
-    time_step   = 0.025;
+    time_step   = 0.01;
 
     # desired state constants
     height = 0.95;
@@ -133,14 +133,14 @@ if __name__ == "__main__":
     mpc_alip.setMinTimeStep(1);
 
     # simulation variables
-    sim_time = 1.0;  sim_dt = env.dt;
+    sim_time = 5.0;  sim_dt = env.dt;
     Nt = round(sim_time/sim_dt + 1);
     T = [i*sim_dt for i in range(Nt)];
 
     # loop variables
     N_3link = inputs_3link.num_inputs;
     q_alip  = [[0 for i in range(num_ssvar)] for i in range(Nt)];
-    q_desired = [[0 for i in range(2*num_ssvar)] for i in range(Nt)];
+    q_desired = [[0 for i in range(4)] for i in range(Nt)];
     q_3link = [[0 for i in range(2*N_3link)] for i in range(Nt+1)];
     u_alip  = [[0 for j in range(num_inputs*PH_length)] for i in range(Nt)];
     u_3link = [[0 for j in range(N_3link)] for i in range(Nt)];
@@ -152,8 +152,8 @@ if __name__ == "__main__":
     tlist = [0 for i in range(Nt)];
 
 	# Set initial state
-	# init_state = np.array([0.357571103645510, 2.426450446298773, -1.213225223149386, 0.3, 0, 0]) + np.random.randn(6)*0.01
-    init_state = np.array([0.7076, 1.7264, -0.8632, 0, 0, 0]) + 0.01*np.random.randn(6);
+    init_state = np.array([1.0236756190034337, 1.1651000155300129, -0.6137993852195395, 0, 0, 0]);
+    #init_state = init_state + 0.01*np.random.randn(6);
     q_3link[0] = init_state.tolist();
     env.set_state(init_state[0:3],init_state[3:6]);
 
@@ -177,19 +177,20 @@ if __name__ == "__main__":
         q_temp = mpc_alip.simulate(q_alip[i], u_alip[i]);
         x_desired = q_temp[1][0];  L_desired = q_temp[1][1];
 
-        print("desired conversion variables:", [u_alip[i][1], x_desired, L_desired]);
-
         if (np.isnan(Clist[i])):
             print("ERROR: Cost is nan after optimization...");
             break;
         else:
             print("cost post-optimization:", Clist[i]);
 
-        q_desired[i] = [x_desired, height, theta, u_alip[i][1]];#, L_desired];
-        # q_desired[i] = [0, height, theta, 0];#, L_desired];
+        print("mpc results:", u_alip[i])
+
+        # q_desired[i] = [0, height, theta, 0];
+        q_desired[i] = [x_desired, height, theta, u_alip[i][1]];
+        print("desired conversion variables:", q_desired[i]);
 
         # convert input: alip -> 3link
-        u_3link[i] = id.convert(inputs_3link, q_desired[i], q_3link[i], 0);
+        u_3link[i] = id.convert(inputs_3link, q_desired[i], q_3link[i]);
 
         if (u_3link[i] is None):
             print("ERROR: ID-QP function returned None...");
@@ -197,7 +198,7 @@ if __name__ == "__main__":
             break;
 
         action = np.array(u_3link[i]);
-        print("action:", action.tolist());
+        print("action:", u_3link[i]);
 
         next_state, _, _, _ = env.step(action);
         q_3link[i+1] = next_state.tolist();
@@ -205,8 +206,8 @@ if __name__ == "__main__":
         if render_mode:
             env.render();
 
-    ans = input("\nSee animation? [y/n] ");
-    if (ans == 'y'):  animation_3link(T[:i+2], q_3link[:i+2], inputs_3link);
+    # ans = input("\nSee animation? [y/n] ");
+    # if (ans == 'y'):  animation_3link(T, q_3link, inputs_3link);
 
     # alip_results = (T, q_alip, u_alip, Clist, nlist, brklist, tlist);
     # saveResults_alip("prevRun_IDMPC.pickle", alip_results)
