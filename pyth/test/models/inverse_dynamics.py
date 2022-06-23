@@ -7,7 +7,6 @@ from statespace_3link import *
 def convert(inputs_3link, q_desired, q, output=0):
     mathexp = MathExpressions();
 
-    print(q);
     # model variables
     N = inputs_3link.num_inputs;
 

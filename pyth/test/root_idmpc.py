@@ -87,7 +87,7 @@ class InputsALIP:
         self.joint_masses         = [40];
         self.link_lengths         = [0.95];
         self.CP_maxdistance       = 0.1;
-        self.input_bounds         = [10000, 10000];
+        self.input_bounds         = [40, 250];
         self.prev_input           = prev_input;
 
 class Inputs3link:
@@ -126,14 +126,14 @@ if __name__ == "__main__":
     theta  = np.pi/2;
 
     # MPC class variable
-    mpc_alip = mpc.system('nno', cost, statespace_alip, inputs_alip, num_inputs,
+    mpc_alip = mpc.system('ngd', cost, statespace_alip, inputs_alip, num_inputs,
                           num_ssvar, PH_length, knot_length, time_step);
-    mpc_alip.setAlpha(10);
+    mpc_alip.setAlpha(25);
     mpc_alip.setAlphaMethod('bkl');
     mpc_alip.setMinTimeStep(1);
 
     # simulation variables
-    sim_time = 5.0;  sim_dt = env.dt;
+    sim_time = 1.0;  sim_dt = env.dt;
     Nt = round(sim_time/sim_dt + 1);
     T = [i*sim_dt for i in range(Nt)];
 
@@ -141,7 +141,7 @@ if __name__ == "__main__":
     N_3link = inputs_3link.num_inputs;
     q_alip  = [[0 for i in range(num_ssvar)] for i in range(Nt)];
     q_desired = [[0 for i in range(2*num_ssvar)] for i in range(Nt)];
-    q_3link = [[0 for i in range(2*N_3link)] for i in range(Nt)];
+    q_3link = [[0 for i in range(2*N_3link)] for i in range(Nt+1)];
     u_alip  = [[0 for j in range(num_inputs*PH_length)] for i in range(Nt)];
     u_3link = [[0 for j in range(N_3link)] for i in range(Nt)];
 
@@ -158,14 +158,14 @@ if __name__ == "__main__":
     env.set_state(init_state[0:3],init_state[3:6]);
 
     # simulation loop
-    for i in range(Nt-1):
+    for i in range(Nt):
         print("\nt =", i*sim_dt);
+        print("current state:", q_3link[i]);
 
         # convert state: 3link -> alip
         (x_c, h_c, _) = CoM_3link(q_3link[i], inputs_3link);
         L = mathexp.base_momentum(q_3link[i][:N_3link], q_3link[i][N_3link:2*N_3link])[0][0];
-
-        q_alip[i]  = [x_c, L];
+        q_alip[i] = [x_c, L];
 
         # set alip model inputs
         inputs_alip.prev_inputs = u_alip[i-1][:num_inputs];
@@ -174,18 +174,18 @@ if __name__ == "__main__":
 
         # solve MPC problem
         (u_alip[i], Clist[i], nlist[i], brklist[i], tlist[i]) = mpc_alip.solve(q_alip[i], u_alip[i-1]);
-        q_temp = mpc_alip.simulate(q_alip[i], u_alip[i])[1];
-        x_desired = q_temp[0];  L_desired = q_temp[1];
+        q_temp = mpc_alip.simulate(q_alip[i], u_alip[i]);
+        x_desired = q_temp[1][0];  L_desired = q_temp[1][1];
 
-        print([u_alip[i][1], x_desired, L_desired]);
+        print("desired conversion variables:", [u_alip[i][1], x_desired, L_desired]);
 
         if (np.isnan(Clist[i])):
             print("ERROR: Cost is nan after optimization...");
             break;
         else:
-            print(Clist[i]);
+            print("cost post-optimization:", Clist[i]);
 
-        q_desired[i] = [x_desired, height, theta, u_alip[i][1], L_desired];
+        q_desired[i] = [x_desired, height, theta, u_alip[i][1]];#, L_desired];
         # q_desired[i] = [0, height, theta, 0];#, L_desired];
 
         # convert input: alip -> 3link
@@ -197,7 +197,7 @@ if __name__ == "__main__":
             break;
 
         action = np.array(u_3link[i]);
-        print("action: ", action);
+        print("action:", action.tolist());
 
         next_state, _, _, _ = env.step(action);
         q_3link[i+1] = next_state.tolist();
