@@ -53,18 +53,21 @@ def convert(inputs_3link, q_desired, q, output=0):
         print("\nLc_d =\n", Lc_d);
         print("\ndq_d =\n", dq_d);
 
+    print("\nq_a =\n", q_a);
+    print("\nq_d =\n", q_d);
+
     # centroidal momentum calculations
     Lc    = mathexp.centroidal_momentum(x, dx);
     J_Lc  = mathexp.J_centroidal_momentum(x);
     dJ_Lc = mathexp.dJ_centroidal_momentum(x, dx)[0];
 
     # PD controller (temporary)
-    kp = np.diag([200, 50, 100]);
-    kd = np.diag([20, 20, 0]);
+    kp = np.diag([400, 400, 400]);
+    kd = np.diag([50, 50, 50]);
     u_PD = np.matmul(kp, (q_a - q_d)) + np.matmul(kd, (dq_a - dq_d));
 
     u_q = np.matmul(dJ_a, dx) - ddq_d + u_PD;
-    u_Lc = np.matmul(dJ_Lc, dx) + 20*(Lc - Lc_d);
+    u_Lc = 1*np.matmul(dJ_Lc, dx) + 160*(Lc - Lc_d);
 
     if output:
         print("\nu_PD =\n", u_PD);
@@ -97,7 +100,7 @@ def convert(inputs_3link, q_desired, q, output=0):
         print("\nb =\n", b);
 
     # control barrier functions
-    gm1 = 2;  gm2 = 2;
+    gm1 = 10;  gm2 = 10;
 
     h_con = -np.array([
         q_a[0] + 0.1,
@@ -137,9 +140,9 @@ def convert(inputs_3link, q_desired, q, output=0):
         print("\nlb =\n", lb);
         print("\nub =\n", ub)
 
-    G = None; #np.append(J_con, np.zeros(6*3).reshape(6,3), axis=1);
-    h = None; #-np.matmul((dJ_con + gm1*J_con), dx) - gm2*(np.matmul(J_con, dx) + gm1*h_con);
-    #h.shape = (len(h),)
+    G = np.append(J_con, np.zeros(6*3).reshape(6,3), axis=1);
+    h = -np.matmul((dJ_con + gm1*J_con), dx) - gm2*(np.matmul(J_con, dx) + gm1*h_con);
+    h.shape = (len(h),)
 
     if output:
         print("\nG =\n", G);
@@ -148,13 +151,15 @@ def convert(inputs_3link, q_desired, q, output=0):
         print("\nMatrices Dimensions:");
         print("H.shape =", H.shape);
         print("g.shape =", g.shape);
-        #print("G.shape =", G.shape);
-        #print("h.shape =", h.shape);
+        print("G.shape =", G.shape);
+        print("h.shape =", h.shape);
         print("A.shape =", A.shape);
         print("b.shape =", b.shape);
         print("lb.shape =", lb.shape);
         print("ub.shape =", ub.shape);
 
+    # G = None
+    # h = None
     u_result = solve_qp(H, g, G, h, A, b, lb, ub, solver='cvxopt');
 
     if (u_result is None):
@@ -163,4 +168,4 @@ def convert(inputs_3link, q_desired, q, output=0):
     if output:
         print("\nu_result =", u_result);
 
-    return [u_result[i] for i in range(N,2*N)];
+    return [u_result[i] for i in range(N,2*N)], [u_result[i] for i in range(0,N)];

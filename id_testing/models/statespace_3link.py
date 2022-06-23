@@ -3,8 +3,9 @@ from MathFunctionsCpp import MathExpressions
 import time
 import matplotlib.pyplot as plt
 
-def statespace_3link(q, u, inputs):
-    mathexp = MathExpressions();
+mathexp = MathExpressions()
+
+def statespace_3link(q, u, inputs):  
 
     M = MassMatrix_3link(q, inputs);
     C = DriftVector_3link(q);
@@ -241,3 +242,34 @@ def plotCost_3link(T, C):
     costPlot.plot(T, C);
 
     return costPlot;
+
+
+
+
+def calcMassMatrix(q):
+    #  calculates the mass matrix Mmat(x)
+    
+    #  Parameters:
+    #  q: the state variables @type colvec
+
+    MmatName_= ["Mmat_L1_pend_3link","Mmat_L2_pend_3link","Mmat_L3_pend_3link"]
+    Dimension = 3
+
+    Mmat_name = MmatName_
+    n_fun = len(Mmat_name)
+    M = np.zeros((Dimension,Dimension))
+
+    # for i in range(n_fun):
+    #     M = M + eval(Mmat_name[i],q)
+    
+
+    M = np.zeros((Dimension,Dimension))
+    M = M + mathexp.Mmat_L1_pend_3link(q)
+    M = M + mathexp.Mmat_L2_pend_3link(q)
+    M = M + mathexp.Mmat_L3_pend_3link(q)
+
+    return M
+
+
+
+
