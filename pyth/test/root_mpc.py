@@ -20,13 +20,13 @@ def Cu(u, du, inputs):
     umax = inputs.input_bounds;
 
     u_error = [
-        umax[0] - np.abs(u[0]),
-        umax[1] - np.abs(u[1])
+        umax[0] - np.abs(u[0])
+        # umax[1] - np.abs(u[1])
     ];
 
     Cu = [
-        1e-5*(du[0])**2 - np.log(u_error[0]) + np.log(umax[0]),
-        1e-5*(du[1])**2 - np.log(u_error[1]) + np.log(umax[1])
+        1e-5*(du[0])**2 - np.log(u_error[0]) + np.log(umax[0])
+        # 1e-5*(du[1])**2 - np.log(u_error[1]) + np.log(umax[1])
     ];
 
     return np.sum(Cu);
@@ -40,8 +40,8 @@ def Ccmp(u, inputs):
 
     Ccmp = [
         #-np.log(utip**2 - u[0]**2) + np.log(utip**2),
-        100*(u[0]/utip)**2,
-        0
+        100*(u[0]/utip)**2
+        # 0
     ];
 
     return np.sum(Ccmp);
@@ -52,7 +52,7 @@ def cost(mpc_var, q, u, inputs):
     Nu = mpc_var.u_num;
     P  = mpc_var.PH;
     u0 = inputs.prev_input;
-    qd = [0, 0, 0, 0];
+    qd = [0, 0];
 
     # reshape input variable
     uc = np.reshape(u0 + u, [P+1, Nu]);
@@ -74,7 +74,7 @@ class InputVariables:
         self.joint_masses         = [80];
         self.link_lengths         = [2.0];
         self.CP_maxdistance       = 0.1;
-        self.input_bounds         = [100, 50];
+        self.input_bounds         = [50];
         self.prev_input           = prev_input;
 
 def updateFunction(mpc_var, q, u):
@@ -82,10 +82,10 @@ def updateFunction(mpc_var, q, u):
     return InputVariables(u[:N]);
 
 def main():
-    inputs = InputVariables([0, 0]);
+    inputs = InputVariables([0]);
 
     # mpc variables
-    num_inputs  = 2;
+    num_inputs  = 1;
     num_ssvar   = 2;
     PH_length   = 5;
     knot_length = 2;
@@ -99,7 +99,7 @@ def main():
     mpc_var.setAlphaMethod('bkl');
     mpc_var.setMinTimeStep(1);  # very large (no adjustment)
 
-    sim_results = mpc_var.sim_root(3, q0, u0, updateFunction, 1);
+    sim_results = mpc_var.sim_root(3, q0, u0, updateFunction, 0);
 
     reportResults_alip(sim_results, inputs);
     # saveResults_alip("prevRun_data.pickle", sim_results);

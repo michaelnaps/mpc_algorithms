@@ -121,8 +121,8 @@ class system:
                 print("|g|:          ", gnorm);
                 print("New Cost:     ", Cn);
                 print("New Input: ");
-                for i in range(0, N*P, 2):
-                    print("              ", un[i], un[i+1]);
+                for i in range(0, N*P, N):
+                    print("              ", un[i]);
 
             # break conditions
             if (count == imax):
@@ -187,7 +187,7 @@ class system:
                 print("New Cost:     ", Cn);
                 print("New Input: ");
                 for i in range(0, N*P, N):
-                    print("              ", un[i], un[i+1]);
+                    print("              ", un[i]);
 
             # break conditions
             if (count > imax):

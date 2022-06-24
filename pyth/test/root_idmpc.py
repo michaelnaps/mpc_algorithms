@@ -33,13 +33,13 @@ def Cu(u, du, inputs):
     umax = inputs.input_bounds;
 
     u_error = [
-        umax[0]**2 - u[0]**2,
-        umax[1]**2 - u[1]**2
+        umax[0] - np.abs(u[0])
+        # umax[1] - np.abs(u[1])
     ];
 
     Cu = [
-        1e-5*(du[0])**2 - np.log(u_error[0]) + np.log(umax[0]**2),
-        1e-5*(du[1])**2 - np.log(u_error[1]) + np.log(umax[1]**2)
+        1e-5*(du[0])**2 - np.log(u_error[0]) + np.log(umax[0])
+        # 1e-5*(du[1])**2 - np.log(u_error[1]) + np.log(umax[1])
     ];
 
     return np.sum(Cu);
@@ -53,8 +53,8 @@ def Ccmp(u, inputs):
 
     Ccmp = [
         #-np.log(utip**2 - u[0]**2) + np.log(utip**2),
-        100*(u[0]/utip)**2,
-        0
+        100*(u[0]/utip)**2
+        # 0
     ];
 
     return np.sum(Ccmp);
@@ -65,7 +65,7 @@ def cost(mpc_var, q, u, inputs):
     Nu = mpc_var.u_num;
     P  = mpc_var.PH;
     u0 = inputs.prev_input;
-    qd = [0, 0, 0, 0];
+    qd = [0, 0];
 
     # reshape input variable
     uc = np.reshape(u0 + u, [P+1, Nu]);
@@ -87,7 +87,7 @@ class InputsALIP:
         self.joint_masses         = [40];
         self.link_lengths         = [0.95];
         self.CP_maxdistance       = 0.5;
-        self.input_bounds         = [40, 250];
+        self.input_bounds         = [250];
         self.prev_input           = prev_input;
 
 class Inputs3link:
@@ -100,7 +100,7 @@ class Inputs3link:
 
 if __name__ == "__main__":
     #==== Create custom MuJoCo Environment ====#
-    render_mode = False;
+    render_mode = True;
     dynamics_randomization = False;
     apply_force = True;
     register(id='Pend3link-v0',
@@ -111,13 +111,13 @@ if __name__ == "__main__":
 
     # initialize inputs and math expressions class
     inputs_3link = Inputs3link();
-    inputs_alip  = InputsALIP([0, 0]);
+    inputs_alip  = InputsALIP([0]);
     mathexp      = MathExpressions();
 
     # mpc variable parameters
-    num_inputs  = 2;
+    num_inputs  = 1;
     num_ssvar   = 2;
-    PH_length   = 10;
+    PH_length   = 5;
     knot_length = 2;
     time_step   = 0.01;
 
@@ -126,14 +126,14 @@ if __name__ == "__main__":
     theta  = np.pi/2;
 
     # MPC class variable
-    mpc_alip = mpc.system('ngd', cost, statespace_alip, inputs_alip, num_inputs,
+    mpc_alip = mpc.system('nno', cost, statespace_alip, inputs_alip, num_inputs,
                           num_ssvar, PH_length, knot_length, time_step);
     mpc_alip.setAlpha(25);
     mpc_alip.setAlphaMethod('bkl');
     mpc_alip.setMinTimeStep(1);
 
     # simulation variables
-    sim_time = 5.0;  sim_dt = env.dt;
+    sim_time = 1.0;  sim_dt = env.dt;
     Nt = round(sim_time/sim_dt + 1);
     T = [i*sim_dt for i in range(Nt)];
 
@@ -144,6 +144,8 @@ if __name__ == "__main__":
     q_3link = [[0 for i in range(2*N_3link)] for i in range(Nt+1)];
     u_alip  = [[0 for j in range(num_inputs*PH_length)] for i in range(Nt)];
     u_3link = [[0 for j in range(N_3link)] for i in range(Nt)];
+
+    u_alip_actual = [[0] for i in range(Nt)];
 
     # MPC variables
     Clist = [0 for i in range(Nt)];
@@ -203,6 +205,11 @@ if __name__ == "__main__":
         next_state, _, _, _ = env.step(action);
         q_3link[i+1] = next_state.tolist();
 
+        u_alip_actual[i] = [
+            mathexp.centroidal_momentum(q_3link[i+1][:N_3link], q_3link[i+1][N_3link:2*N_3link])[0][0]
+        ];
+        print("Lc_actual:", u_alip_actual[i]);
+
         if render_mode:
             env.render();
 
@@ -210,4 +217,12 @@ if __name__ == "__main__":
     # if (ans == 'y'):  animation_3link(T, q_3link, inputs_3link);
 
     # alip_results = (T, q_alip, u_alip, Clist, nlist, brklist, tlist);
-    # saveResults_alip("prevRun_IDMPC.pickle", alip_results)
+
+    # temporarily adjust to two-input system
+    u_alip = [[0, u_alip[i]] for i in range(Nt)];
+    u_alip_actual = [[0, u_alip_actual[i]] for i in range(Nt)];
+
+    statePlot = plotStates_alip(T, q_alip);
+    inputPlot = plotInputs_alip(T, u_alip);
+    inputPlot_actual = plotInputs_alip(T, u_alip_actual);
+    plt.show();

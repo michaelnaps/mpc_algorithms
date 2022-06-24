@@ -10,7 +10,7 @@ def statespace_alip(q, u, inputs):
 
     # state and input variables
     x  = q[0];  L  = q[1];
-    ua = 0;  Lc = u[1];
+    ua = 0;  Lc = u[0];
 
     # solve for statespace
     ddq = [

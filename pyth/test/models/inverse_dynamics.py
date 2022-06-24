@@ -53,7 +53,7 @@ def convert(inputs_3link, q_desired, q, output=0):
         print("\ndq_d =\n", dq_d);
 
     # centroidal momentum calculations
-    Lc    = mathexp.centroidal_momentum(x, dx);
+    Lc    = mathexp.centroidal_momentum(x, dx)[0][0];
     J_Lc  = mathexp.J_centroidal_momentum(x);
     dJ_Lc = mathexp.dJ_centroidal_momentum(x, dx)[0];
 
