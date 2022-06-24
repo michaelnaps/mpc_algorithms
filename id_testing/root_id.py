@@ -4,7 +4,6 @@ sys.path.insert(0, 'models/.');
 
 import mpc
 from statespace_3link import *
-from modeuler import *
 from MathFunctionsCpp import MathExpressions
 import inverse_dynamics as id
 import math
