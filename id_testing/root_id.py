@@ -51,7 +51,7 @@ if __name__ == "__main__":
     theta  = math.pi/2;
 
     # simulation variables
-    sim_time = 10.0;  sim_dt = env.dt;	#env.dt = 0.0005
+    sim_time = 5.0;  sim_dt = env.dt;	#env.dt = 0.0005
     Nt = round(sim_time/sim_dt + 1);
     T = [i*sim_dt for i in range(Nt)];
 
@@ -67,6 +67,7 @@ if __name__ == "__main__":
     init_state = np.array([0.7076, 1.7264, -0.8632, 0, 0, 0]) + np.random.randn(6)*0.01;
     q_3link[0] = init_state.tolist();
 
+    u_previous = [0, 0, 0];
 
     env.set_state(init_state[0:3],init_state[3:6]);
     # simulation loop
@@ -81,7 +82,7 @@ if __name__ == "__main__":
         q_desired[i] = [0, height, theta, 0];
 
         # convert input: alip -> 3link
-        u_3link[i] = id.convert(inputs_3link, q_desired[i], q_3link[i], output=1);
+        u_3link[i] = id.convert(inputs_3link, q_desired[i], q_3link[i], u_previous, output=1);
 
         if (u_3link[i] is None):
             # print("ERROR: ID-QP function returned None...");
@@ -93,6 +94,8 @@ if __name__ == "__main__":
 
         next_state, _, _, _ = env.step(action);
         q_3link[i+1] = next_state.tolist();  # print(q_3link[i+1]);
+
+        u_previous = u_3link[i];
 
         if render_mode:
             env.render();
