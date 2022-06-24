@@ -51,14 +51,14 @@ if __name__ == "__main__":
     theta  = math.pi/2;
 
     # simulation variables
-    sim_time = 5.0;  sim_dt = env.dt;	#env.dt = 0.0005
+    sim_time = 10.0;  sim_dt = env.dt;	#env.dt = 0.0005
     Nt = round(sim_time/sim_dt + 1);
     T = [i*sim_dt for i in range(Nt)];
 
     # loop variables
     N_3link = inputs_3link.num_inputs;
     q_desired = [[0 for i in range(4)] for i in range(Nt)];
-    q_3link = [[0 for i in range(2*N_3link)] for i in range(Nt)];
+    q_3link = [[0 for i in range(2*N_3link)] for i in range(Nt+1)];
     u_3link = [[0 for j in range(N_3link)] for i in range(Nt)];
     ddq = [[0 for j in range(N_3link)] for i in range(Nt)];
 
@@ -68,10 +68,11 @@ if __name__ == "__main__":
     q_3link[0] = init_state.tolist();
 
     u_previous = [0, 0, 0];
+    u_alip_actual = [[0] for i in range(Nt)];
 
     env.set_state(init_state[0:3],init_state[3:6]);
     # simulation loop
-    for i in range(Nt-1):
+    for i in range(Nt):
         # print("\nt =", i*sim_dt);
 
         # # calculate current CoM position and L for monitoring
@@ -82,7 +83,7 @@ if __name__ == "__main__":
         q_desired[i] = [0, height, theta, 0];
 
         # convert input: alip -> 3link
-        u_3link[i] = id.convert(inputs_3link, q_desired[i], q_3link[i], u_previous, output=1);
+        u_3link[i] = id.convert(inputs_3link, q_desired[i], q_3link[i], u_previous);
 
         if (u_3link[i] is None):
             # print("ERROR: ID-QP function returned None...");
@@ -97,11 +98,20 @@ if __name__ == "__main__":
 
         u_previous = u_3link[i];
 
+        u_alip_actual[i] = [
+            mathexp.centroidal_momentum(q_3link[i+1][:N_3link], q_3link[i+1][N_3link:2*N_3link])[0][0]
+        ];
+        print("Lc_actual:", u_alip_actual[i]);
+
         if render_mode:
             env.render();
 
-    statePlot = plotStates_3link(T, q_3link);
+    statePlot = plotStates_3link(T, q_3link[:Nt]);
     inputPlot = plotInputs_3link(T, u_3link);
+
+    fig, amPlot = plt.subplots();
+    amPlot.plot(T, u_alip_actual);
+
     plt.show(block=0);
 
     input("Press enter to close plots...");

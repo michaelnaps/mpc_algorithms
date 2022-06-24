@@ -63,11 +63,11 @@ def convert(inputs_3link, q_desired, q, u_prev, output=0):
 
     # PD controller (temporary)
     kp = np.diag([400, 400, 50]);
-    kd = np.diag([50, 50, 20]);
+    kd = np.diag([50, 50, 50]);
     u_PD = np.matmul(kp, (q_a - q_d)) + np.matmul(kd, (dq_a - dq_d));
 
     u_q  = np.matmul(dJ_a, dx) - ddq_d + u_PD;
-    u_Lc = np.matmul(dJ_Lc, dx) + 160*(Lc - Lc_d);
+    u_Lc = np.matmul(dJ_Lc, dx) + 200*(Lc - Lc_d);
 
     if output:
         print("\nu_PD =\n", u_PD);
@@ -87,9 +87,9 @@ def convert(inputs_3link, q_desired, q, u_prev, output=0):
         print("\nu =\n", u);
 
     # QP Optimization
-    ku = 10;
-    H = np.vstack((np.append(np.matmul(J.transpose(), J), Z3, axis=1), np.append(Z3, ku*I, axis=1)));
-    g = np.append(2*np.matmul(J.transpose(), u), -2*ku*np.array(u_prev));  g.shape = (len(g),);
+    ku = 1e-2;
+    H = np.vstack((np.append(np.matmul(J.transpose(), J), Z3, axis=1), np.append(Z3, 1e-2*I, axis=1)));
+    g = np.append(2*np.matmul(J.transpose(), u), np.zeros(3));  g.shape = (len(g),);
     A = np.append(M, -I, axis=1);
     b = -E;  b.shape = (len(b),);
 
