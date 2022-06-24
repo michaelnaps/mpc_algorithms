@@ -52,9 +52,14 @@ def convert(inputs_3link, q_desired, q, output=0):
         print("\ndq_d =\n", dq_d);
 
     # centroidal momentum calculations
-    Lc    = mathexp.centroidal_momentum(x, dx);
+    Lc    = mathexp.centroidal_momentum(x, dx)[0][0];
     J_Lc  = mathexp.J_centroidal_momentum(x);
     dJ_Lc = mathexp.dJ_centroidal_momentum(x, dx)[0];
+
+    if output:
+        print("\nLc =\n", Lc);
+        print("\nJ_Lc =\n", J_Lc);
+        print("\ndJ_Lc =\n", dJ_Lc);
 
     # PD controller (temporary)
     kp = np.diag([400, 400, 400]);
@@ -74,10 +79,6 @@ def convert(inputs_3link, q_desired, q, output=0):
     u  = np.append(u_q, u_Lc);  u.shape = (len(u), 1);
 
     if output:
-        print("\nLc =\n", Lc);
-        print("\nJ_Lc =\n", J_Lc);
-        print("\ndJ_Lc =\n", dJ_Lc);
-
         print("\nJ =\n", J);
         print("\ndJ =\n", dJ);
         print("\nu =\n", u);

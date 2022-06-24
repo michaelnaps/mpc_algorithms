@@ -81,7 +81,7 @@ if __name__ == "__main__":
         q_desired[i] = [0, height, theta, 0];
 
         # convert input: alip -> 3link
-        u_3link[i] = id.convert(inputs_3link, q_desired[i], q_3link[i]);
+        u_3link[i] = id.convert(inputs_3link, q_desired[i], q_3link[i], output=1);
 
         if (u_3link[i] is None):
             # print("ERROR: ID-QP function returned None...");
