@@ -6,7 +6,7 @@ sys.path.insert(0, 'models/.');
 import mpc
 from statespace_alip import *
 import matplotlib.pyplot as plt
-import random as rd
+import numpy.random as rd
 
 def Cq(qd, q):
     Cq = [
@@ -20,13 +20,13 @@ def Cu(u, du, inputs):
     umax = inputs.input_bounds;
 
     u_error = [
-        umax[0] - np.abs(u[0])
+        umax[0]**2 - u[0]**2
         # umax[1] - np.abs(u[1])
     ];
 
     Cu = [
-        1e-5*(du[0])**2 - np.log(u_error[0]) + np.log(umax[0])
-        # 1e-5*(du[1])**2 - np.log(u_error[1]) + np.log(umax[1])
+        1e-5*(du[0])**2 - np.log(u_error[0]) + np.log(umax[0]**2)
+        # 1e-5*(du[1])**2 - np.log(u_error[1]) + np.log(umax[1]**2)
     ];
 
     return np.sum(Cu);
@@ -87,22 +87,31 @@ def main():
     # mpc variables
     num_inputs  = 1;
     num_ssvar   = 2;
-    PH_length   = 5;
-    knot_length = 2;
+    PH_length   = 10;
+    knot_length = 1;
 
-    disturb = 0.05*rd.uniform(0,1);
+    disturb = 0.05; #*rd.random();
     q0 = [0-disturb, 0];
     u0 = [0 for i in range(num_inputs*PH_length)];
 
-    mpc_var = mpc.system('ngd', cost, statespace_alip, inputs, num_inputs, num_ssvar, PH_length, knot_length);
-    mpc_var.setAlpha(25);
-    mpc_var.setAlphaMethod('bkl');
-    mpc_var.setMinTimeStep(1);  # very large (no adjustment)
+    for i in range(30):
+        PH_length = i + 1;
+        u0 = [0 for i in range(num_inputs*PH_length)];
 
-    sim_results = mpc_var.sim_root(3, q0, u0, updateFunction, 0);
+        ngd_var = mpc.system('ngd', cost, statespace_alip, inputs, num_inputs, num_ssvar, PH_length, knot_length);
+        ngd_var.setAlpha(25);
+        ngd_var.setAlphaMethod('bkl');
+        ngd_var.setMinTimeStep(1);  # very large (no adjustment)
 
-    reportResults_alip(sim_results, inputs);
-    # saveResults_alip("prevRun_data.pickle", sim_results);
+        nno_var = mpc.system('nno', cost, statespace_alip, inputs, num_inputs, num_ssvar, PH_length, knot_length);
+        nno_var.setMinTimeStep(1);  # very large (no adjustment)
+
+        ngd_results = ngd_var.sim_root(2, q0, u0, updateFunction, 0);  print("\nNGD Complete");
+        nno_results = nno_var.sim_root(2, q0, u0, updateFunction, 0);
+
+        # reportResults_alip(sim_results, inputs);
+        saveResults_alip("ngdResults_p" + str(PH_length) + ".pickle", ngd_results);
+        saveResults_alip("nnoResults_p" + str(PH_length) + ".pickle", nno_results);
 
 if __name__ == "__main__":
     main();

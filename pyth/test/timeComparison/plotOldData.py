@@ -1,7 +1,7 @@
 import sys
 
-sys.path.insert(0, '/home/michaelnaps/prog/mpc_algorithms/pyth/.');
-sys.path.insert(0, 'models/.');
+sys.path.insert(0, '../../.');
+sys.path.insert(0, '../models');
 
 import mpc
 from statespace_alip import *
@@ -28,6 +28,7 @@ class Inputs3link:
 if (__name__ == "__main__"):
     inputs = InputsALIP([0]);
 
+    """
     ngd_results = loadResults_alip("ngdResults.pickle");
     nno_results = loadResults_alip("nnoResults.pickle");
 
@@ -53,6 +54,26 @@ if (__name__ == "__main__"):
 
     input("Press enter to close run time plots...");
     plt.close('all');
+    """
 
-    PH_length = [(0 + 1) for i in range(4)];
-    for i in range(4):
+    PH_num = 30;
+    PH = [(i + 1) for i in range(PH_num)];
+    ngd_meanlist = [0 for i in range(PH_num)];
+    nno_meanlist = [0 for i in range(PH_num)];
+
+    for i in range(PH_num):
+        ngd_results = loadResults_alip("./results/ngdResults_p" + str(PH[i]) + ".pickle");
+        nno_results = loadResults_alip("./results/nnoResults_p" + str(PH[i]) + ".pickle");
+
+        ngd_meanlist[i] = np.mean(ngd_results[6]);
+        nno_meanlist[i] = np.mean(nno_results[6]);
+
+    fig, runTimeAverageComparison = plt.subplots();
+    runTimeAverageComparison.plot(PH, ngd_meanlist, label="NGD");
+    runTimeAverageComparison.plot(PH, nno_meanlist, label="NNO");
+    plt.legend();
+    plt.grid();
+    plt.show(block=0);
+
+    input("Press enter to close run time plots...");
+    plt.close('all');

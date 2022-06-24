@@ -90,7 +90,7 @@ def plotStates_alip(T, q):
 
 def plotInputs_alip(T, u, id=-1):
     uT = np.transpose(u);
-    
+
     if id == -1:
         Tspan = T;
     else:
@@ -165,18 +165,18 @@ def plotBrkFreq_alip(brk):
 
     return brkFreqPlot;
 
-def plotRunTime_alip(T, t):
+def plotRunTime_alip(T, t, title=1):
     fig, runTimePlot = plt.subplots();
 
     aveRunTime = np.mean(t);
 
     runTimePlot.plot(T, t, label="Calc. Trend");
     runTimePlot.plot([T[0], T[-1]], [aveRunTime, aveRunTime], label="Average Calc. Time");
-    runTimePlot.set_title("MPC Computation Runtime Trend");
     runTimePlot.set_ylabel("Calc. Time [ms]");
     runTimePlot.set_xlabel("Time [s]");
     runTimePlot.legend();
     runTimePlot.grid();
+    if title:  runTimePlot.set_title("MPC Computation Runtime Trend");
 
     return runTimePlot;
 
