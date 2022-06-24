@@ -5,7 +5,7 @@ sys.path.insert(0, 'models/.');
 
 import mpc
 from statespace_alip import *
-from statespace_3link import CoM_3link, animation_3link
+from statespace_3link import *
 from MathFunctionsCpp import MathExpressions
 import inverse_dynamics as id
 import matplotlib.pyplot as plt
@@ -100,9 +100,9 @@ class Inputs3link:
 
 if __name__ == "__main__":
     #==== Create custom MuJoCo Environment ====#
-    render_mode = False;
-    dynamics_randomization = False;
-    apply_force = True;
+    render_mode = 0;
+    dynamics_randomization = 0;
+    apply_force = 1;
     register(id='Pend3link-v0',
             entry_point='mujoco_envs.pend_3link:Pend3LinkEnv',
             kwargs={'dynamics_randomization': dynamics_randomization});
@@ -133,7 +133,7 @@ if __name__ == "__main__":
     mpc_alip.setMinTimeStep(1);
 
     # simulation variables
-    sim_time = 5.0;  sim_dt = env.dt;
+    sim_time = 1.0;  sim_dt = env.dt;
     Nt = round(sim_time/sim_dt + 1);
     T = [i*sim_dt for i in range(Nt)];
 
@@ -218,7 +218,11 @@ if __name__ == "__main__":
 
     # alip_results = (T, q_alip, u_alip, Clist, nlist, brklist, tlist);
 
-    statePlot = plotStates_alip(T, q_alip);
+    statePlot_alip = plotStates_alip(T, q_alip);
     inputPlot = plotInputs_alip(T, u_alip);
     inputPlot_actual = plotInputs_alip(T, u_alip_actual);
+
+    statePlot_3link = plotStates_3link(T, q_3link[:Nt]);
+    inputPlot_3link = plotInputs_3link(T, u_3link);
+
     plt.show();

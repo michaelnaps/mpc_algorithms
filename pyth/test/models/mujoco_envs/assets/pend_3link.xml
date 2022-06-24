@@ -1,7 +1,7 @@
 <mujoco model="pend_3link">
 	<compiler angle="degree" inertiafromgeom="true"/>
 	<default>
-		<joint armature="2" damping="2.0" limited="true"/>
+		<joint armature="2" damping="0.0" limited="true"/>
 		<geom contype="0" friction="1 0.1 0.1" rgba="0.7 0.7 0 1"/>
 	</default>
 	<option gravity="0 0 -9.81"  timestep="0.0005"/>
@@ -9,7 +9,7 @@
 		<!-- Floor -->
 		<geom conaffinity="0" contype="0" name="ground" pos="0 0 0" rgba="0.9 0.9 0.9 1" size="1 1 10" type="plane"/>
 
-    <!-- Base -->
+      <!-- Base -->
 		<geom conaffinity="0" contype="0" fromto="0 -0.01 0.01 0 0.01 0.01" name="root" rgba="0.9 0.4 0.6 1" size=".011" type="cylinder"/>
 		<!-- Arm -->
 		<body name="link1" pos="0 0 .01">
@@ -19,14 +19,14 @@
 			<joint axis="0 -1 0" limited="false" name="joint1" pos="0 0 0" range="-180.0 180.0" type="hinge"/>
 			<body name="link2" pos="0.5 0 0">
 				<inertial pos="0.25 0 0" mass="5" diaginertia="0.2083 0.2083 0.2083" />
-        <joint axis="0 -1 0" limited="true" name="joint2" pos="0 0 0" range="-180.0 180.0" type="hinge"/>
+         <joint axis="0 -1 0" limited="true" name="joint2" pos="0 0 0" range="-180.0 180.0" type="hinge"/>
 				<geom fromto="0 0 0 0.5 0 0" name="link2_geom" rgba="0.0 0.4 0.6 1" size=".01" type="capsule"/>
 				<body name="link3" pos="0.5 0 0">
           <inertial pos="0.3 0 0" mass="30" diaginertia="1.5 1.5 1.5" />
           <joint axis="0 -1 0" limited="true" name="joint3" pos="0 0 0" range="-180.0 180.0" type="hinge"/>
           <geom fromto="0 0 0 0.6 0 0" name="link3_geom" rgba="0.5 0.0 0.6 1" size=".01" type="capsule"/>
 				</body>
-			</body>
+         </body>
 		</body>
 	</worldbody>
 	<actuator>
