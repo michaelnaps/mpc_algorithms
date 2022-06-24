@@ -154,8 +154,8 @@ def convert(inputs_3link, q_desired, q, output=0):
         print("lb.shape =", lb.shape);
         print("ub.shape =", ub.shape);
 
-    # G = None
-    # h = None
+    # G = None;
+    # h = None;
     u_result = solve_qp(H, g, G, h, A, b, lb, ub, solver='cvxopt');
 
     if (u_result is None):

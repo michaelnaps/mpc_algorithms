@@ -10,7 +10,7 @@ def statespace_alip(q, u, inputs):
 
     # state and input variables
     x  = q[0];  L  = q[1];
-    ua = 0;  Lc = u[0];
+    ua = 0;     Lc = u[0];
 
     # solve for statespace
     ddq = [
@@ -90,7 +90,7 @@ def plotStates_alip(T, q):
 
 def plotInputs_alip(T, u, id=-1):
     uT = np.transpose(u);
-
+    
     if id == -1:
         Tspan = T;
     else:
@@ -100,8 +100,16 @@ def plotInputs_alip(T, u, id=-1):
 
         uT = [uT[0][id:P+id], uT[1][id:P+id]];
 
-    fig, inputPlot = plt.subplots(1,2);
+    fig, inputPlot = plt.subplots();
+    # fig, inputPlot = plt.subplots(1,2);
 
+    inputPlot.plot(Tspan, uT[0], label="Actual Lc");
+    inputPlot.set_title("Angular Momentum about the COM (L_c)")
+    inputPlot.set_ylabel("Angular Momentum [Nm/s]");
+    inputPlot.set_xlabel("Time [s]");
+    inputPlot.grid();
+
+    """
     inputPlot[0].plot(Tspan, uT[0], label="Actual ua");
     inputPlot[0].set_title("Ankle Torque (u_a)")
     inputPlot[0].set_ylabel("Torque [Nm]");
@@ -113,6 +121,7 @@ def plotInputs_alip(T, u, id=-1):
     inputPlot[1].set_ylabel("Angular Momentum [Nm/s]");
     inputPlot[1].set_xlabel("Time [s]");
     inputPlot[1].grid();
+    """
 
     return inputPlot;
 

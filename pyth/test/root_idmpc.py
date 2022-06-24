@@ -87,7 +87,7 @@ class InputsALIP:
         self.joint_masses         = [40];
         self.link_lengths         = [0.95];
         self.CP_maxdistance       = 0.5;
-        self.input_bounds         = [250];
+        self.input_bounds         = [2];
         self.prev_input           = prev_input;
 
 class Inputs3link:
@@ -100,7 +100,7 @@ class Inputs3link:
 
 if __name__ == "__main__":
     #==== Create custom MuJoCo Environment ====#
-    render_mode = True;
+    render_mode = False;
     dynamics_randomization = False;
     apply_force = True;
     register(id='Pend3link-v0',
@@ -118,7 +118,7 @@ if __name__ == "__main__":
     num_inputs  = 1;
     num_ssvar   = 2;
     PH_length   = 5;
-    knot_length = 2;
+    knot_length = 1;
     time_step   = 0.01;
 
     # desired state constants
@@ -126,14 +126,14 @@ if __name__ == "__main__":
     theta  = np.pi/2;
 
     # MPC class variable
-    mpc_alip = mpc.system('nno', cost, statespace_alip, inputs_alip, num_inputs,
+    mpc_alip = mpc.system('ngd', cost, statespace_alip, inputs_alip, num_inputs,
                           num_ssvar, PH_length, knot_length, time_step);
     mpc_alip.setAlpha(25);
     mpc_alip.setAlphaMethod('bkl');
     mpc_alip.setMinTimeStep(1);
 
     # simulation variables
-    sim_time = 1.0;  sim_dt = env.dt;
+    sim_time = 5.0;  sim_dt = env.dt;
     Nt = round(sim_time/sim_dt + 1);
     T = [i*sim_dt for i in range(Nt)];
 
@@ -188,7 +188,7 @@ if __name__ == "__main__":
         print("mpc results:", u_alip[i])
 
         # q_desired[i] = [0, height, theta, 0];
-        q_desired[i] = [x_desired, height, theta, u_alip[i][1]];
+        q_desired[i] = [x_desired, height, theta, u_alip[i][0]];
         print("desired conversion variables:", q_desired[i]);
 
         # convert input: alip -> 3link
@@ -217,10 +217,6 @@ if __name__ == "__main__":
     # if (ans == 'y'):  animation_3link(T, q_3link, inputs_3link);
 
     # alip_results = (T, q_alip, u_alip, Clist, nlist, brklist, tlist);
-
-    # temporarily adjust to two-input system
-    u_alip = [[0, u_alip[i]] for i in range(Nt)];
-    u_alip_actual = [[0, u_alip_actual[i]] for i in range(Nt)];
 
     statePlot = plotStates_alip(T, q_alip);
     inputPlot = plotInputs_alip(T, u_alip);
