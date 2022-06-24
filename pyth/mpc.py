@@ -169,7 +169,8 @@ class system:
                 break;
 
             # calculate the next iteration of the input
-            if (a_method == "bkl"):  (un, Cn, _, _, _) = self.alpha_bkl(g, Cc, q0, uc);
+            if (a_method == "bkl"):
+                (un, Cn, _, _, _) = self.alpha_bkl(g, Cc, q0, uc);
             else:
                 un = [uc[i] - alpha*g[i] for i in range(P*N)];
                 q  = self.simulate(q0, un);
