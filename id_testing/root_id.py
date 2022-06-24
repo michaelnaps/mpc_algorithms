@@ -34,14 +34,14 @@ class Inputs3link:
 
 if __name__ == "__main__":
 	#==================== Create custom MuJoCo Environment ====================#
-    render_mode = True
-    dynamics_randomization = False
-    apply_force = True
+    render_mode = True;
+    dynamics_randomization = False;
+    apply_force = True;
     register(id='Pend3link-v0',
              entry_point='mujoco_envs.pend_3link:Pend3LinkEnv',
-             kwargs =   {'dynamics_randomization': dynamics_randomization})
-    env = gym.make('Pend3link-v0')
-    state = env.reset()
+             kwargs =   {'dynamics_randomization': dynamics_randomization});
+    env = gym.make('Pend3link-v0');
+    state = env.reset();
 
     # initialize inputs and math expressions class
     mathexp = MathExpressions();
@@ -52,7 +52,7 @@ if __name__ == "__main__":
     theta  = math.pi/2;
 
     # simulation variables
-    sim_time = 1.0;  sim_dt = env.dt;	#env.dt = 0.0005
+    sim_time = 10.0;  sim_dt = env.dt;	#env.dt = 0.0005
     Nt = round(sim_time/sim_dt + 1);
     T = [i*sim_dt for i in range(Nt)];
 
@@ -65,11 +65,11 @@ if __name__ == "__main__":
 
     # Set initial state
     # init_state = np.array([0.357571103645510, 2.426450446298773, -1.213225223149386, 0.3, 0, 0]) + np.random.randn(6)*0.01
-    init_state = np.array([0.7076, 1.7264, -0.8632, 0, 0, 0]) + np.random.randn(6)*0.01
-    q_3link[0] = init_state.tolist()
+    init_state = np.array([0.7076, 1.7264, -0.8632, 0, 0, 0]) + np.random.randn(6)*0.01;
+    q_3link[0] = init_state.tolist();
 
 
-    env.set_state(init_state[0:3],init_state[3:6])
+    env.set_state(init_state[0:3],init_state[3:6]);
     # simulation loop
     for i in range(Nt-1):
         # print("\nt =", i*sim_dt);
@@ -82,22 +82,25 @@ if __name__ == "__main__":
         q_desired[i] = [0, height, theta, 0];
 
         # convert input: alip -> 3link
-        u_3link[i] = id.convert(inputs_3link, q_desired[i], q_3link[i], output=0);
+        u_3link[i] = id.convert(inputs_3link, q_desired[i], q_3link[i]);
 
         if (u_3link[i] is None):
             # print("ERROR: ID-QP function returned None...");
-            u_3link[i] = [0,0,0]
+            u_3link[i] = [0,0,0];
             break;
 
         action = np.array(u_3link[i])
         # print("action: ", action)
 
-        next_state, _, _, _ = env.step(action)
+        next_state, _, _, _ = env.step(action);
         q_3link[i+1] = next_state.tolist();  # print(q_3link[i+1]);
 
         if render_mode:
-            env.render()
+            env.render();
 
     statePlot = plotStates_3link(T, q_3link);
     inputPlot = plotInputs_3link(T, u_3link);
-    plt.show();
+    plt.show(block=0);
+
+    input("Press enter to close plots...");
+    plt.close('all');

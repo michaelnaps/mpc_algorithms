@@ -52,7 +52,7 @@ def convert(inputs_3link, q_desired, q, output=0):
         print("\ndq_d =\n", dq_d);
 
     # centroidal momentum calculations
-    Lc    = mathexp.centroidal_momentum(x, dx);
+    Lc    = mathexp.centroidal_momentum(x, dx)[0][0];
     J_Lc  = mathexp.J_centroidal_momentum(x);
     dJ_Lc = mathexp.dJ_centroidal_momentum(x, dx)[0];
 
@@ -62,16 +62,19 @@ def convert(inputs_3link, q_desired, q, output=0):
     u_PD = np.matmul(kp, (q_a - q_d)) + np.matmul(kd, (dq_a - dq_d));
 
     u_q = np.matmul(dJ_a, dx) - ddq_d + u_PD;
-    u_Lc = 1*np.matmul(dJ_Lc, dx) + 160*(Lc - Lc_d);
+    # u_Lc = 1*np.matmul(dJ_Lc, dx) + 160*(Lc - Lc_d);
 
     if output:
         print("\nu_PD =\n", u_PD);
         print("\nu_q =\n", u_q);
-        print("\nu_Lc =\n", u_Lc);
+        # print("\nu_Lc =\n", u_Lc);
 
-    J  = np.vstack((J_a, J_Lc.T));
-    dJ = np.vstack((dJ_a, dJ_Lc));
-    u  = np.append(u_q, u_Lc);  u.shape = (len(u), 1);
+    # J  = np.vstack((J_a, J_Lc.T));
+    J  = J_a;
+    # dJ = np.vstack((dJ_a, dJ_Lc));
+    dJ = dJ_a;
+    # u  = np.append(u_q, u_Lc);  u.shape = (len(u), 1);
+    u  = u_q;
 
     if output:
         print("\nLc =\n", Lc);

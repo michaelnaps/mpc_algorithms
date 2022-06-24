@@ -33,13 +33,13 @@ def Cu(u, du, inputs):
     umax = inputs.input_bounds;
 
     u_error = [
-        umax[0] - np.abs(u[0])
+        umax[0]**2 - u[0]**2
         # umax[1] - np.abs(u[1])
     ];
 
     Cu = [
-        1e-5*(du[0])**2 - np.log(u_error[0]) + np.log(umax[0])
-        # 1e-5*(du[1])**2 - np.log(u_error[1]) + np.log(umax[1])
+        1e-5*(du[0])**2 - np.log(u_error[0]) + np.log(umax[0]**2)
+        # 1e-5*(du[1])**2 - np.log(u_error[1]) + np.log(umax[1]**2)
     ];
 
     return np.sum(Cu);
@@ -133,7 +133,7 @@ if __name__ == "__main__":
     mpc_alip.setMinTimeStep(1);
 
     # simulation variables
-    sim_time = 1.0;  sim_dt = env.dt;
+    sim_time = 5.0;  sim_dt = env.dt;
     Nt = round(sim_time/sim_dt + 1);
     T = [i*sim_dt for i in range(Nt)];
 
@@ -219,10 +219,14 @@ if __name__ == "__main__":
     # alip_results = (T, q_alip, u_alip, Clist, nlist, brklist, tlist);
 
     statePlot_alip = plotStates_alip(T, q_alip);
-    inputPlot = plotInputs_alip(T, u_alip);
-    inputPlot_actual = plotInputs_alip(T, u_alip_actual);
+
+    fig, inputComparison = plt.subplots();
+    inputComparison.plot(T, np.transpose(u_alip)[0], label="desired");
+    inputComparison.plot(T, u_alip_actual, label="actual");
 
     statePlot_3link = plotStates_3link(T, q_3link[:Nt]);
     inputPlot_3link = plotInputs_3link(T, u_3link);
+    plt.show(block=0);
 
-    plt.show();
+    input("Press enter to close plots...");
+    plt.close('all');
