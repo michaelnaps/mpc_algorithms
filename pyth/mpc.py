@@ -353,8 +353,6 @@ class system:
 
             if output:  print("Elapsed Time:\n              ", tlist[i]);
 
-            # inverse dynamics: lapm -> 3link (digit)
-
             qlist[i] = self.modeuler(qlist[i-1], ulist[i][:N], 1)[1][1];
 
             if (update != 0):  self.inputs = update(self, qlist[i], ulist[i]);
