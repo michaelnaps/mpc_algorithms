@@ -273,6 +273,24 @@ def plotInputs_3link(T, u):
 
 def plotCost_3link(T, C):
     fig, costPlot = plt.subplots();
+
     costPlot.plot(T, C);
+    costPlot.set_title("MPC Cost Trend");
+    costPlot.set_ylabel("Cost");
+    costPlot.set_xlabel("Time [s]");
+    costPlot.grid();
 
     return costPlot;
+
+def plotBrkFreq_3link(brk):
+    fig, brkFreqPlot = plt.subplots();
+
+    unique, counts = np.unique(brk[1:], return_counts=1);
+
+    for i in range(len(unique)):
+        brkFreqPlot.bar([unique[i], unique[i]], [0, counts[i]], linewidth=3);
+
+    plt.xlim([np.min(brk)-0.5, np.max(brk)+0.5]);
+    plt.xticks(unique);
+
+    return brkFreqPlot;

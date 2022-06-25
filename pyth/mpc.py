@@ -122,7 +122,7 @@ class system:
                 print("New Cost:     ", Cn);
                 print("New Input: ");
                 for i in range(0, N*P, N):
-                    print("              ", un[i]);
+                    print("              ", [un[i+j] for j in range(N)]);
 
             # break conditions
             if (count == imax):
