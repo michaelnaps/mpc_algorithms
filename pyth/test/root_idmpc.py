@@ -34,12 +34,10 @@ def Cu(u, du, inputs):
 
     u_error = [
         umax[0]**2 - u[0]**2
-        # umax[1] - np.abs(u[1])
     ];
 
     Cu = [
-        1e-5*(du[0])**2 - np.log(u_error[0]) + np.log(umax[0]**2)
-        # 1e-5*(du[1])**2 - np.log(u_error[1]) + np.log(umax[1]**2)
+        100*(du[0])**2 - np.log(u_error[0]) + np.log(umax[0]**2)
     ];
 
     return np.sum(Cu);
@@ -52,9 +50,7 @@ def Ccmp(u, inputs):
     utip = m*g*dmax;
 
     Ccmp = [
-        #-np.log(utip**2 - u[0]**2) + np.log(utip**2),
         100*(u[0]/utip)**2
-        # 0
     ];
 
     return np.sum(Ccmp);
@@ -87,7 +83,7 @@ class InputsALIP:
         self.joint_masses         = [40];
         self.link_lengths         = [0.95];
         self.CP_maxdistance       = 0.5;
-        self.input_bounds         = [10];
+        self.input_bounds         = [2];
         self.prev_input           = prev_input;
 
 class Inputs3link:
@@ -117,9 +113,9 @@ if __name__ == "__main__":
     # mpc variable parameters
     num_inputs  = 1;
     num_ssvar   = 2;
-    PH_length   = 5;
+    PH_length   = 10;
     knot_length = 1;
-    time_step   = 0.01;
+    time_step   = 0.025;
 
     # desired state constants
     height = 0.95;
@@ -127,7 +123,7 @@ if __name__ == "__main__":
 
     # MPC class variable
     mpc_alip = mpc.system('ngd', cost, statespace_alip, inputs_alip, num_inputs,
-                          num_ssvar, PH_length, knot_length, time_step);
+                          num_ssvar, PH_length, knot_length, time_step, max_iter=100);
     mpc_alip.setAlpha(25);
     mpc_alip.setAlphaMethod('bkl');
     mpc_alip.setMinTimeStep(1);
@@ -171,11 +167,19 @@ if __name__ == "__main__":
 
         # set alip model inputs
         inputs_alip.prev_inputs = u_alip[i-1][:num_inputs];
-        inputs_alip.link_lengths = [h_c];
+        # inputs_alip.link_lengths = [h_c];
         mpc_alip.setModelInputs(inputs_alip);
 
         # solve MPC problem
-        (u_alip[i], Clist[i], nlist[i], brklist[i], tlist[i]) = mpc_alip.solve(q_alip[i-1], u_alip[i-1]);
+        if ((i-1) % 10) == 0:
+            (u_alip[i], Clist[i], nlist[i], brklist[i], tlist[i]) = mpc_alip.solve(q_alip[i-1], u_alip[i-1], output=0);
+        else:
+            u_alip[i] = u_alip[i-1];
+            Clist[i]  = Clist[i-1];
+            nlist[i]  = 0;
+            brklist[i] = 3;
+            tlist[i]  = 0;
+
         q_temp = mpc_alip.simulate(q_alip[i-1], u_alip[i]);
         x_desired = q_temp[1][0];  L_desired = q_temp[1][1];
 
@@ -188,7 +192,7 @@ if __name__ == "__main__":
         print("mpc results:", u_alip[i])
 
         # q_desired[i] = [0, height, theta, 0];
-        q_desired[i] = [x_desired, height, theta, u_alip[i][0]];
+        q_desired[i] = [0, height, theta, u_alip[i][0]];
         print("desired conversion variables:", q_desired[i]);
 
         # convert input: alip -> 3link
