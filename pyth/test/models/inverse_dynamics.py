@@ -4,7 +4,7 @@ from MathFunctionsCpp import MathExpressions
 import math
 from statespace_3link import *
 
-def convert(inputs_3link, q_desired, q, output=0):
+def convert(inputs_3link, q_desired, q, u_prev, output=0):
     mathexp = MathExpressions();
 
     # model variables
@@ -26,7 +26,7 @@ def convert(inputs_3link, q_desired, q, output=0):
     M = np.array(MassMatrix_3link(q, inputs_3link));
     E = np.array(DriftVector_3link(q))
     (J_a, dJ_a) = np.array(J_CoM_3link(q, inputs_3link));
-    J_a = J_a[1:N];  dJ_a = dJ_a[1:N];
+    J_a = J_a[1:N];  dJ_a = dJ_a[1:N]
 
     if output:
         print("\nE =\n", E);  print("\nM =\n", M);
@@ -57,13 +57,20 @@ def convert(inputs_3link, q_desired, q, output=0):
     J_Lc  = mathexp.J_centroidal_momentum(x);
     dJ_Lc = mathexp.dJ_centroidal_momentum(x, dx)[0];
 
+    if output:
+        print("\nLc =\n", Lc);
+        print("\nJ_Lc =\n", J_Lc);
+        print("\ndJ_Lc =\n", dJ_Lc);
+
     # PD controller (temporary)
-    kp = np.diag([400, 400]);
-    kd = np.diag([50, 50]);
+    # kp = np.diag([7500, 10000, 1000]);
+    # kd = np.diag([500, 1000, 1500]);
+    kp = np.diag([10000, 1000]);
+    kd = np.diag([1000, 1500]);
     u_PD = np.matmul(kp, (q_a - q_d)) + np.matmul(kd, (dq_a - dq_d));
 
-    u_q = np.matmul(dJ_a, dx) - ddq_d + u_PD;
-    u_Lc = 1*np.matmul(dJ_Lc, dx) + 160*(Lc - Lc_d);
+    u_q  = np.matmul(dJ_a, dx) - ddq_d + u_PD;
+    u_Lc = np.matmul(dJ_Lc, dx) + 15000*(Lc - Lc_d);
 
     if output:
         print("\nu_PD =\n", u_PD);
@@ -71,21 +78,21 @@ def convert(inputs_3link, q_desired, q, output=0):
         print("\nu_Lc =\n", u_Lc);
 
     J  = np.vstack((J_a, J_Lc.T));
+    # J = J_a;
     dJ = np.vstack((dJ_a, dJ_Lc));
+    # dJ = dJ_a;
     u  = np.append(u_q, u_Lc);  u.shape = (len(u), 1);
+    # u = u_q;  u.shape = (len(u), 1);
 
     if output:
-        print("\nLc =\n", Lc);
-        print("\nJ_Lc =\n", J_Lc);
-        print("\ndJ_Lc =\n", dJ_Lc);
-
         print("\nJ =\n", J);
         print("\ndJ =\n", dJ);
         print("\nu =\n", u);
 
     # QP Optimization
-    H = np.vstack((np.append(np.matmul(J.transpose(), J), Z3, axis=1), np.append(Z3, Z3, axis=1)));
-    g = np.append(2*np.matmul(J.transpose(), u), np.zeros(N));  g.shape = (len(g),);
+    ku = 10;
+    H = np.vstack((np.append(np.matmul(J.transpose(), J), Z3, axis=1), np.append(Z3, ku*I, axis=1)));
+    g = np.append(2*np.matmul(J.transpose(), u), np.zeros(3));  g.shape = (len(g),);
     A = np.append(M, -I, axis=1);
     b = -E;  b.shape = (len(b),);
 
@@ -99,8 +106,8 @@ def convert(inputs_3link, q_desired, q, output=0):
     gm1 = 10;  gm2 = 10;
 
     h_con = -np.array([
-        #q_a[0] + 0.1,
-        #-q_a[0] + 0.1,
+        # q_a[0] + 0.1,
+        # -q_a[0] + 0.1,
         q_a[0] - 0.5,
         -q_a[0] + 1,
         q_a[1] - math.pi/2 + 1,
@@ -111,16 +118,16 @@ def convert(inputs_3link, q_desired, q, output=0):
         -J_a[0],
         J_a[1],
         -J_a[1]
-        #J_a[2],
-        #-J_a[2]
+        # J_a[2],
+        # -J_a[2]
     ]);
     dJ_con = -np.array([
         dJ_a[0],
         -dJ_a[0],
         dJ_a[1],
         -dJ_a[1]
-        #dJ_a[2],
-        #-dJ_a[2]
+        # dJ_a[2],
+        # -dJ_a[2]
     ]);
 
     if output:
@@ -128,7 +135,7 @@ def convert(inputs_3link, q_desired, q, output=0):
         print("\nJ_con =\n", J_con);
         print("\ndJ_con =\n", dJ_con);
 
-    lb = -np.array([2000, 2000, 2000, 40, 1000, 500]);
+    lb = -np.array([2000, 2000, 2000, 10000, 10000, 10000]);
     lb.shape = (len(lb),);
     ub = -lb;
 

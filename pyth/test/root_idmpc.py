@@ -7,7 +7,7 @@ import mpc
 from statespace_alip import *
 from statespace_3link import *
 from MathFunctionsCpp import MathExpressions
-import inverse_dynamics0 as id
+import inverse_dynamics as id
 import matplotlib.pyplot as plt
 
 import gym
@@ -220,13 +220,16 @@ if __name__ == "__main__":
     # ans = input("\nSee animation? [y/n] ");
     # if (ans == 'y'):  animation_3link(T, q_3link, inputs_3link);
 
-    # alip_results = (T, q_alip, u_alip, Clist, nlist, brklist, tlist);
+    alip_results = (T, q_alip, u_alip, Clist, nlist, brklist, tlist);
+    tpm_results  = (T, q_3link[:Nt], u_3link);
 
-    statePlot_alip = plotStates_alip(T, q_alip);
+    reportResults_alip(alip_results, inputs_alip);
+
 
     fig, inputComparison = plt.subplots();
     inputComparison.plot(T, np.transpose(u_alip)[0], label="desired");
     inputComparison.plot(T, u_alip_actual, label="actual");
+    plt.legend();
 
     statePlot_3link = plotStates_3link(T, q_3link[:Nt]);
     inputPlot_3link = plotInputs_3link(T, u_3link);

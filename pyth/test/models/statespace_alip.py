@@ -180,7 +180,7 @@ def plotRunTime_alip(T, t, title=1):
 
     return runTimePlot;
 
-def saveResults_alip(filename, mpc_results):
+def saveResults_alip(filename, sim_results):
     with open(filename, "wb") as save_file:
         pickle.dump(mpc_results, save_file);
 

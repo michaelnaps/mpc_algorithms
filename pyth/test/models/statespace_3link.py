@@ -220,31 +220,31 @@ def plotStates_3link(T, q):
 
     fig, statePlot = plt.subplots(2,3);
 
-    statePlot[0,0].plot(T, qT[0]);
-    statePlot[0,0].set_title("Link 1");
-    statePlot[0,0].set_ylabel("Position [rad]");
-    statePlot[0,0].grid();
+    statePlot[0][0].plot(T, qT[0]);
+    statePlot[0][0].set_title("Link 1");
+    statePlot[0][0].set_ylabel("Position [rad]");
+    statePlot[0][0].grid();
 
-    statePlot[1,0].plot(T, qT[3]);
-    statePlot[1,0].set_ylabel("Velocity [rad/s]")
-    statePlot[1,0].set_xlabel("Time [s]");
-    statePlot[1,0].grid();
+    statePlot[1][0].plot(T, qT[3]);
+    statePlot[1][0].set_ylabel("Velocity [rad/s]")
+    statePlot[1][0].set_xlabel("Time [s]");
+    statePlot[1][0].grid();
 
-    statePlot[0,1].plot(T, qT[1]);
-    statePlot[0,1].set_title("Link 2");
-    statePlot[0,1].grid();
+    statePlot[0][1].plot(T, qT[1]);
+    statePlot[0][1].set_title("Link 2");
+    statePlot[0][1].grid();
 
-    statePlot[1,1].plot(T, qT[4]);
-    statePlot[1,1].set_xlabel("Time [s]");
-    statePlot[1,1].grid();
+    statePlot[1][1].plot(T, qT[4]);
+    statePlot[1][1].set_xlabel("Time [s]");
+    statePlot[1][1].grid();
 
-    statePlot[0,2].plot(T, qT[2]);
-    statePlot[0,2].set_title("Link 2");
-    statePlot[0,2].grid();
+    statePlot[0][2].plot(T, qT[2]);
+    statePlot[0][2].set_title("Link 2");
+    statePlot[0][2].grid();
 
-    statePlot[1,2].plot(T, qT[5]);
-    statePlot[1,2].set_xlabel("Time [s]");
-    statePlot[1,2].grid();
+    statePlot[1][2].plot(T, qT[5]);
+    statePlot[1][2].set_xlabel("Time [s]");
+    statePlot[1][2].grid();
 
     return statePlot;
 
@@ -294,3 +294,65 @@ def plotBrkFreq_3link(brk):
     plt.xticks(unique);
 
     return brkFreqPlot;
+
+def plotRunTime_3link(T, t, title=1):
+    fig, runTimePlot = plt.subplots();
+
+    aveRunTime = np.mean(t);
+
+    runTimePlot.plot(T, t, label="Calc. Trend");
+    runTimePlot.plot([T[0], T[-1]], [aveRunTime, aveRunTime], label="Average Calc. Time");
+    runTimePlot.set_ylabel("Calc. Time [ms]");
+    runTimePlot.set_xlabel("Time [s]");
+    runTimePlot.legend();
+    runTimePlot.grid();
+    if title:  runTimePlot.set_title("MPC Computation Runtime Trend");
+
+    return runTimePlot;
+
+def saveResults_3link(filename, sim_results):
+    with open(filename, "wb") as save_file:
+        pickle.dump(mpc_results, save_file);
+
+    print("\nResults saved...");
+    return 1;
+
+def loadResults_3link(filename):
+    with open(filename, "rb") as load_file:
+        mpc_results = pickle.load(load_file);
+
+    return mpc_results;
+
+def staticPlots_3link(mpc_results):
+    T = mpc_results[0];
+    q = mpc_results[1];
+    u = mpc_results[2];
+    C = mpc_results[3];
+    n = mpc_results[4];
+    brk = mpc_results[5];
+    t = mpc_results[6];
+
+    statePlot = plotStates_3link(T, q);
+    inputPlot = plotInputs_3link(T, u);
+    costPlot  = plotCost_3link(T, C);
+    brkFreqPlot = plotBrkFreq_3link(brk);
+    runTimePlot = plotRunTime_3link(T, t);
+    plt.show(block=0);
+
+    input("Press enter to close static plots...");
+    plt.close('all');
+
+    return 1;
+
+def reportResults_alip(mpc_results, inputs=0):
+    T = mpc_results[0];
+    q = mpc_results[1];
+
+    ans = input("\nSee state, input, and cost plots? [y/n] ");
+    if (ans == 'y'):  staticPlots_alip(mpc_results);
+
+    if (inputs != 0):
+        ans = input("\nSee animation? [y/n] ");
+        if (ans == 'y'):  animation_alip(T, q, inputs);
+
+    return 1;
