@@ -87,31 +87,33 @@ def main():
     # mpc variables
     num_inputs  = 1;
     num_ssvar   = 2;
-    PH_length   = 10;
     knot_length = 1;
 
-    disturb = 0.05; #*rd.random();
-    q0 = [0-disturb, 0];
-    u0 = [0 for i in range(num_inputs*PH_length)];
-
-    for i in range(30):
+    for i in range(20):
         PH_length = i + 1;
         u0 = [0 for i in range(num_inputs*PH_length)];
 
-        ngd_var = mpc.system('ngd', cost, statespace_alip, inputs, num_inputs, num_ssvar, PH_length, knot_length);
-        ngd_var.setAlpha(25);
-        ngd_var.setAlphaMethod('bkl');
-        ngd_var.setMinTimeStep(1);  # very large (no adjustment)
+        for j in range(20):
+            disturb = 0.05*rd.random();
+            posneg = rd.randint(2);
+            dir = 1;
+            if posneg < 1:  dir = -1;
+            q0 = [0 + dir*disturb, 0];
 
-        nno_var = mpc.system('nno', cost, statespace_alip, inputs, num_inputs, num_ssvar, PH_length, knot_length);
-        nno_var.setMinTimeStep(1);  # very large (no adjustment)
+            nno_var = mpc.system('nno', cost, statespace_alip, inputs, num_inputs, num_ssvar, PH_length, knot_length, max_iter=100);
+            nno_var.setMinTimeStep(1);  # very large (no adjustment)
 
-        ngd_results = ngd_var.sim_root(2, q0, u0, updateFunction, 0);  print("\nNGD Complete");
-        nno_results = nno_var.sim_root(2, q0, u0, updateFunction, 0);
+            ngd_var = mpc.system('ngd', cost, statespace_alip, inputs, num_inputs, num_ssvar, PH_length, knot_length, max_iter=100);
+            ngd_var.setAlpha(25);
+            ngd_var.setAlphaMethod('bkl');
+            ngd_var.setMinTimeStep(1);  # very large (no adjustment)
 
-        # reportResults_alip(sim_results, inputs);
-        saveResults_alip("ngdResults_p" + str(PH_length) + ".pickle", ngd_results);
-        saveResults_alip("nnoResults_p" + str(PH_length) + ".pickle", nno_results);
+            nno_results = nno_var.sim_root(2, q0, u0, updateFunction, 0);
+            ngd_results = ngd_var.sim_root(2, q0, u0, updateFunction, 0);  print("\nNGD Complete");
+
+            # reportResults_alip(sim_results, inputs);
+            saveResults_alip("ngdResults_p" + str(PH_length) + "_t" + str(j+1) + ".pickle", ngd_results);
+            saveResults_alip("nnoResults_p" + str(PH_length) + "_t" + str(j+1) + ".pickle", nno_results);
 
 if __name__ == "__main__":
     main();

@@ -64,11 +64,11 @@ if __name__ == "__main__":
 
     # Set initial state
     # init_state = np.array([0.357571103645510, 2.426450446298773, -1.213225223149386, 0.3, 0, 0]) + np.random.randn(6)*0.01
-    init_state = np.array([0.7076, 1.7264, -0.8632, 0, 0, 0]) + np.random.randn(6)*0.01;
+    init_state = np.array([0.7076, 1.7264, -0.8632, 0, 0, 0]) + 0.01*np.random.randn(6);
     q_3link[0] = init_state.tolist();
 
     u_previous = [0, 0, 0];
-    u_alip_actual = [[0] for i in range(Nt)];
+    y_actual = [[0] for i in range(Nt)];
 
     env.set_state(init_state[0:3],init_state[3:6]);
     # simulation loop
@@ -76,9 +76,14 @@ if __name__ == "__main__":
         # print("\nt =", i*sim_dt);
 
         # # calculate current CoM position and L for monitoring
-        # (x_c, h_c, _) = CoM_3link(q_3link[i], inputs_3link);
+        (x_c, h_c, q_c) = CoM_3link(q_3link[i], inputs_3link);
         # # print("com: ",x_c)
         # L = mathexp.base_momentum(q_3link[i][:N_3link], q_3link[i][N_3link:2*N_3link])[0][0];
+
+        y_actual[i] = [
+            x_c, h_c, q_c,
+            mathexp.centroidal_momentum(q_3link[i][:N_3link], q_3link[i][N_3link:2*N_3link])[0][0]
+        ];
 
         q_desired[i] = [0, height, theta, 0];
 
@@ -98,10 +103,7 @@ if __name__ == "__main__":
 
         u_previous = u_3link[i];
 
-        u_alip_actual[i] = [
-            mathexp.centroidal_momentum(q_3link[i+1][:N_3link], q_3link[i+1][N_3link:2*N_3link])[0][0]
-        ];
-        print("Lc_actual:", u_alip_actual[i]);
+        print("Lc_actual:", y_actual[i]);
 
         if render_mode:
             env.render();
@@ -109,8 +111,12 @@ if __name__ == "__main__":
     statePlot = plotStates_3link(T, q_3link[:Nt]);
     inputPlot = plotInputs_3link(T, u_3link);
 
-    fig, amPlot = plt.subplots();
-    amPlot.plot(T, u_alip_actual);
+    yT = np.transpose(y_actual);
+    fig, yPlot = plt.subplots(1,4);
+    yPlot[0].plot(T, yT[0]);  yPlot[0].set_title("x_c");
+    yPlot[1].plot(T, yT[1]);  yPlot[1].set_title("h_c");
+    yPlot[2].plot(T, yT[2]);  yPlot[2].set_title("q_c");
+    yPlot[3].plot(T, yT[3]);  yPlot[3].set_title("L_c");
 
     plt.show(block=0);
 

@@ -56,24 +56,38 @@ if (__name__ == "__main__"):
     plt.close('all');
     """
 
-    PH_num = 30;
+    PH_num = 15;  rd_num = 20;
     PH = [(i + 1) for i in range(PH_num)];
     ngd_meanlist = [0 for i in range(PH_num)];
     nno_meanlist = [0 for i in range(PH_num)];
+    nno_brklist = [];  ngd_brklist = [];
 
     for i in range(PH_num):
-        ngd_results = loadResults_alip("./results/ngdResults_p" + str(PH[i]) + ".pickle");
-        nno_results = loadResults_alip("./results/nnoResults_p" + str(PH[i]) + ".pickle");
+        for j in range(rd_num):
+            nno_results = loadResults_alip("data/nnoResults_p" + str(PH[i]) + "_t" + str(j+1) + ".pickle");
+            ngd_results = loadResults_alip("data/ngdResults_p" + str(PH[i]) + "_t" + str(j+1) + ".pickle");
 
-        ngd_meanlist[i] = np.mean(ngd_results[6]);
-        nno_meanlist[i] = np.mean(nno_results[6]);
+            nno_Nt = len(nno_results[0]);
+            ngd_Nt = len(ngd_results[0]);
+
+            nno_meanlist[i] += np.mean(nno_results[6])/rd_num;
+            ngd_meanlist[i] += np.mean(ngd_results[6])/rd_num;
+
+            nno_brklist += nno_results[5];
+            ngd_brklist += ngd_results[5];
 
     fig, runTimeAverageComparison = plt.subplots();
-    runTimeAverageComparison.plot(PH, ngd_meanlist, label="NGD");
     runTimeAverageComparison.plot(PH, nno_meanlist, label="NNO");
+    runTimeAverageComparison.plot(PH, ngd_meanlist, label="NGD");
     plt.legend();
     plt.grid();
+
+    nno_brkFreqPlot = plotBrkFreq_alip(nno_brklist);
+    nno_brkFreqPlot.set_title("NNO");
+    ngd_brkFreqPlot = plotBrkFreq_alip(ngd_brklist);
+    ngd_brkFreqPlot.set_title("NGD");
+
     plt.show(block=0);
 
-    input("Press enter to close run time plots...");
+    input("Press enter to close plots...");
     plt.close('all');
