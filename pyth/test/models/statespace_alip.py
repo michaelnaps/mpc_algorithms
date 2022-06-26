@@ -157,7 +157,7 @@ def plotBrkFreq_alip(brk):
 
     unique, counts = np.unique(brk[1:], return_counts=1);
 
-    for i in range(len(unique)):
+    for i in range(len(unique)-1):
         brkFreqPlot.bar([unique[i], unique[i]], [0, counts[i]], linewidth=3);
 
     plt.xlim([np.min(brk)-0.5, np.max(brk)+0.5]);

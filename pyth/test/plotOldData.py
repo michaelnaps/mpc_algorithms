@@ -29,8 +29,8 @@ if (__name__ == "__main__"):
     inputs_alip = InputsALIP([0]);
     inputs_tpm = InputsTPM();
 
-    alip_results = loadResults_alip("resultsALIP.pickle");
-    tpm_results  = loadResults_tpm("resultsTPM.pickle");
+    alip_results = loadResults_alip("data/resultsALIP_t1.pickle");
+    tpm_results  = loadResults_tpm("data/resultsTPM_t1.pickle");
 
     reportResults_alip(alip_results, inputs_alip);
 

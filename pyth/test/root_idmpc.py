@@ -146,7 +146,7 @@ if __name__ == "__main__":
     # MPC variables
     Clist = [0 for i in range(Nt)];
     nlist = [0 for i in range(Nt)];
-    brklist = [0 for i in range(Nt)];
+    brklist = [100 for i in range(Nt)];
     tlist = [0 for i in range(Nt)];
 
 	# Set initial state (TPM and ALIP)
@@ -179,21 +179,22 @@ if __name__ == "__main__":
 
         # set alip model inputs
         inputs_alip.prev_inputs = u_alip[i-1][:num_inputs];
-        inputs_alip.link_lengths = [h_c];
+        # inputs_alip.link_lengths = [h_c];
         mpc_alip.setModelInputs(inputs_alip);
 
         # solve MPC problem
         if ((i-1) % 50) == 0:
             (u_alip[i], Clist[i], nlist[i], brklist[i], tlist[i]) = mpc_alip.solve(q_alip[i-1], u_alip[i-1], output=0);
+            x_d = mpc_alip.simulate(u_alip[i-1], u_alip[i])[1][0];
         else:
             u_alip[i] = u_alip[i-1];
             Clist[i]  = Clist[i-1];
-            nlist[i]  = 0;
-            brklist[i] = 3;
-            tlist[i]  = 0;
+            nlist[i]  = -1;
+            brklist[i] = 100;
+            tlist[i]  = -1;
 
         # construct q_d for ID-QP function
-        q_desired[i] = [0, height, theta, u_alip[i][0]];
+        q_desired[i] = [x_d, height, theta, u_alip[i][0]];
 
         if (np.isnan(Clist[i])):
             print("ERROR: Cost is nan after optimization...");
@@ -219,8 +220,7 @@ if __name__ == "__main__":
             env.render();
             time.sleep(0.0005);
 
-        input("Press enter to close animation...");
-        plt.close('all');
+        input("Press enter to exit program...");
 
 
 
