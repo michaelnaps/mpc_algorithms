@@ -2,13 +2,13 @@ import numpy as np
 from qpsolvers import solve_qp
 from MathFunctionsCpp import MathExpressions
 import math
-from statespace_3link import *
+from statespace_tpm import *
 
-def convert(inputs_3link, q_desired, q, u_prev, output=0):
+def convert(inputs_tpm, q_desired, q, u_prev, output=0):
     mathexp = MathExpressions();
 
     # model variables
-    N = inputs_3link.num_inputs;
+    N = inputs_tpm.num_inputs;
 
     # initial guess and zero matrices
     Z = np.array([0 for i in range(N)]);
@@ -23,9 +23,9 @@ def convert(inputs_3link, q_desired, q, u_prev, output=0):
         print("\nx =", x);  print("\ndx =", dx);
 
     # calculate the drift vector, mass matrix, and state jacobians
-    M = np.array(MassMatrix_3link(q, inputs_3link));
-    E = np.array(DriftVector_3link(q))
-    (J_a, dJ_a) = np.array(J_CoM_3link(q, inputs_3link));
+    M = np.array(MassMatrix_tpm(q, inputs_tpm));
+    E = np.array(DriftVector_tpm(q))
+    (J_a, dJ_a) = np.array(J_CoM_tpm(q, inputs_tpm));
     J_a = J_a[1:N];  dJ_a = dJ_a[1:N]
 
     if output:
@@ -33,7 +33,7 @@ def convert(inputs_3link, q_desired, q, u_prev, output=0):
         print("\nJ_a =\n", J_a);  print("\ndJ_a =\n", dJ_a);
 
     # actual state variables
-    q_a  = np.array(CoM_3link(q, inputs_3link))[1:N];  q_a.shape = (len(q_a),1);
+    q_a  = np.array(CoM_tpm(q, inputs_tpm))[1:N];  q_a.shape = (len(q_a),1);
     dq_a = np.matmul(J_a, dx);  dq_a.shape = (len(dq_a),1);
 
     if output:

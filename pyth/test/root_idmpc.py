@@ -5,7 +5,7 @@ sys.path.insert(0, 'models/.');
 
 import mpc
 from statespace_alip import *
-from statespace_3link import *
+from statespace_tpm import *
 from MathFunctionsCpp import MathExpressions
 import inverse_dynamics as id
 import matplotlib.pyplot as plt
@@ -86,7 +86,7 @@ class InputsALIP:
         self.input_bounds         = [2];
         self.prev_input           = prev_input;
 
-class Inputs3link:
+class InputsTPM:
     def __init__(self):
         self.num_inputs           = 3;
         self.gravity_acc          = -9.81;
@@ -106,7 +106,7 @@ if __name__ == "__main__":
     state = env.reset();
 
     # initialize inputs and math expressions class
-    inputs_3link = Inputs3link();
+    inputs_tpm = InputsTPM();
     inputs_alip  = InputsALIP([0]);
     mathexp      = MathExpressions();
 
@@ -129,19 +129,19 @@ if __name__ == "__main__":
     mpc_alip.setMinTimeStep(1);
 
     # simulation variables
-    sim_time = 5.0;  sim_dt = env.dt;
+    sim_time = 10.0;  sim_dt = env.dt;
     Nt = round(sim_time/sim_dt + 1);
     T = [i*sim_dt for i in range(Nt)];
 
     # loop variables
-    N_3link = inputs_3link.num_inputs;
+    N_tpm = inputs_tpm.num_inputs;
     q_alip  = [[0 for i in range(num_ssvar)] for i in range(Nt)];
     q_desired = [[0 for i in range(4)] for i in range(Nt)];
-    q_3link = [[0 for i in range(2*N_3link)] for i in range(Nt)];
+    q_tpm = [[0 for i in range(2*N_tpm)] for i in range(Nt)];
     u_alip  = [[0 for j in range(num_inputs*PH_length)] for i in range(Nt)];
-    u_3link = [[0 for j in range(N_3link)] for i in range(Nt)];
+    u_tpm = [[0 for j in range(N_tpm)] for i in range(Nt)];
 
-    u_alip_actual = [[0] for i in range(Nt)];
+    s_actual = [[0, 0, 0, 0] for i in range(Nt)];
 
     # MPC variables
     Clist = [0 for i in range(Nt)];
@@ -149,29 +149,41 @@ if __name__ == "__main__":
     brklist = [0 for i in range(Nt)];
     tlist = [0 for i in range(Nt)];
 
-	# Set initial state
+	# Set initial state (TPM and ALIP)
     init_state = np.array([1.0236756190034337, 1.1651000155300129, -0.6137993852195395, 0, 0, 0]);
-    #init_state = init_state + 0.01*np.random.randn(6);
-    q_3link[0] = init_state.tolist();
+    init_state = init_state + 0.01*np.random.randn(6);
+    q_tpm[0] = init_state.tolist();
     env.set_state(init_state[0:3],init_state[3:6]);
+
+    (x_c, h_c, q_c) = CoM_tpm(q_tpm[0], inputs_tpm);
+    s_actual[0] = [
+        x_c, h_c, q_c,
+        mathexp.centroidal_momentum(q_tpm[0][:N_tpm], q_tpm[0][N_tpm:2*N_tpm])[0][0]
+    ];
 
     # simulation loop
     for i in range(1,Nt):
         print("\nt =", i*sim_dt);
-        print("current state:", q_3link[i-1]);
 
-        # convert state: 3link -> alip
-        (x_c, h_c, _) = CoM_3link(q_3link[i-1], inputs_3link);
-        L = mathexp.base_momentum(q_3link[i-1][:N_3link], q_3link[i-1][N_3link:2*N_3link])[0][0];
+        # convert state: tpm -> alip
+        (x_c, h_c, q_c) = CoM_tpm(q_tpm[i-1], inputs_tpm);
+        L = mathexp.base_momentum(q_tpm[i-1][:N_tpm], q_tpm[i-1][N_tpm:2*N_tpm])[0][0];
         q_alip[i-1] = [x_c, L];
+
+        s_actual[i] = [
+            x_c, h_c, q_c,
+            mathexp.centroidal_momentum(q_tpm[i-1][:N_tpm], q_tpm[i-1][N_tpm:2*N_tpm])[0][0]
+        ];
+
+        print("current alip state:", s_actual[i]);
 
         # set alip model inputs
         inputs_alip.prev_inputs = u_alip[i-1][:num_inputs];
-        # inputs_alip.link_lengths = [h_c];
+        inputs_alip.link_lengths = [h_c];
         mpc_alip.setModelInputs(inputs_alip);
 
         # solve MPC problem
-        if ((i-1) % 10) == 0:
+        if ((i-1) % 50) == 0:
             (u_alip[i], Clist[i], nlist[i], brklist[i], tlist[i]) = mpc_alip.solve(q_alip[i-1], u_alip[i-1], output=0);
         else:
             u_alip[i] = u_alip[i-1];
@@ -180,60 +192,40 @@ if __name__ == "__main__":
             brklist[i] = 3;
             tlist[i]  = 0;
 
-        q_temp = mpc_alip.simulate(q_alip[i-1], u_alip[i]);
-        x_desired = q_temp[1][0];  L_desired = q_temp[1][1];
+        # construct q_d for ID-QP function
+        q_desired[i] = [0, height, theta, u_alip[i][0]];
 
         if (np.isnan(Clist[i])):
             print("ERROR: Cost is nan after optimization...");
             break;
-        else:
-            print("cost post-optimization:", Clist[i]);
 
-        print("mpc results:", u_alip[i])
+        # convert input: alip -> tpm
+        u_tpm[i] = id.convert(inputs_tpm, q_desired[i], q_tpm[i-1], u_tpm[i-1]);
 
-        # q_desired[i] = [0, height, theta, 0];
-        q_desired[i] = [0, height, theta, u_alip[i][0]];
-        print("desired conversion variables:", q_desired[i]);
-
-        # convert input: alip -> 3link
-        u_3link[i] = id.convert(inputs_3link, q_desired[i], q_3link[i-1], u_3link[i-1]);
-
-        if (u_3link[i] is None):
+        if (u_tpm[i] is None):
             print("ERROR: ID-QP function returned None...");
-            u_3link[i] = [0,0,0];
+            u_tpm[i] = [0,0,0];
             break;
 
-        action = np.array(u_3link[i]);
-        print("action:", u_3link[i]);
+        q_next, _, _, _ = env.step(np.array(u_tpm[i]));
+        q_tpm[i] = q_next.tolist();
 
-        next_state, _, _, _ = env.step(action);
-        q_3link[i] = next_state.tolist();
+    ans = input("\nSee animation? [y/n] ");
+    if (ans == 'y'):
+        env.set_state(init_state[0:3], init_state[3:6]);
 
-        u_alip_actual[i] = [
-            mathexp.centroidal_momentum(q_3link[i][:N_3link], q_3link[i][N_3link:2*N_3link])[0][0]
-        ];
-        print("Lc_actual:", u_alip_actual[i]);
-
-        if render_mode:
+        for i in range(1,Nt):
+            env.step(u_tpm[i]);
             env.render();
+            time.sleep(0.0005);
 
-    # ans = input("\nSee animation? [y/n] ");
-    # if (ans == 'y'):  animation_3link(T, q_3link, inputs_3link);
+        input("Press enter to close animation...");
+        plt.close('all');
+
+
 
     alip_results = (T, q_alip, u_alip, Clist, nlist, brklist, tlist);
-    tpm_results  = (T, q_3link[:Nt], u_3link);
+    tpm_results  = (T, q_tpm[:Nt], u_tpm, s_actual);
 
-    reportResults_alip(alip_results, inputs_alip);
-
-
-    fig, inputComparison = plt.subplots();
-    inputComparison.plot(T, np.transpose(u_alip)[0], label="desired");
-    inputComparison.plot(T, u_alip_actual, label="actual");
-    plt.legend();
-
-    statePlot_3link = plotStates_3link(T, q_3link[:Nt]);
-    inputPlot_3link = plotInputs_3link(T, u_3link);
-    plt.show(block=0);
-
-    input("Press enter to close plots...");
-    plt.close('all');
+    saveResults_alip("resultsALIP.pickle", alip_results);
+    saveResults_tpm("resultsTPM.pickle", tpm_results);

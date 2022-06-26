@@ -5,19 +5,19 @@ sys.path.insert(0, 'models/.');
 
 import mpc
 from statespace_alip import *
-from statespace_3link import *
+from statespace_tpm import *
 import matplotlib.pyplot as plt
 
 class InputsALIP:
     def __init__(self, prev_input):
         self.gravity_acc          = -9.81;
-        self.joint_masses         = [80];
-        self.link_lengths         = [2.0];
-        self.CP_maxdistance       = 0.1;
-        self.input_bounds         = [50];
+        self.joint_masses         = [40];
+        self.link_lengths         = [0.95];
+        self.CP_maxdistance       = 0.5;
+        self.input_bounds         = [2];
         self.prev_input           = prev_input;
 
-class Inputs3link:
+class InputsTPM:
     def __init__(self):
         self.num_inputs           = 3;
         self.gravity_acc          = -9.81;
@@ -26,33 +26,17 @@ class Inputs3link:
         self.link_lengths         = [0.5, 0.5, 0.6];
 
 if (__name__ == "__main__"):
-    inputs = InputsALIP([0]);
+    inputs_alip = InputsALIP([0]);
+    inputs_tpm = InputsTPM();
 
-    ngd_results = loadResults_alip("ngdResults.pickle");
-    nno_results = loadResults_alip("nnoResults.pickle");
+    alip_results = loadResults_alip("resultsALIP.pickle");
+    tpm_results  = loadResults_tpm("resultsTPM.pickle");
 
-    # reportResults_alip(ngd_results, inputs);
-    # reportResults_alip(nno_results, inputs);
+    reportResults_alip(alip_results, inputs_alip);
 
-    ngd_runtime = plotRunTime_alip(ngd_results[0], ngd_results[6], title=0);
-    nno_runtime = plotRunTime_alip(nno_results[0], nno_results[6], title=0);
+    statePlot = plotStates_tpm(tpm_results[0], tpm_results[1]);
+    inputPlot = plotInputs_tpm(tpm_results[0], tpm_results[2]);
+
     plt.show(block=0);
-
-    ngd_mean = np.mean(ngd_results[6]);
-    nno_mean = np.mean(nno_results[6]);
-
-    fig, runTimeComparison = plt.subplots();
-    runTimeComparison.plot(ngd_results[0], ngd_results[6], label='NGD', color='#1f77b4');
-    runTimeComparison.plot([ngd_results[0][0], ngd_results[0][-1]], [ngd_mean, ngd_mean], color='#1f77b4', linestyle='--');
-    runTimeComparison.plot(nno_results[0], nno_results[6], label='NNO', color='#2ca02c');
-    runTimeComparison.plot([nno_results[0][0], nno_results[0][-1]], [nno_mean, nno_mean], color='#2ca02c', linestyle='--');
-    runTimeComparison.plot([0], [0], label="AVE.", color='k', linestyle='--');
-    plt.legend();
-    plt.grid();
-    plt.show(block=0);
-
-    input("Press enter to close run time plots...");
+    input("Press enter to close plots...");
     plt.close('all');
-
-    PH_length = [(0 + 1) for i in range(4)];
-    for i in range(4):

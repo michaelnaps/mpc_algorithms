@@ -1,14 +1,12 @@
 import numpy as np
 from MathFunctionsCpp import MathExpressions
-import time
 import matplotlib.pyplot as plt
+import pickle
 
-mathexp = MathExpressions()
+def statespace_tpm(q, u, inputs):
 
-def statespace_3link(q, u, inputs):
-
-    M = MassMatrix_3link(q, inputs);
-    C = DriftVector_3link(q);
+    M = MassMatrix_tpm(q, inputs);
+    C = DriftVector_tpm(q);
 
     E = [C[i] + u[i] for i in range(3)];
 
@@ -16,7 +14,7 @@ def statespace_3link(q, u, inputs):
 
     return [q[3], q[4], q[5], dq[0], dq[1], dq[2]];
 
-def MassMatrix_3link(q, inputs):
+def MassMatrix_tpm(q, inputs):
     # Constants and State Variables
     N = inputs.num_inputs;
     g = inputs.gravity_acc;
@@ -49,7 +47,7 @@ def MassMatrix_3link(q, inputs):
 
     return Mdq;
 
-def DriftVector_3link(q):
+def DriftVector_tpm(q):
     mathexp = MathExpressions();
 
     q1 = q[0];  q2 = q[1];  q3 = q[2];
@@ -68,7 +66,7 @@ def DriftVector_3link(q):
 
     return [E[i][0] for i in range(3)];
 
-def CoM_3link(q, inputs):
+def CoM_tpm(q, inputs):
     # Constants and State Variables
     N = inputs.num_inputs;
     m = inputs.joint_masses;
@@ -100,7 +98,7 @@ def CoM_3link(q, inputs):
     return (x_com, z_com, q_com);
     #return (z_com, q_com);
 
-def J_CoM_3link(q, inputs):
+def J_CoM_tpm(q, inputs):
     # Constants and State Variables
     N = inputs.num_inputs;
     g = inputs.gravity_acc;
@@ -153,7 +151,7 @@ def J_CoM_3link(q, inputs):
 
     return (J, dJ);
 
-def animation_3link(T, q, inputs, save=0, filename="image.png"):
+def animation_tpm(T, q, inputs, save=0, filename="image.png"):
     Nt = len(T);
     dt = T[1] - T[0];
 
@@ -187,7 +185,7 @@ def animation_3link(T, q, inputs, save=0, filename="image.png"):
         xHip   = xKnee + L2*np.cos(q1+q2);    yHip   = yKnee + L2*np.sin(q1+q2);
         xHead  = xHip + L3*np.cos(q1+q2+q3);  yHead  = yHip + L3*np.sin(q1+q2+q3);
 
-        (x_com, y_com, _) = CoM_3link(q[i], inputs);
+        (x_com, y_com, _) = CoM_tpm(q[i], inputs);
 
         plt.plot([xAnkle, xKnee], [yAnkle, yKnee]);
         plt.plot([xKnee, xHip], [yKnee, yHip]);
@@ -215,7 +213,7 @@ def animation_3link(T, q, inputs, save=0, filename="image.png"):
 
     return 1;
 
-def plotStates_3link(T, q):
+def plotStates_tpm(T, q):
     qT = np.transpose(q);
 
     fig, statePlot = plt.subplots(2,3);
@@ -248,7 +246,7 @@ def plotStates_3link(T, q):
 
     return statePlot;
 
-def plotInputs_3link(T, u):
+def plotInputs_tpm(T, u):
     uT = np.transpose(u);
 
     fig, inputPlot = plt.subplots(1,3);
@@ -271,7 +269,7 @@ def plotInputs_3link(T, u):
 
     return inputPlot;
 
-def plotCost_3link(T, C):
+def plotCost_tpm(T, C):
     fig, costPlot = plt.subplots();
 
     costPlot.plot(T, C);
@@ -282,7 +280,7 @@ def plotCost_3link(T, C):
 
     return costPlot;
 
-def plotBrkFreq_3link(brk):
+def plotBrkFreq_tpm(brk):
     fig, brkFreqPlot = plt.subplots();
 
     unique, counts = np.unique(brk[1:], return_counts=1);
@@ -295,7 +293,7 @@ def plotBrkFreq_3link(brk):
 
     return brkFreqPlot;
 
-def plotRunTime_3link(T, t, title=1):
+def plotRunTime_tpm(T, t, title=1):
     fig, runTimePlot = plt.subplots();
 
     aveRunTime = np.mean(t);
@@ -310,33 +308,33 @@ def plotRunTime_3link(T, t, title=1):
 
     return runTimePlot;
 
-def saveResults_3link(filename, sim_results):
+def saveResults_tpm(filename, sim_results):
     with open(filename, "wb") as save_file:
-        pickle.dump(mpc_results, save_file);
+        pickle.dump(sim_results, save_file);
 
     print("\nResults saved...");
     return 1;
 
-def loadResults_3link(filename):
+def loadResults_tpm(filename):
     with open(filename, "rb") as load_file:
-        mpc_results = pickle.load(load_file);
+        sim_results = pickle.load(load_file);
 
-    return mpc_results;
+    return sim_results;
 
-def staticPlots_3link(mpc_results):
-    T = mpc_results[0];
-    q = mpc_results[1];
-    u = mpc_results[2];
-    C = mpc_results[3];
-    n = mpc_results[4];
-    brk = mpc_results[5];
-    t = mpc_results[6];
+def staticPlots_tpm(sim_results):
+    T = sim_results[0];
+    q = sim_results[1];
+    u = sim_results[2];
+    C = sim_results[3];
+    n = sim_results[4];
+    brk = sim_results[5];
+    t = sim_results[6];
 
-    statePlot = plotStates_3link(T, q);
-    inputPlot = plotInputs_3link(T, u);
-    costPlot  = plotCost_3link(T, C);
-    brkFreqPlot = plotBrkFreq_3link(brk);
-    runTimePlot = plotRunTime_3link(T, t);
+    statePlot = plotStates_tpm(T, q);
+    inputPlot = plotInputs_tpm(T, u);
+    costPlot  = plotCost_tpm(T, C);
+    brkFreqPlot = plotBrkFreq_tpm(brk);
+    runTimePlot = plotRunTime_tpm(T, t);
     plt.show(block=0);
 
     input("Press enter to close static plots...");
@@ -344,12 +342,12 @@ def staticPlots_3link(mpc_results):
 
     return 1;
 
-def reportResults_alip(mpc_results, inputs=0):
-    T = mpc_results[0];
-    q = mpc_results[1];
+def reportResults_tpm(sim_results, inputs=0):
+    T = sim_results[0];
+    q = sim_results[1];
 
     ans = input("\nSee state, input, and cost plots? [y/n] ");
-    if (ans == 'y'):  staticPlots_alip(mpc_results);
+    if (ans == 'y'):  staticPlots_alip(sim_results);
 
     if (inputs != 0):
         ans = input("\nSee animation? [y/n] ");
