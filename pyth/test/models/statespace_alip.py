@@ -14,7 +14,7 @@ def statespace_alip(q, u, inputs):
 
     # solve for statespace
     ddq = [
-        L/(m*H) - Lc/(m*H),
+        L/(m*H) + Lc/(m*H),
         ua + m*g*x
     ];
 
@@ -155,13 +155,13 @@ def plotCost_alip(T, C):
 def plotBrkFreq_alip(brk):
     fig, brkFreqPlot = plt.subplots();
 
-    unique, counts = np.unique(brk[1:], return_counts=1);
+    unique, counts = np.unique(brk[1:], return_counts=1);  print(unique);
 
     for i in range(len(unique)-1):
         brkFreqPlot.bar([unique[i], unique[i]], [0, counts[i]], linewidth=3);
 
-    plt.xlim([np.min(brk)-0.5, np.max(brk)+0.5]);
-    plt.xticks(unique);
+    plt.xlim([unique[-2]-0.5, unique[-2]+0.5]);
+    plt.xticks(unique[:-2]);
 
     return brkFreqPlot;
 

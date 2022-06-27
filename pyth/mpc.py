@@ -195,7 +195,7 @@ class system:
                 brk = -1;
                 break;
 
-            if (np.abs(Cc - Cn) < eps):
+            if (np.abs(Cn - Cc) < eps):
                 brk = 2;
                 break;
 

@@ -83,7 +83,7 @@ class InputsALIP:
         self.joint_masses         = [40];
         self.link_lengths         = [0.95];
         self.CP_maxdistance       = 0.5;
-        self.input_bounds         = [2];
+        self.input_bounds         = [100];
         self.prev_input           = prev_input;
 
 class InputsTPM:
@@ -96,7 +96,6 @@ class InputsTPM:
 
 if __name__ == "__main__":
     #==== Create custom MuJoCo Environment ====#
-    render_mode = 0;
     dynamics_randomization = 0;
     apply_force = 1;
     register(id='Pend3link-v0',
@@ -149,37 +148,34 @@ if __name__ == "__main__":
     brklist = [100 for i in range(Nt)];
     tlist = [0 for i in range(Nt)];
 
-	# Set initial state (TPM and ALIP)
+	# SET INITIAL STATES (TPM and ALIP)
     init_state = np.array([1.0236756190034337, 1.1651000155300129, -0.6137993852195395, 0, 0, 0]);
-    init_state = init_state + 0.01*np.random.randn(6);
+    init_state = init_state + 0.1*np.random.randn(6);
     q_tpm[0] = init_state.tolist();
     env.set_state(init_state[0:3],init_state[3:6]);
 
     (x_c, h_c, q_c) = CoM_tpm(q_tpm[0], inputs_tpm);
-    s_actual[0] = [
-        x_c, h_c, q_c,
-        mathexp.centroidal_momentum(q_tpm[0][:N_tpm], q_tpm[0][N_tpm:2*N_tpm])[0][0]
-    ];
+    L   = mathexp.base_momentum(q_tpm[0][:N_tpm], q_tpm[0][N_tpm:2*N_tpm])[0][0];
+    L_c = mathexp.centroidal_momentum(q_tpm[0][:N_tpm], q_tpm[0][N_tpm:2*N_tpm])[0][0];
+
+
+    q_alip[0] = [x_c, L];
+    s_actual[0] = [x_c, h_c, q_c, L_c];
+
+    print("INITIAL STATE:");
+    print("TPM:", q_tpm[0]);
+    print("ALIP:", q_alip[0]);
+    print("ID-QP:", s_actual[0]);
 
     # simulation loop
     for i in range(1,Nt):
         print("\nt =", i*sim_dt);
 
-        # convert state: tpm -> alip
-        (x_c, h_c, q_c) = CoM_tpm(q_tpm[i-1], inputs_tpm);
-        L = mathexp.base_momentum(q_tpm[i-1][:N_tpm], q_tpm[i-1][N_tpm:2*N_tpm])[0][0];
-        q_alip[i-1] = [x_c, L];
-
-        s_actual[i] = [
-            x_c, h_c, q_c,
-            mathexp.centroidal_momentum(q_tpm[i-1][:N_tpm], q_tpm[i-1][N_tpm:2*N_tpm])[0][0]
-        ];
-
-        print("current alip state:", s_actual[i]);
+        print("current alip state:", s_actual[i-1]);
 
         # set alip model inputs
         inputs_alip.prev_inputs = u_alip[i-1][:num_inputs];
-        # inputs_alip.link_lengths = [h_c];
+        inputs_alip.link_lengths = [h_c];
         mpc_alip.setModelInputs(inputs_alip);
 
         # solve MPC problem
@@ -210,6 +206,14 @@ if __name__ == "__main__":
 
         q_next, _, _, _ = env.step(np.array(u_tpm[i]));
         q_tpm[i] = q_next.tolist();
+
+        # convert state: tpm -> alip
+        (x_c, h_c, q_c) = CoM_tpm(q_tpm[i], inputs_tpm);
+        L   = mathexp.base_momentum(q_tpm[i][:N_tpm], q_tpm[i][N_tpm:2*N_tpm])[0][0];
+        L_c = mathexp.centroidal_momentum(q_tpm[i][:N_tpm], q_tpm[i][N_tpm:2*N_tpm])[0][0];
+
+        q_alip[i] = [x_c, L];
+        s_actual[i] = [x_c, h_c, q_c, L_c];
 
     ans = input("\nSee animation? [y/n] ");
     if (ans == 'y'):
