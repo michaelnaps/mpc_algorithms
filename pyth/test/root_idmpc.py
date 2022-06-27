@@ -22,38 +22,22 @@ from datetime import datetime
 from gym.envs.registration import registry, register, make, spec
 
 def Cq(qd, q):
-    Cq = [
-        2500*(qd[0] - q[0])**2,
-          10*(qd[1] - q[1])**2
-    ];
-
-    return np.sum(Cq);
+    kx = 2500;  kL = 10;
+    return (kx*(qd[0] - q[0])**2 + kL*(qd[1] - q[1])**2);
 
 def Cu(u, du, inputs):
+    kdu = 100;  ku = 1;
     umax = inputs.input_bounds;
-
-    u_error = [
-        umax[0]**2 - u[0]**2
-    ];
-
-    Cu = [
-        100*(du[0])**2 - np.log(u_error[0]) + np.log(umax[0]**2)
-    ];
-
-    return np.sum(Cu);
+    u_error = umax[0]**2 - u[0]**2;
+    return (100*(du[0])**2 - ku*np.log(u_error) + ku*np.log(umax[0]**2));
 
 def Ccmp(u, inputs):
+    kcmp = 100;
     dmax = inputs.CP_maxdistance;
     g = inputs.gravity_acc;
     m = inputs.joint_masses[0];
-
     utip = m*g*dmax;
-
-    Ccmp = [
-        100*(u[0]/utip)**2
-    ];
-
-    return np.sum(Ccmp);
+    return kcmp*(u[0]/utip)**2;
 
 def cost(mpc_var, q, u, inputs):
     # MPC constants
@@ -112,9 +96,9 @@ if __name__ == "__main__":
     # mpc variable parameters
     num_inputs  = 1;
     num_ssvar   = 2;
-    PH_length   = 10;
+    PH_length   = 20;
     knot_length = 1;
-    time_step   = 0.025;
+    time_step   = 0.05;
 
     # desired state constants
     height = 0.95;
@@ -122,7 +106,7 @@ if __name__ == "__main__":
 
     # MPC class variable
     mpc_alip = mpc.system('nno', cost, statespace_alip, inputs_alip, num_inputs,
-                          num_ssvar, PH_length, knot_length, time_step, max_iter=100);
+                          num_ssvar, PH_length, knot_length, time_step, max_iter=10);
     # mpc_alip.setAlpha(25);
     # mpc_alip.setAlphaMethod('bkl');
     mpc_alip.setMinTimeStep(1);
@@ -158,7 +142,6 @@ if __name__ == "__main__":
     L   = mathexp.base_momentum(q_tpm[0][:N_tpm], q_tpm[0][N_tpm:2*N_tpm])[0][0];
     L_c = mathexp.centroidal_momentum(q_tpm[0][:N_tpm], q_tpm[0][N_tpm:2*N_tpm])[0][0];
 
-
     q_alip[0] = [x_c, L];
     s_actual[0] = [x_c, h_c, q_c, L_c];
 
@@ -171,6 +154,7 @@ if __name__ == "__main__":
     for i in range(1,Nt):
         print("\nt =", i*sim_dt);
 
+        print("desired alip state:", q_desired[i-1]);
         print("current alip state:", s_actual[i-1]);
 
         # set alip model inputs
@@ -179,7 +163,7 @@ if __name__ == "__main__":
         mpc_alip.setModelInputs(inputs_alip);
 
         # solve MPC problem
-        if ((i-1) % 50) == 0:
+        if ((i-1) % 25) == 0:
             (u_alip[i], Clist[i], nlist[i], brklist[i], tlist[i]) = mpc_alip.solve(q_alip[i-1], u_alip[i-1], output=0);
             x_d = mpc_alip.simulate(u_alip[i-1], u_alip[i])[1][0];
         else:
@@ -204,8 +188,8 @@ if __name__ == "__main__":
             u_tpm[i] = [0,0,0];
             break;
 
-        q_next, _, _, _ = env.step(np.array(u_tpm[i]));
-        q_tpm[i] = q_next.tolist();
+        # TPM simulation step
+        q_tpm[i] = env.step(u_tpm[i])[0].tolist();
 
         # convert state: tpm -> alip
         (x_c, h_c, q_c) = CoM_tpm(q_tpm[i], inputs_tpm);

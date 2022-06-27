@@ -32,7 +32,7 @@ if (__name__ == "__main__"):
     alip_results = loadResults_alip("resultsALIP.pickle");
     tpm_results  = loadResults_tpm("resultsTPM.pickle");
 
-    reportResults_alip(alip_results, inputs_alip);
+    reportResults_alip(alip_results);
 
 
     ans = input("\nSee TPM plots? [y/n] ");
