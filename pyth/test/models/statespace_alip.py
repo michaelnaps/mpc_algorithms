@@ -155,13 +155,13 @@ def plotCost_alip(T, C):
 def plotBrkFreq_alip(brk):
     fig, brkFreqPlot = plt.subplots();
 
-    unique, counts = np.unique(brk[1:], return_counts=1);  print(unique);
+    unique, counts = np.unique(brk[1:], return_counts=1);
 
     for i in range(len(unique)-1):
         brkFreqPlot.bar([unique[i], unique[i]], [0, counts[i]], linewidth=3);
 
-    plt.xlim([unique[-2]-0.5, unique[-2]+0.5]);
-    plt.xticks(unique[:-2]);
+    plt.xlim([unique[0]-0.5, unique[-2]+0.5]);
+    plt.xticks(unique[:-1]);
 
     return brkFreqPlot;
 

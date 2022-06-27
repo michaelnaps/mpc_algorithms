@@ -23,8 +23,8 @@ from gym.envs.registration import registry, register, make, spec
 
 def Cq(qd, q):
     Cq = [
-        100*(qd[0] - q[0])**2,
-         10*(qd[1] - q[1])**2
+        2500*(qd[0] - q[0])**2,
+          10*(qd[1] - q[1])**2
     ];
 
     return np.sum(Cq);
@@ -82,7 +82,7 @@ class InputsALIP:
         self.gravity_acc          = -9.81;
         self.joint_masses         = [40];
         self.link_lengths         = [0.95];
-        self.CP_maxdistance       = 0.5;
+        self.CP_maxdistance       = 0.1;
         self.input_bounds         = [100];
         self.prev_input           = prev_input;
 
@@ -121,10 +121,10 @@ if __name__ == "__main__":
     theta  = np.pi/2;
 
     # MPC class variable
-    mpc_alip = mpc.system('ngd', cost, statespace_alip, inputs_alip, num_inputs,
+    mpc_alip = mpc.system('nno', cost, statespace_alip, inputs_alip, num_inputs,
                           num_ssvar, PH_length, knot_length, time_step, max_iter=100);
-    mpc_alip.setAlpha(25);
-    mpc_alip.setAlphaMethod('bkl');
+    # mpc_alip.setAlpha(25);
+    # mpc_alip.setAlphaMethod('bkl');
     mpc_alip.setMinTimeStep(1);
 
     # simulation variables

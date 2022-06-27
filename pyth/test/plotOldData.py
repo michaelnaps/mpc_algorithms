@@ -34,9 +34,12 @@ if (__name__ == "__main__"):
 
     reportResults_alip(alip_results, inputs_alip);
 
-    statePlot = plotStates_tpm(tpm_results[0], tpm_results[1]);
-    inputPlot = plotInputs_tpm(tpm_results[0], tpm_results[2]);
 
-    plt.show(block=0);
-    input("Press enter to close plots...");
-    plt.close('all');
+    ans = input("\nSee TPM plots? [y/n] ");
+    if (ans == 'y'):
+        statePlot = plotStates_tpm(tpm_results[0], tpm_results[1]);
+        inputPlot = plotInputs_tpm(tpm_results[0], tpm_results[2]);
+        plt.show(block=0);
+
+        input("Press enter to close plots...");
+        plt.close('all');
