@@ -89,8 +89,8 @@ def convert(inputs_tpm, q_desired, q, u_prev, output=0):
         print("\ndJ =\n", dJ);
         print("\nu =\n", u);
 
-    # QP Optimization
-    ku = 10;
+    # QP Optimization -2*uT_prev
+    ku = 75;
     H = np.vstack((np.append(np.matmul(J.transpose(), J), Z3, axis=1), np.append(Z3, ku*I, axis=1)));
     g = np.append(2*np.matmul(J.transpose(), u), np.zeros(3));  g.shape = (len(g),);
     A = np.append(M, -I, axis=1);

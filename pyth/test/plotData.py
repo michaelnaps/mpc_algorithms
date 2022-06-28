@@ -40,13 +40,13 @@ if (__name__ == "__main__"):
     inputs_alip = InputsALIP([0]);
     inputs_tpm = InputsTPM();
 
-    alip_results = loadResults_alip("data/resultsALIP_t5.pickle");
-    tpm_results  = loadResults_tpm("data/resultsTPM_t5.pickle");
+    # alip_results = loadResults_alip("data/resultsALIP_t10.pickle");
+    # tpm_results  = loadResults_tpm("data/resultsTPM_t10.pickle");
 
-    # alip_results = loadResults_alip("resultsALIP.pickle");
-    # tpm_results  = loadResults_tpm("resultsTPM.pickle");
+    alip_results = loadResults_alip("resultsALIP.pickle");
+    tpm_results  = loadResults_tpm("resultsTPM.pickle");
 
-    Nt = int(len(alip_results[0]));
+    Nt = int(len(alip_results[0])/3);
 
     ans = input("\nSee ALIP plots? [y/n] ");
     if (ans == 'y'):
@@ -57,8 +57,10 @@ if (__name__ == "__main__"):
         s_actual = np.transpose(tpm_results[3])[3];
         s_desired = np.transpose(alip_results[2])[2];
 
-        alipTrackingPlot.plot(tpm_results[0][:Nt], s_actual[:Nt]);
-        alipTrackingPlot.plot(alip_results[0][:Nt], s_desired[:Nt]);
+        alipTrackingPlot.plot(tpm_results[0][:Nt], s_actual[:Nt], label="Actual");
+        alipTrackingPlot.plot(alip_results[0][:Nt], s_desired[:Nt], label="Desired");
+        alipTrackingPlot.set_title("Lc Tracking")
+        alipTrackingPlot.legend();
         plt.show(block=0);
 
         input("Press enter to close plots...");

@@ -188,6 +188,8 @@ if __name__ == "__main__":
             u_tpm[i] = [0,0,0];
             break;
 
+        # DISTURBANCE FUNCTION
+
         # TPM simulation step
         q_tpm[i] = env.step(u_tpm[i])[0].tolist();
 
