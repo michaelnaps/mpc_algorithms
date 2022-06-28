@@ -201,16 +201,12 @@ if __name__ == "__main__":
 
     ans = input("\nSee animation? [y/n] ");
     if (ans == 'y'):
-        env.set_state(init_state[0:3], init_state[3:6]);
-
-        for i in range(1,Nt):
-            env.step(u_tpm[i]);
+        for i in range(Nt):
+            env.set_state(np.array(q_tpm[i][0:3]), np.array(q_tpm[i][3:6]));
             env.render();
             time.sleep(0.0005);
 
         input("Press enter to exit program...");
-
-
 
     alip_results = (T, q_alip, u_alip, Clist, nlist, brklist, tlist);
     tpm_results  = (T, q_tpm[:Nt], u_tpm, s_actual);
