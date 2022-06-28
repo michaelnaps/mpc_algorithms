@@ -156,7 +156,7 @@ class system:
             print("Opt. Start:");
             print("Initial Cost: ", Cc);
 
-        count = 1;
+        count = 0;
         brk = -2*np.isnan(Cc);
         while (Cc > eps):
             # calculate the gradient around the current input
@@ -336,7 +336,7 @@ class system:
         ulist = [0 for i in range(Nt)];
         Clist = [0 for i in range(Nt)];
         nlist = [0 for i in range(Nt)];
-        brklist = [0 for i in range(Nt)];
+        brklist = [100 for i in range(Nt)];
         tlist = [0 for i in range(Nt)];
 
         ulist[0] = u0;

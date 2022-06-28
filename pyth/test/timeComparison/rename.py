@@ -71,10 +71,10 @@ def cost(mpc_var, q, u, inputs):
 class InputVariables:
     def __init__(self, prev_input):
         self.gravity_acc          = -9.81;
-        self.joint_masses         = [40];
-        self.link_lengths         = [1.0];
+        self.joint_masses         = [80];
+        self.link_lengths         = [2.0];
         self.CP_maxdistance       = 0.1;
-        self.input_bounds         = [5.0];
+        self.input_bounds         = [50];
         self.prev_input           = prev_input;
 
 def updateFunction(mpc_var, q, u):
@@ -89,55 +89,19 @@ def main():
     num_ssvar   = 2;
     knot_length = 1;
 
-    PH_min = 1;
-    PH_max = 20;
-    rd_min = 1;
-    rd_max = 50;
-
-    for i in range(PH_min,PH_max+1):
-        PH_length = i;
+    for i in range(17):
+        PH_length = i + 1;
         u0 = [0 for i in range(num_inputs*PH_length)];
 
-        for j in range(rd_min,rd_max+1):
-            print("\nPH:", PH_length)
-            print("t#:", j)
+        for j in range(20,25):
+            nno_results = loadResults_alip("temp/nnoResults_p" + str(PH_length) + "_t" + str(j-19) + ".pickle");
+            ngd_results = loadResults_alip("temp/ngdResults_p" + str(PH_length) + "_t" + str(j-19) + ".pickle");
 
-            disturb = 0.05*rd.random();
-            posneg = rd.randint(2);
-            dir = 1;
-            if posneg < 1:  dir = -1;
-            q0 = [0 + dir*disturb, 0];
+            nno_results[5][0] = 100;
+            ngd_results[5][0] = 100;
 
-            print("initial state:", q0);
-
-            nno_var = mpc.system('nno', cost, statespace_alip, inputs, num_inputs, num_ssvar, PH_length, knot_length, max_iter=50);
-            nno_var.setMinTimeStep(1);  # very large (no adjustment)
-
-            nno_results = nno_var.sim_root(1, q0, u0, updateFunction, 0);
-
-            saveResults_alip("data/nnoResults_p" + str(PH_length) + "_t" + str(j) + ".pickle", nno_results);
-
-            ngd_var = mpc.system('ngd', cost, statespace_alip, inputs, num_inputs, num_ssvar, PH_length, knot_length, max_iter=50);
-            ngd_var.setAlpha(25);
-            ngd_var.setAlphaMethod('bkl');
-            ngd_var.setMinTimeStep(1);  # very large (no adjustment)
-
-            ngd_results = ngd_var.sim_root(1, q0, u0, updateFunction, 0);
-
-            saveResults_alip("data/ngdResults_p" + str(PH_length) + "_t" + str(j) + ".pickle", ngd_results);
-
-            print(nno_results[5]);
-            print(ngd_results[5]);
-
-            """
-            nnoBrkFreqPlot = plotBrkFreq_alip(nno_results[5]);
-            ngdBrkFreqPlot = plotBrkFreq_alip(ngd_results[5]);
-
-            plt.show(block=0);
-
-            input("Press enter to close plots...");
-            plt.close('all');
-            """
+            saveResults_alip("nnoResults_p" + str(PH_length) + "_t" + str(j+1) + ".pickle", nno_results);
+            saveResults_alip("ngdResults_p" + str(PH_length) + "_t" + str(j+1) + ".pickle", ngd_results);
 
 if __name__ == "__main__":
     main();
