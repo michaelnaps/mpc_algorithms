@@ -110,22 +110,22 @@ if (__name__ == "__main__"):
 
     fig, runTimeComparisonPlot = plt.subplots(1,3);
 
-    runTimeComparisonPlot[0].bar(PH, ngd_meanitercount, color="#ff7f0e", label="NGD");
-    runTimeComparisonPlot[0].bar(PH, nno_meanitercount, color="#1f77b4", label="NNO");
+    runTimeComparisonPlot[0].bar(PH, nno_meanitercount, color="#1f77b4", label="NNO", zorder=10);
+    runTimeComparisonPlot[0].bar(PH, ngd_meanitercount, color="yellowgreen", label="NGD", zorder=0);
     runTimeComparisonPlot[0].set_title("Number of Iterations");
     runTimeComparisonPlot[0].set_ylabel("Iteration Count [n]");
     runTimeComparisonPlot[0].legend();
     runTimeComparisonPlot[0].grid();
 
-    runTimeComparisonPlot[1].plot(PH, nno_itertime);
-    runTimeComparisonPlot[1].plot(PH, ngd_itertime);
+    runTimeComparisonPlot[1].plot(PH, nno_itertime, color="#1f77b4");
+    runTimeComparisonPlot[1].plot(PH, ngd_itertime, color="yellowgreen");
     runTimeComparisonPlot[1].set_title("Iteration Time");
     runTimeComparisonPlot[1].set_ylabel("Time [ms]");
     runTimeComparisonPlot[1].set_xlabel("Prediction Horizon Length")
     runTimeComparisonPlot[1].grid();
 
-    runTimeComparisonPlot[2].plot(PH, nno_runtime);
-    runTimeComparisonPlot[2].plot(PH, ngd_runtime);
+    runTimeComparisonPlot[2].plot(PH, nno_runtime, color="#1f77b4");
+    runTimeComparisonPlot[2].plot(PH, ngd_runtime, color="yellowgreen");
     runTimeComparisonPlot[2].set_title("MPC Runtime Time");
     runTimeComparisonPlot[2].set_ylabel("Time [ms]");
     runTimeComparisonPlot[2].grid();
