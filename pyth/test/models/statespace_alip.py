@@ -152,21 +152,39 @@ def plotCost_alip(T, C):
 
     return costPlot;
 
-def plotBrkFreq_alip(brk, plotcolor="#1f77b4"):
+def plotBrkFreq_alip(brk, color="#1f77b4"):
+    # sort out -2 values
+    Nbrk = len(brk);
+    brklist = [];
+    for i in range(Nbrk):
+        if (brk[i] != -2 | (brk[i] == -2 & brk[i-1] != -2)):
+            brklist.append(brk[i]);
+
+    all_labels = [
+        [-2, 'Diverged'],
+        [-1, 'Iter Break'],
+        [0, 'Zero Cost'],
+        [1, 'FOOC'],
+        [2, 'Zero Change']
+    ];
+
+    unique, counts = np.unique(brklist, return_counts=1);
+    Nu = len(unique) - 1;
+
+    labels = [];
+    for i in range(Nu):
+        for j in range(len(all_labels)):
+            if (unique[i] == all_labels[j][0]):
+                labels.append(all_labels[j][1]);
+                break;
+
     fig, brkFreqPlot = plt.subplots();
-
-    unique, counts = np.unique(brk[1:], return_counts=1);
-
-    for i in range(len(unique)-1):
-        brkFreqPlot.bar([unique[i], unique[i]], [0, counts[i]], linewidth=3);
-
-    plt.xlim([unique[0]-0.5, unique[-2]+0.5]);
-    plt.xticks(unique[:-1]);
+    brkFreqPlot.pie(counts[:Nu], labels=labels);
 
     return brkFreqPlot;
 
 def plotRunTime_alip(T, t, title=1):
-    fig, runTimePlot = plt.subplots();
+    fig, runTimePlot = plt.subplots(constrained_layout=True);
 
     aveRunTime = np.mean(t);
 
