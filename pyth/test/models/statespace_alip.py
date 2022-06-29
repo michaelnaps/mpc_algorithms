@@ -152,7 +152,7 @@ def plotCost_alip(T, C):
 
     return costPlot;
 
-def plotBrkFreq_alip(brk):
+def plotBrkFreq_alip(brk, plotcolor="#1f77b4"):
     fig, brkFreqPlot = plt.subplots();
 
     unique, counts = np.unique(brk[1:], return_counts=1);

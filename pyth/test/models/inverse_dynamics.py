@@ -135,7 +135,7 @@ def convert(inputs_tpm, q_desired, q, u_prev, output=0):
         print("\nJ_con =\n", J_con);
         print("\ndJ_con =\n", dJ_con);
 
-    lb = -np.array([2000, 2000, 2000, 10000, 10000, 10000]);
+    lb = -np.array([2000, 2000, 2000, 250, 250, 250]);
     lb.shape = (len(lb),);
     ub = -lb;
 

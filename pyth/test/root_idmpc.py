@@ -65,7 +65,7 @@ class InputsALIP:
     def __init__(self, prev_input):
         self.gravity_acc          = -9.81;
         self.joint_masses         = [40];
-        self.link_lengths         = [0.95];
+        self.link_lengths         = [1.0];
         self.CP_maxdistance       = 0.1;
         self.input_bounds         = [100];
         self.prev_input           = prev_input;
@@ -101,8 +101,11 @@ if __name__ == "__main__":
     time_step   = 0.05;
 
     # desired state constants
-    height = 0.95;
+    height = 1.0;
     theta  = np.pi/2;
+
+    # mid-sim change in height
+    dh = [5.0, 1.2];
 
     # MPC class variable
     mpc_alip = mpc.system('nno', cost, statespace_alip, inputs_alip, num_inputs,
@@ -112,7 +115,7 @@ if __name__ == "__main__":
     mpc_alip.setMinTimeStep(1);
 
     # simulation variables
-    sim_time = 60.0;  sim_dt = env.dt;
+    sim_time = 10.0;  sim_dt = env.dt;
     Nt = round(sim_time/sim_dt + 1);
     T = [i*sim_dt for i in range(Nt)];
 
@@ -134,7 +137,8 @@ if __name__ == "__main__":
 
 	# SET INITIAL STATES (TPM and ALIP)
     init_state = np.array([1.0236756190034337, 1.1651000155300129, -0.6137993852195395, 0, 0, 0]);
-    init_state = init_state + 0.1*np.random.randn(6);
+    # init_state = np.array([0.8217631258316602, 1.1976983872266735, -0.5667525458100534, -0.09402431958351876, 0.16078048669562325, -0.10869250496817745]);
+    # init_state = init_state + 0.1*np.random.randn(6);
     q_tpm[0] = init_state.tolist();
     env.set_state(init_state[0:3],init_state[3:6]);
 
@@ -157,13 +161,17 @@ if __name__ == "__main__":
         print("desired alip state:", q_desired[i-1]);
         print("current alip state:", s_actual[i-1]);
 
+        # check for a change in height
+        if (np.abs(i*sim_dt - dh[0]) < 1e-6):
+            height = dh[1];
+
         # set alip model inputs
         inputs_alip.prev_inputs = u_alip[i-1][:num_inputs];
         inputs_alip.link_lengths = [h_c];
         mpc_alip.setModelInputs(inputs_alip);
 
         # solve MPC problem
-        if ((i-1) % 25) == 0:
+        if (((i-1) % 25) == 0):
             (u_alip[i], Clist[i], nlist[i], brklist[i], tlist[i]) = mpc_alip.solve(q_alip[i-1], u_alip[i-1], output=0);
             x_d = mpc_alip.simulate(u_alip[i-1], u_alip[i])[1][0];
         else:
