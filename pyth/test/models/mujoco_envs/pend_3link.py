@@ -30,7 +30,7 @@ class Pend3LinkEnv(mujoco_env.MujocoEnv, utils.EzPickle):
 	def reset(self):
 		init_pos = np.array([0.7076, 1.7264, -0.8632])
 		init_vel = np.array([0.0, 0.0, 0.0])
-    
+	
 		# init_pos = np.array([-0.1428,  0.7615, 0,  2.7045,  0.5034,  3.2426,  0.3292])
 		# init_vel = np.array([0.7498, -0.0050, 0,  0.2315,  1.4370, -2.0440,  4.2029])
 
@@ -78,3 +78,14 @@ class Pend3LinkEnv(mujoco_env.MujocoEnv, utils.EzPickle):
 	def assign_desired_vel(self,desired_vel):
 		self.desired_vel = desired_vel
 	#=====================================================================================================================
+
+	def apply_force(self, link="torso", force_x=0.0, force_z=0.0):
+		if link == "torso":
+			body = 3
+		elif link == "thigh":
+			body = 2
+		elif link == "shin":
+			body = 1
+
+		f = np.array([force_x, 0, force_z, 0, 0, 0]) #Force applied to the body 		
+		self.sim.data.xfrc_applied[body] = f

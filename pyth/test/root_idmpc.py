@@ -1,7 +1,7 @@
 import sys
 
-sys.path.insert(0, '/home/michaelnaps/prog/mpc_algorithms/pyth/.');
-sys.path.insert(0, 'models/.');
+sys.path.insert(0, '/home/michaelnaps/prog/mpc_algorithms/pyth');
+sys.path.insert(0, 'models');
 
 import mpc
 from statespace_alip import *
@@ -78,6 +78,13 @@ class InputsTPM:
         self.joint_masses         = [5, 5, 30];
         self.link_lengths         = [0.5, 0.5, 0.6];
 
+# IMPORTANT VARIABLE NOTATION:
+#   q - TPM state variables
+#   u - TPM input variables
+#   s - ALIP state variables
+#   v - ALIP input variables
+#   z - ALIP:TPM conversion attributes
+
 if __name__ == "__main__":
     #==== Create custom MuJoCo Environment ====#
     dynamics_randomization = 0;
@@ -101,11 +108,12 @@ if __name__ == "__main__":
     time_step   = 0.05;
 
     # desired state constants
-    height = 1.0;
+    height = 0.90;
     theta  = np.pi/2;
 
-    # mid-sim change in height
-    dh = [5.0, 1.2];
+    # mid-sim change in height and disturbance
+    dh = [0.00, 0.90];
+    t_disturb = [0.00, 0.00, -1.00];
 
     # MPC class variable
     mpc_alip = mpc.system('nno', cost, statespace_alip, inputs_alip, num_inputs,
@@ -115,19 +123,19 @@ if __name__ == "__main__":
     mpc_alip.setMinTimeStep(1);
 
     # simulation variables
-    sim_time = 10.0;  sim_dt = env.dt;
+    sim_time = 5.0;  sim_dt = env.dt;
     Nt = round(sim_time/sim_dt + 1);
     T = [i*sim_dt for i in range(Nt)];
 
     # loop variables
     N_tpm = inputs_tpm.num_inputs;
-    q_alip  = [[0 for i in range(num_ssvar)] for i in range(Nt)];
-    q_desired = [[0 for i in range(4)] for i in range(Nt)];
-    q_tpm = [[0 for i in range(2*N_tpm)] for i in range(Nt)];
-    u_alip  = [[0 for j in range(num_inputs*PH_length)] for i in range(Nt)];
-    u_tpm = [[0 for j in range(N_tpm)] for i in range(Nt)];
+    s  = [[0 for i in range(num_ssvar)] for i in range(Nt)];
+    z_d = [[0 for i in range(4)] for i in range(Nt)];
+    q = [[0 for i in range(2*N_tpm)] for i in range(Nt)];
+    v  = [[0 for j in range(num_inputs*PH_length)] for i in range(Nt)];
+    u = [[0 for j in range(N_tpm)] for i in range(Nt)];
 
-    s_actual = [[0, 0, 0, 0] for i in range(Nt)];
+    z_a = [[0, 0, 0, 0] for i in range(Nt)];
 
     # MPC variables
     Clist = [0 for i in range(Nt)];
@@ -139,87 +147,92 @@ if __name__ == "__main__":
     init_state = np.array([1.0236756190034337, 1.1651000155300129, -0.6137993852195395, 0, 0, 0]);
     # init_state = np.array([0.8217631258316602, 1.1976983872266735, -0.5667525458100534, -0.09402431958351876, 0.16078048669562325, -0.10869250496817745]);
     # init_state = init_state + 0.1*np.random.randn(6);
-    q_tpm[0] = init_state.tolist();
+    q[0] = init_state.tolist();
     env.set_state(init_state[0:3],init_state[3:6]);
 
-    (x_c, h_c, q_c) = CoM_tpm(q_tpm[0], inputs_tpm);
-    L   = mathexp.base_momentum(q_tpm[0][:N_tpm], q_tpm[0][N_tpm:2*N_tpm])[0][0];
-    L_c = mathexp.centroidal_momentum(q_tpm[0][:N_tpm], q_tpm[0][N_tpm:2*N_tpm])[0][0];
+    (x_c, h_c, q_c) = CoM_tpm(q[0], inputs_tpm);
+    L   = mathexp.base_momentum(q[0][:N_tpm], q[0][N_tpm:2*N_tpm])[0][0];
+    L_c = mathexp.centroidal_momentum(q[0][:N_tpm], q[0][N_tpm:2*N_tpm])[0][0];
 
-    q_alip[0] = [x_c, L];
-    s_actual[0] = [x_c, h_c, q_c, L_c];
+    s[0] = [x_c, L];
+    z_a[0] = [x_c, h_c, q_c, L_c];
 
     print("INITIAL STATE:");
-    print("TPM:", q_tpm[0]);
-    print("ALIP:", q_alip[0]);
-    print("ID-QP:", s_actual[0]);
+    print("TPM:", q[0]);
+    print("ALIP:", s[0]);
+    print("ID-QP:", z_a[0]);
 
     # simulation loop
     for i in range(1,Nt):
         print("\nt =", i*sim_dt);
 
-        print("desired alip state:", q_desired[i-1]);
-        print("current alip state:", s_actual[i-1]);
+        print("desired alip attributes: [%.6f, %.6f, %.6f, %.12f]"
+              % (z_d[i-1][0], z_d[i-1][1], z_d[i-1][2], z_d[i-1][3]));
+        print("current alip attrubutes: [%.6f, %.6f, %.6f, %.12f]"
+              % (z_a[i-1][0], z_a[i-1][1], z_a[i-1][2], z_a[i-1][3]));
 
         # check for a change in height
         if (np.abs(i*sim_dt - dh[0]) < 1e-6):
             height = dh[1];
 
         # set alip model inputs
-        inputs_alip.prev_inputs = u_alip[i-1][:num_inputs];
+        inputs_alip.prev_inputs = v[i-1][:num_inputs];
         inputs_alip.link_lengths = [h_c];
         mpc_alip.setModelInputs(inputs_alip);
 
         # solve MPC problem
         if (((i-1) % 25) == 0):
-            (u_alip[i], Clist[i], nlist[i], brklist[i], tlist[i]) = mpc_alip.solve(q_alip[i-1], u_alip[i-1], output=0);
-            x_d = mpc_alip.simulate(u_alip[i-1], u_alip[i])[1][0];
+            (v[i], Clist[i], nlist[i], brklist[i], tlist[i]) = mpc_alip.solve(s[i-1], v[i-1], output=0);
         else:
-            u_alip[i] = u_alip[i-1];
+            v[i] = v[i-1];
             Clist[i]  = Clist[i-1];
             nlist[i]  = -1;
             brklist[i] = 100;
             tlist[i]  = -1;
 
         # construct q_d for ID-QP function
-        q_desired[i] = [x_d, height, theta, u_alip[i][0]];
+        z_d[i] = [0.0, height, theta, v[i][0]];
 
         if (np.isnan(Clist[i])):
             print("ERROR: Cost is nan after optimization...");
             break;
 
         # convert input: alip -> tpm
-        u_tpm[i] = id.convert(inputs_tpm, q_desired[i], q_tpm[i-1], u_tpm[i-1]);
+        u[i] = id.convert(inputs_tpm, z_d[i], q[i-1], u[i-1]);
 
-        if (u_tpm[i] is None):
+        if (u[i] is None):
             print("ERROR: ID-QP function returned None...");
-            u_tpm[i] = [0,0,0];
+            u[i] = [0,0,0];
             break;
 
-        # DISTURBANCE FUNCTION
+        if i*sim_dt > t_disturb[0] and i*sim_dt < t_disturb[1]:
+            force_x = t_disturb[2];
+            force_z = 0;
+            link = "torso";	#options: torso, thigh, shin
+            env.apply_force(link, force_x, force_z);
 
         # TPM simulation step
-        q_tpm[i] = env.step(u_tpm[i])[0].tolist();
+        q[i] = env.step(u[i])[0].tolist();
 
         # convert state: tpm -> alip
-        (x_c, h_c, q_c) = CoM_tpm(q_tpm[i], inputs_tpm);
-        L   = mathexp.base_momentum(q_tpm[i][:N_tpm], q_tpm[i][N_tpm:2*N_tpm])[0][0];
-        L_c = mathexp.centroidal_momentum(q_tpm[i][:N_tpm], q_tpm[i][N_tpm:2*N_tpm])[0][0];
+        (x_c, h_c, q_c) = CoM_tpm(q[i], inputs_tpm);
+        L   = mathexp.base_momentum(q[i][:N_tpm], q[i][N_tpm:2*N_tpm])[0][0];
+        L_c = mathexp.centroidal_momentum(q[i][:N_tpm], q[i][N_tpm:2*N_tpm])[0][0];
 
-        q_alip[i] = [x_c, L];
-        s_actual[i] = [x_c, h_c, q_c, L_c];
+        s[i] = [x_c, L];
+        z_a[i] = [x_c, h_c, q_c, L_c];
 
     ans = input("\nSee animation? [y/n] ");
     if (ans == 'y'):
         for i in range(Nt):
-            env.set_state(np.array(q_tpm[i][0:3]), np.array(q_tpm[i][3:6]));
+            env.set_state(np.array(q[i][0:3]), np.array(q[i][3:6]));
             env.render();
             time.sleep(0.0005);
 
         input("Press enter to exit program...");
 
-    alip_results = (T, q_alip, u_alip, Clist, nlist, brklist, tlist);
-    tpm_results  = (T, q_tpm[:Nt], u_tpm, s_actual);
+    alip_results = (T, s, v, Clist, nlist, brklist, tlist);
+    tpm_results  = (T, q, u, z_a, z_d);
 
     saveResults_alip("resultsALIP.pickle", alip_results);
     saveResults_tpm("resultsTPM.pickle", tpm_results);
