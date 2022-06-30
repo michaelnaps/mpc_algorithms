@@ -111,8 +111,11 @@ if __name__ == "__main__":
     height = 0.90;
     theta  = np.pi/2;
 
-    # mid-sim change in height and disturbance
-    dh = [0.00, 0.90];
+    # mid-sim change in height
+    dh = [5.0, 0.80];
+    dh_next = [20.0, 1.00];
+
+    # apply disturbance
     t_disturb = [0.00, 0.00, -1.00];
 
     # MPC class variable
@@ -123,7 +126,7 @@ if __name__ == "__main__":
     mpc_alip.setMinTimeStep(1);
 
     # simulation variables
-    sim_time = 5.0;  sim_dt = env.dt;
+    sim_time = 60.0;  sim_dt = env.dt;
     Nt = round(sim_time/sim_dt + 1);
     T = [i*sim_dt for i in range(Nt)];
 
@@ -174,6 +177,9 @@ if __name__ == "__main__":
         # check for a change in height
         if (np.abs(i*sim_dt - dh[0]) < 1e-6):
             height = dh[1];
+
+            if dh_next[0] != -1:
+                dh = dh_next;
 
         # set alip model inputs
         inputs_alip.prev_inputs = v[i-1][:num_inputs];
@@ -234,5 +240,5 @@ if __name__ == "__main__":
     alip_results = (T, s, v, Clist, nlist, brklist, tlist);
     tpm_results  = (T, q, u, z_a, z_d);
 
-    saveResults_alip("resultsALIP.pickle", alip_results);
-    saveResults_tpm("resultsTPM.pickle", tpm_results);
+    saveResults_alip("final_tests/resultsALIP_heightchange.pickle", alip_results);
+    saveResults_tpm("final_tests/resultsTPM_heightchange.pickle", tpm_results);

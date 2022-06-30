@@ -70,7 +70,7 @@ def convert(inputs_tpm, q_desired, q, u_prev, output=0):
     u_PD = np.matmul(kp, (q_a - q_d)) + np.matmul(kd, (dq_a - dq_d));
 
     u_q  = np.matmul(dJ_a, dx) - ddq_d + u_PD;
-    u_Lc = np.matmul(dJ_Lc, dx) + 20000*(Lc - Lc_d);
+    u_Lc = np.matmul(dJ_Lc, dx) + 15000*(Lc - Lc_d);
 
     if output:
         print("\nu_PD =\n", u_PD);
