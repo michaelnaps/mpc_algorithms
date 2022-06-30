@@ -112,11 +112,11 @@ if __name__ == "__main__":
     theta  = np.pi/2;
 
     # mid-sim change in height
-    dh = [5.0, 0.80];
-    dh_next = [20.0, 1.00];
+    dh = [0.0, 0.90];
+    dh_next = [0.0, 0.90];
 
     # apply disturbance
-    t_disturb = [0.00, 0.00, -1.00];
+    t_disturb = [20.00, 20.01, -1.00];
 
     # MPC class variable
     mpc_alip = mpc.system('nno', cost, statespace_alip, inputs_alip, num_inputs,
@@ -240,5 +240,5 @@ if __name__ == "__main__":
     alip_results = (T, s, v, Clist, nlist, brklist, tlist);
     tpm_results  = (T, q, u, z_a, z_d);
 
-    saveResults_alip("final_tests/resultsALIP_heightchange.pickle", alip_results);
-    saveResults_tpm("final_tests/resultsTPM_heightchange.pickle", tpm_results);
+    saveResults_alip("final_tests/resultsALIP_disturbance.pickle", alip_results);
+    saveResults_tpm("final_tests/resultsTPM_disturbance.pickle", tpm_results);
