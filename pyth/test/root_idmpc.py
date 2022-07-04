@@ -116,7 +116,7 @@ if __name__ == "__main__":
     dh_next = [0.0, 0.90];
 
     # apply disturbance
-    t_disturb = [20.00, 20.01, -1.00];
+    t_disturb = [0.0, 0.0, 0.0];
 
     # MPC class variable
     mpc_alip = mpc.system('nno', cost, statespace_alip, inputs_alip, num_inputs,
@@ -126,7 +126,7 @@ if __name__ == "__main__":
     mpc_alip.setMinTimeStep(1);
 
     # simulation variables
-    sim_time = 60.0;  sim_dt = env.dt;
+    sim_time = 30.0;  sim_dt = env.dt;
     Nt = round(sim_time/sim_dt + 1);
     T = [i*sim_dt for i in range(Nt)];
 
@@ -147,8 +147,8 @@ if __name__ == "__main__":
     tlist = [0 for i in range(Nt)];
 
 	# SET INITIAL STATES (TPM and ALIP)
-    init_state = np.array([1.0236756190034337, 1.1651000155300129, -0.6137993852195395, 0, 0, 0]);
-    # init_state = np.array([0.8217631258316602, 1.1976983872266735, -0.5667525458100534, -0.09402431958351876, 0.16078048669562325, -0.10869250496817745]);
+    # init_state = np.array([1.0236756190034337, 1.1651000155300129, -0.6137993852195395, 0, 0, 0]);
+    init_state = np.array([0.8217631258316602, 1.1976983872266735, -0.5667525458100534, -0.09402431958351876, 0.16078048669562325, -0.10869250496817745]);
     # init_state = init_state + 0.1*np.random.randn(6);
     q[0] = init_state.tolist();
     env.set_state(init_state[0:3],init_state[3:6]);
@@ -240,5 +240,5 @@ if __name__ == "__main__":
     alip_results = (T, s, v, Clist, nlist, brklist, tlist);
     tpm_results  = (T, q, u, z_a, z_d);
 
-    saveResults_alip("final_tests/resultsALIP_disturbance.pickle", alip_results);
-    saveResults_tpm("final_tests/resultsTPM_disturbance.pickle", tpm_results);
+    saveResults_alip("final_tests/resultsALIP_random.pickle", alip_results);
+    saveResults_tpm("final_tests/resultsTPM_random.pickle", tpm_results);
