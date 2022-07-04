@@ -40,11 +40,11 @@ if (__name__ == "__main__"):
     inputs_alip = InputsALIP([0]);
     inputs_tpm = InputsTPM();
 
-    # alip_results = loadResults_alip("data/resultsALIP_t10.pickle");
-    # tpm_results  = loadResults_tpm("data/resultsTPM_t10.pickle");
+    alip_results = loadResults_alip("final_tests/resultsALIP_heightchange.pickle");
+    tpm_results  = loadResults_tpm("final_tests/resultsTPM_heightchange.pickle");
 
-    alip_results = loadResults_alip("resultsALIP.pickle");
-    tpm_results  = loadResults_tpm("resultsTPM.pickle");
+    # alip_results = loadResults_alip("resultsALIP.pickle");
+    # tpm_results  = loadResults_tpm("resultsTPM.pickle");
 
     plot_time = tpm_results[0][-1];  sim_dt = 0.0005;
     Nt = int(plot_time/sim_dt);
@@ -56,7 +56,7 @@ if (__name__ == "__main__"):
         fig, alipTrackingPlot = plt.subplots();
 
         s_actual = np.transpose(tpm_results[3])[3];
-        s_desired = np.transpose(alip_results[2])[2];
+        s_desired = np.transpose(tpm_results[4])[3];
 
         alipTrackingPlot.plot(tpm_results[0][:Nt], s_actual[:Nt], label="Actual");
         alipTrackingPlot.plot(alip_results[0][:Nt], s_desired[:Nt], label="Desired");
