@@ -105,9 +105,9 @@ if (__name__ == "__main__"):
     # fig.set_size_inches(12,6);
     # fig.savefig("/home/michaelnaps/mpc_thesis/LaTex/figures/algorithm_runtime_comparison.png", dpi=600);
 
-    nno_brkFreqPlot = plotBrkFreq_alip(nno_brklist);
+    nno_brkFreqPlot = plotBrkFreq_alip(nno_brklist, explode_id=2);
     nno_brkFreqPlot.set_title("NNO");
-    ngd_brkFreqPlot = plotBrkFreq_alip(ngd_brklist, color="yellowgreen");
+    ngd_brkFreqPlot = plotBrkFreq_alip(ngd_brklist, explode_id=3);
     ngd_brkFreqPlot.set_title("NGD");
 
     plt.show(block=0);
