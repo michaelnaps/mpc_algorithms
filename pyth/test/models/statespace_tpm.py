@@ -213,61 +213,59 @@ def animation_tpm(T, q, inputs, save=0, filename="image.png"):
 
     return 1;
 
-def plotStates_tpm(T, q):
+def plotStates_tpm(T, q, pos_color='#1f77b4', vel_color='indianred'):
     qT = np.transpose(q);
 
-    fig, statePlot = plt.subplots(2,3);
+    stateFig, statePlot = plt.subplots(2,3,constrained_layout=True);
 
-    statePlot[0][0].plot(T, qT[0]);
-    statePlot[0][0].set_title("Link 1");
-    statePlot[0][0].set_ylabel("Position [rad]");
+    statePlot[0][0].plot(T, qT[0], linewidth=2.5, color=pos_color);
+    statePlot[0][0].set_title("Link 1", fontsize=14);
+    statePlot[0][0].set_ylabel("Position [rad]", fontsize=12);
     statePlot[0][0].grid();
 
-    statePlot[1][0].plot(T, qT[3]);
-    statePlot[1][0].set_ylabel("Velocity [rad/s]")
-    statePlot[1][0].set_xlabel("Time [s]");
+    statePlot[1][0].plot(T, qT[3], linewidth=2.5, color=vel_color);
+    statePlot[1][0].set_ylabel("Velocity [rad/s]", fontsize=12);
+    statePlot[1][0].set_xlabel("Time [s]", fontsize=12);
     statePlot[1][0].grid();
 
-    statePlot[0][1].plot(T, qT[1]);
-    statePlot[0][1].set_title("Link 2");
+    statePlot[0][1].plot(T, qT[1], linewidth=2.5, color=pos_color);
+    statePlot[0][1].set_title("Link 2", fontsize=14);
     statePlot[0][1].grid();
 
-    statePlot[1][1].plot(T, qT[4]);
-    statePlot[1][1].set_xlabel("Time [s]");
+    statePlot[1][1].plot(T, qT[4], linewidth=2.5, color=vel_color);
+    statePlot[1][1].set_xlabel("Time [s]", fontsize=12);
     statePlot[1][1].grid();
 
-    statePlot[0][2].plot(T, qT[2]);
-    statePlot[0][2].set_title("Link 2");
+    statePlot[0][2].plot(T, qT[2], linewidth=2.5, color=pos_color);
+    statePlot[0][2].set_title("Link 2", fontsize=14);
     statePlot[0][2].grid();
 
-    statePlot[1][2].plot(T, qT[5]);
-    statePlot[1][2].set_xlabel("Time [s]");
+    statePlot[1][2].plot(T, qT[5], linewidth=2.5, color=vel_color);
+    statePlot[1][2].set_xlabel("Time [s]", fontsize=12);
     statePlot[1][2].grid();
 
-    return statePlot;
+    return (stateFig, statePlot);
 
 def plotInputs_tpm(T, u):
     uT = np.transpose(u);
 
-    fig, inputPlot = plt.subplots(1,3);
+    inputFig, inputPlot = plt.subplots(1,3,constrained_layout=True);
 
-    inputPlot[0].plot(T, uT[0]);
-    inputPlot[0].set_title("Link 1");
-    inputPlot[0].set_ylabel("Torque [Nm]");
-    inputPlot[0].set_xlabel("Time [s]");
+    inputPlot[0].plot(T, uT[0], linewidth=2.5);
+    inputPlot[0].set_title("Link 1", fontsize=14);
+    inputPlot[0].set_ylabel("Torque [Nm]", fontsize=12);
     inputPlot[0].grid();
 
-    inputPlot[1].plot(T, uT[1]);
-    inputPlot[1].set_title("Link 2");
-    inputPlot[1].set_xlabel("Time [s]");
+    inputPlot[1].plot(T, uT[1], linewidth=2.5);
+    inputPlot[1].set_title("Link 2", fontsize=14);
+    inputPlot[1].set_xlabel("Time [s]", fontsize=12);
     inputPlot[1].grid();
 
-    inputPlot[2].plot(T, uT[2]);
-    inputPlot[2].set_title("Link 3");
-    inputPlot[2].set_xlabel("Time [s]");
+    inputPlot[2].plot(T, uT[2], linewidth=2.5);
+    inputPlot[2].set_title("Link 3", fontsize=14);
     inputPlot[2].grid();
 
-    return inputPlot;
+    return (inputFig, inputPlot);
 
 def plotCost_tpm(T, C):
     fig, costPlot = plt.subplots();
