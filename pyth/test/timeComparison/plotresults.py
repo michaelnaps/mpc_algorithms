@@ -30,7 +30,7 @@ if (__name__ == "__main__"):
     ngd_meanitercount = [0 for i in range(PH_min, PH_max+1)];
     nno_brklist = [];  ngd_brklist = [];
 
-    print("PH:", PH);
+    # print("PH:", PH);
 
     for i in range(PH_min-1,PH_max):
         nno_runtimecount = 0;
@@ -105,10 +105,15 @@ if (__name__ == "__main__"):
     # fig.set_size_inches(12,6);
     # fig.savefig("/home/michaelnaps/mpc_thesis/LaTex/figures/algorithm_runtime_comparison.png", dpi=600);
 
-    nno_brkFreqPlot = plotBrkFreq_alip(nno_brklist, explode_id=2);
-    nno_brkFreqPlot.set_title("NNO");
-    ngd_brkFreqPlot = plotBrkFreq_alip(ngd_brklist, explode_id=3);
-    ngd_brkFreqPlot.set_title("NGD");
+    (nno_brkFreqFig, nno_brkFreqPlot) = plotBrkFreq_alip(nno_brklist);
+    nno_brkFreqPlot.set_title("NNO", fontsize=14);
+    nno_brkFreqFig.set_size_inches(3,5);
+    nno_brkFreqFig.savefig("/home/michaelnaps/mpc_thesis/LaTex/figures/nno_brk_codes.png", dpi=600);
+
+    (ngd_brkFreqFig, ngd_brkFreqPlot) = plotBrkFreq_alip(ngd_brklist);
+    ngd_brkFreqPlot.set_title("NGD", fontsize=14);
+    ngd_brkFreqFig.set_size_inches(4,5)
+    ngd_brkFreqFig.savefig("/home/michaelnaps/mpc_thesis/LaTex/figures/ngd_brk_codes.png", dpi=600);
 
     plt.show(block=0);
 

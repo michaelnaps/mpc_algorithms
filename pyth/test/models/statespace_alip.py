@@ -152,7 +152,7 @@ def plotCost_alip(T, C):
 
     return costPlot;
 
-def plotBrkFreq_alip(brk, explode_id=-1):
+def plotBrkFreq_alip(brk):
     # sort out -2 values
     Nbrk = len(brk);
     brklist = [];
@@ -164,7 +164,7 @@ def plotBrkFreq_alip(brk, explode_id=-1):
 
     all_labels = [
         [-2, 'Diverged', 'firebrick'],
-        [-1, 'Iter Break', 'darkorange'],
+        [-1, 'Iter Break', 'indianred'],
         [0, 'Zero Cost', '#1f77b4'],
         [1, 'FOOC', 'yellowgreen'],
         [2, 'Zero Change', 'mediumorchid']
@@ -182,26 +182,22 @@ def plotBrkFreq_alip(brk, explode_id=-1):
             if (unique[i] == all_labels[j][0]):
                 labels.append(all_labels[j][1]);
                 colors.append(all_labels[j][2]);
-                percent.append(counts[i]/np.sum(counts));
-
-                if (i==explode_id):
-                    temp = (0.1,)
-                    explode = explode + temp;
-                else:
-                    temp = (0.0,)
-                    explode = explode + temp;
-
+                percent.append(counts[i]);
                 break;
 
-    fig, brkFreqPlot = plt.subplots(constrained_layout=True);
-    # brkFreqPlot.pie(counts[:Nu], labels=labels, colors=colors, explode=explode, shadow=True, autopct='%.3f%%');
+    percent = [percent[i]/np.sum(percent) for i in range(len(labels))];
 
-    brkFreqPlot.bar(unique[:Nu], percent, color=colors, zorder=5);
-    brkFreqPlot.set_xticks(unique[:Nu]);
-    brkFreqPlot.set_xticklabels(labels);
+    brkFreqFig, brkFreqPlot = plt.subplots(constrained_layout=True);
+
+    container = brkFreqPlot.bar(labels, percent, color=colors, zorder=5);
+    brkFreqPlot.set_ylim([0,1]);
+    brkFreqPlot.set_yticks([0.1*i for i in range(1,11)]);
     brkFreqPlot.grid(zorder=0);
 
-    return brkFreqPlot;
+    print("labels:", labels);
+    print("percent:", percent);
+
+    return (brkFreqFig, brkFreqPlot);
 
 def plotRunTime_alip(T, t, title=1):
     fig, runTimePlot = plt.subplots(constrained_layout=True);
