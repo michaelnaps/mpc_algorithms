@@ -40,13 +40,13 @@ if (__name__ == "__main__"):
     inputs_alip = InputsALIP([0]);
     inputs_tpm = InputsTPM();
 
-    alip_results = loadResults_alip("final_tests/resultsALIP_heightchange.pickle");
-    tpm_results  = loadResults_tpm("final_tests/resultsTPM_heightchange.pickle");
+    alip_results = loadResults_alip("final_tests/resultsALIP_random.pickle");
+    tpm_results  = loadResults_tpm("final_tests/resultsTPM_random.pickle");
 
     # alip_results = loadResults_alip("resultsALIP.pickle");
     # tpm_results  = loadResults_tpm("resultsTPM.pickle");
 
-    plot_time = tpm_results[0][-1];  sim_dt = 0.0005;
+    plot_time = 15.0;  sim_dt = 0.0005;
     Nt = int(plot_time/sim_dt);
 
     ans = input("\nSee ALIP plots? [y/n] ");
@@ -78,6 +78,7 @@ if (__name__ == "__main__"):
 
     ans = input("\nSee TPM animation? [y/n] ");
     if (ans == 'y'):
+        """
         #==== Create custom MuJoCo Environment ====#
         dynamics_randomization = 0;
         apply_force = 1;
@@ -95,5 +96,17 @@ if (__name__ == "__main__"):
             env.set_state(np.array(tpm_results[1][i][0:3]), np.array(tpm_results[1][i][3:6]));
             env.render();
             time.sleep(0.0005);
+        """
+
+        anim_dt = 0.01;
+        anim_Nt = int(plot_time/anim_dt + 1);
+        jump = int(anim_dt/sim_dt);
+        T = [i*anim_dt for i in range(anim_Nt)];
+        q = tpm_results[1][:Nt+1:jump];
+
+        print(len(T));
+        print(len(q));
+
+        animation_tpm(T, q, inputs_tpm);
 
         input("Press enter to exit program...");

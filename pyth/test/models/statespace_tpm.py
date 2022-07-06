@@ -171,7 +171,7 @@ def animation_tpm(T, q, inputs, save=0, filename="image.png"):
         xLimits = [-(L1+L2+L3)/2, (L1+L2+L3)/2];
         yLimits = [-(L1+L2+L3)/2, (L1+L2+L3)];
 
-    plt.figure(figsize=(4,5.2), dpi=80);
+    plt.figure(figsize=(5.625,10), dpi=200);
 
     for i in range(Nt):
         plt.clf();
@@ -198,7 +198,7 @@ def animation_tpm(T, q, inputs, save=0, filename="image.png"):
                   marker='.', markerfacecolor='k', markeredgecolor='k', markersize=m3);
         plt.plot([x_com], [y_com], linestyle="none",
                   marker='s', markerfacecolor='m', markeredgecolor='m', markersize=m/10, label="COM");
-        plt.legend();
+        plt.legend(loc='lower left');
 
         plt.title("TPM Simulation: t = {:.3f}".format(T[i]));
         plt.xticks(color='w');  plt.yticks(color='w');
