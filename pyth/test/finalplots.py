@@ -99,6 +99,7 @@ if (__name__ == "__main__"):
     # base test plots ---------------------------------------------------------------------------------------------------
 
     # height change test plots ------------------------------------------------------------------------------------------
+    """
     alip = alip_results['heightchange'];
     tpm  = tpm_results['heightchange'];
 
@@ -148,27 +149,46 @@ if (__name__ == "__main__"):
 
     input("Press enter to close height change plots...");
     plt.close('all');
+    """
 
     # disturbance plots -------------------------------------------------------------------------------------------------
+    alip = alip_results['disturbance'];
+    tpm  = tpm_results['disturbance'];
+
+    plot_time = 40.0;
+    sim_dt = tpm[0][1] - tpm[0][0];
+    Nt = int(plot_time/sim_dt);
+
+    savefile = "/home/michaelnaps/mpc_thesis/LaTex/figures/idqp_trend_disturbance.png";
+    (Nt, objA, objD, objPlot) = plotIDQPTrackingResults(plot_time, tpm, savefile);
+
+    plt.show(block=0);
+
+    input("Press enter to close random plots...");
+    plt.close('all');
 
     # random plots ------------------------------------------------------------------------------------------------------
     """
     alip = alip_results['random'];
     tpm  = tpm_results['random'];
 
+    plot_time = 15.0;
+    sim_dt = tpm[0][1] - tpm[0][0];
+    Nt = int(plot_time/sim_dt);
+
     savefile = "/home/michaelnaps/mpc_thesis/LaTex/figures/idqp_trend_random.png";
-    (Nt, objA, objD, objPlot) = plotIDQPTrackingResults(15, tpm, savefile);
+    # (Nt, objA, objD, objPlot) = plotIDQPTrackingResults(15, tpm, savefile);
 
     (stateFig, statePlot) = plotStates_tpm(tpm[0][:Nt], tpm[1][:Nt]);
     stateFig.set_size_inches(8,6);
-    stateFig.savefig("/home/michaelnaps/mpc_thesis/LaTex/figures/state_trend_random.png", dpi=600);
+    # stateFig.savefig("/home/michaelnaps/mpc_thesis/LaTex/figures/state_trend_random.png", dpi=600);
 
     (inputFig, inputPlot) = plotInputs_tpm(tpm[0][:Nt], tpm[2][:Nt]);
-    inputFig.set_size_inches(8,4);
-    inputFig.savefig("/home/michaelnaps/mpc_thesis/LaTex/figures/input_trend_random.png", dpi=600);
+    inputFig.set_size_inches(4,8);
+    inputFig.savefig("input_trend_random.png", dpi=600);
 
     plt.show(block=0);
 
-    input("Press enter to close height change plots...");
+    input("Press enter to close random plots...");
     plt.close('all');
     """
