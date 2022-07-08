@@ -29,7 +29,7 @@ def Cu(u, du, inputs):
     kdu = 100;  ku = 1;
     umax = inputs.input_bounds;
     u_error = umax[0]**2 - u[0]**2;
-    return (100*(du[0])**2 - ku*np.log(u_error) + ku*np.log(umax[0]**2));
+    return (kdu*(du[0])**2 - ku*np.log(u_error) + ku*np.log(umax[0]**2));
 
 def Ccmp(u, inputs):
     kcmp = 100;

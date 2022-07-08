@@ -194,23 +194,30 @@ def plotBrkFreq_alip(brk):
     brkFreqPlot.set_yticks([0.1*i for i in range(1,11)]);
     brkFreqPlot.grid(zorder=0);
 
-    print("labels:", labels);
-    print("percent:", percent);
-
     return (brkFreqFig, brkFreqPlot);
 
 def plotRunTime_alip(T, t, title=1):
-    fig, runTimePlot = plt.subplots(constrained_layout=True);
+    Nt = len(T);
+    time = [];
+    runtime = [];
+    for i in range(1,Nt):
+        if t[i] != -1:
+            time.append(T[i]);
+            runtime.append(t[i]);
 
-    aveRunTime = np.mean(t);
+    runTimeFig, runTimePlot = plt.subplots();
 
-    runTimePlot.plot(T, t, label="Calc. Trend");
-    runTimePlot.plot([T[0], T[-1]], [aveRunTime, aveRunTime], label="Average Calc. Time");
+    aveRunTime = np.mean(runtime);
+
+    runTimePlot.plot(time, runtime, label="Calc. Trend", color='#1f77b4');
+    runTimePlot.plot([time[0], time[-1]], [aveRunTime, aveRunTime], label="Average Calc. Time", color='yellowgreen');
     runTimePlot.set_ylabel("Calc. Time [ms]");
     runTimePlot.set_xlabel("Time [s]");
     runTimePlot.legend();
     runTimePlot.grid();
     if title:  runTimePlot.set_title("MPC Computation Runtime Trend");
+
+    runTimeFig.savefig("/home/michaelnaps/mpc_thesis/LaTex/figures/runtime_heightchange.png", dpi=600)
 
     return runTimePlot;
 

@@ -291,12 +291,17 @@ def plotBrkFreq_tpm(brk):
 
     return brkFreqPlot;
 
-def plotRunTime_tpm(T, t, title=1):
+def plotRunTime_tpm(T, t, brk, title=1):
+    runtime = [];
+    for i in range(len(T)):
+        if brk != 100:
+            runtime.append(t[i]);
+
     fig, runTimePlot = plt.subplots();
 
-    aveRunTime = np.mean(t);
+    aveRunTime = np.mean(runtime);
 
-    runTimePlot.plot(T, t, label="Calc. Trend");
+    runTimePlot.plot(T, runtime, label="Calc. Trend");
     runTimePlot.plot([T[0], T[-1]], [aveRunTime, aveRunTime], label="Average Calc. Time");
     runTimePlot.set_ylabel("Calc. Time [ms]");
     runTimePlot.set_xlabel("Time [s]");
