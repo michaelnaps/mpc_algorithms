@@ -151,7 +151,7 @@ def J_CoM_tpm(q, inputs):
 
     return (J, dJ);
 
-def animation_tpm(T, q, inputs, save=0, filename="image.png"):
+def animation_tpm(T, q, inputs, save=0, filename="image.png", height=-1):
     Nt = len(T);
     dt = T[1] - T[0];
 
@@ -165,13 +165,13 @@ def animation_tpm(T, q, inputs, save=0, filename="image.png"):
     m  = m1 + m2 + m3;
 
     if save:
-        xLimits = [-(L1+L2+L3)/2+0.6, (L1+L2+L3)/2];
-        yLimits = [-(L1+L2+L3)/4+0.3, (L1+L2+L3)*0.75];
+        xLimits = [-(L1+L2+L3)/2, (L1+L2+L3)/2];
+        yLimits = [-(L1+L2+L3)/4+0.3, (L1+L2+L3)*1.0];
     else:
         xLimits = [-(L1+L2+L3)/2, (L1+L2+L3)/2];
         yLimits = [-(L1+L2+L3)/2, (L1+L2+L3)];
 
-    plt.figure(figsize=(5.625,10), dpi=200);
+    plt.figure(figsize=(4,5.2), dpi=80);
 
     for i in range(Nt):
         plt.clf();
@@ -186,6 +186,10 @@ def animation_tpm(T, q, inputs, save=0, filename="image.png"):
         xHead  = xHip + L3*np.cos(q1+q2+q3);  yHead  = yHip + L3*np.sin(q1+q2+q3);
 
         (x_com, y_com, _) = CoM_tpm(q[i], inputs);
+
+        if height != -1:
+            plt.plot([-(L1+L2+L3)/2, (L1+L2+L3)/2], [height, height],
+                     label='$h_{d}$', color='yellowgreen', linestyle='dashed')
 
         plt.plot([xAnkle, xKnee], [yAnkle, yKnee]);
         plt.plot([xKnee, xHip], [yKnee, yHip]);
