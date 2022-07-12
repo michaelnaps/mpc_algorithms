@@ -210,8 +210,8 @@ def animation_tpm(T, q, inputs, save=0, filename="image.png", height=-1):
         plt.grid();
         plt.pause(dt);
 
-    if save:
-        plt.savefig(filename, format="png", dpi=800);
+        if save & i==0:
+            plt.savefig(filename, format="png", dpi=800);
 
     input("Press Enter to close animation...");
 
@@ -253,20 +253,20 @@ def plotStates_tpm(T, q, pos_color='#1f77b4', vel_color='indianred'):
 def plotInputs_tpm(T, u):
     uT = np.transpose(u);
 
-    inputFig, inputPlot = plt.subplots(3,1,constrained_layout=True);
+    inputFig, inputPlot = plt.subplots(1,3,constrained_layout=True);
 
     inputPlot[0].plot(T, uT[0]);
     inputPlot[0].set_title("Link 1", fontsize=14);
+    inputPlot[0].set_ylabel("Torque [Nm]", fontsize=12);
     inputPlot[0].grid();
 
     inputPlot[1].plot(T, uT[1]);
     inputPlot[1].set_title("Link 2", fontsize=14);
-    inputPlot[1].set_ylabel("Torque [Nm]", fontsize=12);
+    inputPlot[1].set_xlabel("Time [s]", fontsize=12);
     inputPlot[1].grid();
 
     inputPlot[2].plot(T, uT[2]);
     inputPlot[2].set_title("Link 3", fontsize=14);
-    inputPlot[2].set_xlabel("Time [s]", fontsize=12);
     inputPlot[2].grid();
 
     return (inputFig, inputPlot);

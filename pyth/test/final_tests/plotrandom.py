@@ -102,20 +102,33 @@ if (__name__ == "__main__"):
 
     plot_time = 15.0;
     sim_dt = tpm[0][1] - tpm[0][0];
-    Nt = int(plot_time/sim_dt);
+    Nt = int(plot_time/sim_dt) + 1;
 
     savefile = "/home/michaelnaps/mpc_thesis/LaTex/figures/idqp_trend_random.png";
-    (Nt, objA, objD, objPlot) = plotIDQPTrackingResults(15, tpm, savefile);
+    # (Nt, objA, objD, objPlot) = plotIDQPTrackingResults(15, tpm, savefile);
 
     (stateFig, statePlot) = plotStates_tpm(tpm[0][:Nt], tpm[1][:Nt]);
     stateFig.set_size_inches(8,6);
     # stateFig.savefig("/home/michaelnaps/mpc_thesis/LaTex/figures/state_trend_random.png", dpi=600);
 
     (inputFig, inputPlot) = plotInputs_tpm(tpm[0][:Nt], tpm[2][:Nt]);
-    inputFig.set_size_inches(4,8);
-    inputFig.savefig("input_trend_random.png", dpi=600);
+    inputFig.set_size_inches(8,4);
+    # inputFig.savefig("input_trend_random.png", dpi=600);
 
     plt.show(block=0);
 
     input("Press enter to close random plots...");
     plt.close('all');
+
+    T = tpm[0];
+
+    t_anim = [0.0, 2.0, 15.0];
+    folder_loc = '/home/michaelnaps/mpc_thesis/Figure Creation/Supplemental Photos/';
+    h_d = 0.9;
+
+    N_anim = len(t_anim);
+    for i in range(N_anim):
+        t_id = int(t_anim[i]/sim_dt);
+        animation_tpm(T[t_id:t_id+2], tpm[1][t_id:t_id+2], inputs_tpm,
+                      height=h_d, save=1,
+                      filename=folder_loc + 'tpm' + str(i) + '_random.png');

@@ -84,8 +84,7 @@ if (__name__ == "__main__"):
     inputs_alip = InputsALIP([0]);
     inputs_tpm = InputsTPM();
 
-    labels = ['random'];
-    Nl = len(labels);
+    labels = ['disturbance'];  Nl = len(labels);
     alip_results = {labels[i]: None for i in range(Nl)};
     tpm_results = {labels[i]: None for i in range(Nl)};
 
@@ -96,99 +95,37 @@ if (__name__ == "__main__"):
     plot_time = tpm_results[labels[0]][0][-1];  sim_dt = 0.0005;
     Nt = int(plot_time/sim_dt);
 
-    # base test plots ---------------------------------------------------------------------------------------------------
-
-    # height change test plots ------------------------------------------------------------------------------------------
-    """
-    alip = alip_results['heightchange'];
-    tpm  = tpm_results['heightchange'];
-
-    (Nt, objA, objD, objPlot) = plotIDQPTrackingResults(60, tpm, "/home/michaelnaps/mpc_thesis/LaTex/figures/idqp_trend_heightchange.png");
-
-    T = tpm[0][:Nt];
-    objA = np.transpose(tpm[3][:Nt]);
-    objD = np.transpose(tpm[4][:Nt]);
-
-    heightFig, heightPlot = plt.subplots(2,1,constrained_layout=True);
-
-    heightPlot[0].plot(T[1:], objD[1][1:], label='Desired', color="yellowgreen", linestyle='dashed', linewidth=2.5);
-    heightPlot[0].plot(T[1:], objA[1][1:], label='Actual', color="#1f77b4", linewidth=2.5);
-    heightPlot[0].set_title('COM z-Position Tracking', fontsize=14);
-    heightPlot[0].set_ylabel('$h_{c}\\ [m]$', fontsize=12);
-    heightPlot[0].legend(prop={"size":12});
-    heightPlot[0].grid();
-
-    heightPlot[1].plot([tpm[0][0], tpm[0][-1]], [0, 0], label='Desired', color="yellowgreen", linestyle='dashed', linewidth=2.5);
-    heightPlot[1].plot(tpm[0][1:Nt], [np.abs(objD[1][i] - objA[1][i]) for i in range(1,Nt)], label='Actual', color="#1f77b4", linewidth=2.5);
-    heightPlot[1].set_title('Tracking Error', fontsize=14);
-    heightPlot[1].set_ylabel('$e_{h,c}\\ [m]$', fontsize=12);
-    heightPlot[1].grid();
-
-    heightFig.set_size_inches(8,4.6);
-    heightFig.savefig("/home/michaelnaps/mpc_thesis/LaTex/figures/height_error_trend_heightchange.png", dpi=600);
-
-    objFig, objPlot = plt.subplots(2,1,constrained_layout=True);
-
-    objPlot[0].plot(T, objD[0], label='Desired', color="yellowgreen", linestyle='dashed', linewidth=2.5);
-    objPlot[0].plot(T, objA[0], label='Actual', color="#1f77b4", linewidth=2.5);
-    objPlot[0].set_title('COM x-Position Tracking', fontsize=14);
-    objPlot[0].set_ylabel('$x_{c}\\ [m]$', fontsize=12);
-    objPlot[0].legend(prop={"size":12});
-    objPlot[0].grid();
-
-    objPlot[1].plot(T, objA[3], label='Actual', color="#1f77b4", linewidth=2.5);
-    objPlot[1].plot(T, objD[3], label='Desired', color="yellowgreen", linestyle='dashed', linewidth=2.5);
-    objPlot[1].set_title('COM Angular Momentum Tracking', fontsize=14);
-    objPlot[1].set_ylabel('$L_{c}\\ [\\frac{kg\\ m^{2}}{s}]$', fontsize=12);
-    objPlot[1].grid();
-
-    objFig.set_size_inches(8,4.6);
-    objFig.savefig("/home/michaelnaps/mpc_thesis/LaTex/figures/mpc_trend_heightchange.png", dpi=600);
-
-    plt.show(block=0);
-
-    input("Press enter to close height change plots...");
-    plt.close('all');
-    """
-
     # disturbance plots -------------------------------------------------------------------------------------------------
     alip = alip_results['disturbance'];
     tpm  = tpm_results['disturbance'];
 
-    plot_time = 40.0;
+    plot_time = 30.0;
     sim_dt = tpm[0][1] - tpm[0][0];
-    Nt = int(plot_time/sim_dt);
+    Nt = int(plot_time/sim_dt) + 1;
 
     savefile = "/home/michaelnaps/mpc_thesis/LaTex/figures/idqp_trend_disturbance.png";
-    (Nt, objA, objD, objPlot) = plotIDQPTrackingResults(plot_time, tpm, savefile);
+    # (Nt, objA, objD, objPlot) = plotIDQPTrackingResults(plot_time, tpm, savefile);
+
+    t_start = 18.0;
+    Nt_start = int(t_start/sim_dt) - 1;
+    (inputFig, inputPlot) = plotInputs_tpm(tpm[0][Nt_start:Nt], tpm[2][Nt_start:Nt]);
+    inputFig.set_size_inches(8,4);
+    inputFig.savefig("/home/michaelnaps/mpc_thesis/LaTex/figures/input_trend_disturbance.png", dpi=600);
 
     plt.show(block=0);
 
     input("Press enter to close random plots...");
     plt.close('all');
 
-    # random plots ------------------------------------------------------------------------------------------------------
-    """
-    alip = alip_results['random'];
-    tpm  = tpm_results['random'];
+    T = tpm[0][:Nt];
 
-    plot_time = 15.0;
-    sim_dt = tpm[0][1] - tpm[0][0];
-    Nt = int(plot_time/sim_dt);
+    t_anim = [10, 21, 22, 35];
+    folder_loc = '/home/michaelnaps/mpc_thesis/Figure Creation/Supplemental Photos/';
+    h_d = 0.9;
 
-    savefile = "/home/michaelnaps/mpc_thesis/LaTex/figures/idqp_trend_random.png";
-    # (Nt, objA, objD, objPlot) = plotIDQPTrackingResults(15, tpm, savefile);
-
-    (stateFig, statePlot) = plotStates_tpm(tpm[0][:Nt], tpm[1][:Nt]);
-    stateFig.set_size_inches(8,6);
-    # stateFig.savefig("/home/michaelnaps/mpc_thesis/LaTex/figures/state_trend_random.png", dpi=600);
-
-    (inputFig, inputPlot) = plotInputs_tpm(tpm[0][:Nt], tpm[2][:Nt]);
-    inputFig.set_size_inches(4,8);
-    inputFig.savefig("input_trend_random.png", dpi=600);
-
-    plt.show(block=0);
-
-    input("Press enter to close random plots...");
-    plt.close('all');
-    """
+    N_anim = len(t_anim);
+    for i in range(N_anim):
+        t_id = int(t_anim[i]/sim_dt+1);
+        #animation_tpm(T[t_id-2:t_id], tpm[1][t_id-2:t_id], inputs_tpm,
+        #              height=h_d, save=1,
+        #              filename=folder_loc + 'tpm' + str(i) + '_disturbance.png');

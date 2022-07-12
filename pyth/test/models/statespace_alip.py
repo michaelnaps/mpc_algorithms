@@ -205,9 +205,10 @@ def plotRunTime_alip(T, t, title=1):
             time.append(T[i]);
             runtime.append(t[i]);
 
-    runTimeFig, runTimePlot = plt.subplots();
+    runTimeFig, runTimePlot = plt.subplots(constrained_layout=True);
 
     aveRunTime = np.mean(runtime);
+    print("Mean Runtime:", aveRunTime);
 
     runTimePlot.plot(time, runtime, label="Calc. Trend", color='#1f77b4');
     runTimePlot.plot([time[0], time[-1]], [aveRunTime, aveRunTime], label="Average Calc. Time", color='yellowgreen');
@@ -219,7 +220,7 @@ def plotRunTime_alip(T, t, title=1):
 
     runTimeFig.savefig("/home/michaelnaps/mpc_thesis/LaTex/figures/runtime_heightchange.png", dpi=600)
 
-    return runTimePlot;
+    return (runTimeFig, runTimePlot);
 
 def saveResults_alip(filename, sim_results):
     with open(filename, "wb") as save_file:

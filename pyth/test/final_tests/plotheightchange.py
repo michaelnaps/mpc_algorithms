@@ -106,11 +106,16 @@ if (__name__ == "__main__"):
     objA = np.transpose(tpm[3][:Nt]);
     objD = np.transpose(tpm[4][:Nt]);
 
+    (runTimeFig, runTimePlot) = plotRunTime_alip(T, alip[6], 0);
+    plt.show();
+
+    runTimeFig.savefig('/home/michaelnaps/mpc_thesis/LaTex/figures/runtime_example_heightchange.png', dpi=600)
+
     heightFig, heightPlot = plt.subplots(2,1,constrained_layout=True);
 
     heightPlot[0].plot(T[1:], objD[1][1:], label='Desired', color="yellowgreen", linestyle='dashed', linewidth=2.5);
     heightPlot[0].plot(T[1:], objA[1][1:], label='Actual', color="#1f77b4", linewidth=2.5);
-    heightPlot[0].set_title('COM Height Trend', fontsize=14);
+    heightPlot[0].set_title('COM Height Tracking', fontsize=14);
     heightPlot[0].set_ylabel('$h_{c}\\ [m]$', fontsize=12);
     heightPlot[0].legend(prop={"size":12});
     heightPlot[0].grid();
@@ -122,7 +127,7 @@ if (__name__ == "__main__"):
     heightPlot[1].grid();
 
     heightFig.set_size_inches(8,4.6);
-    # heightFig.savefig("/home/michaelnaps/mpc_thesis/LaTex/figures/height_error_trend_heightchange.png", dpi=600);
+    heightFig.savefig("/home/michaelnaps/mpc_thesis/LaTex/figures/height_error_trend_heightchange.png", dpi=600);
 
     objFig, objPlot = plt.subplots(3,1,constrained_layout=True);
 
@@ -161,4 +166,4 @@ if (__name__ == "__main__"):
     N_anim = len(t_anim);
     for i in range(N_anim):
         t_id = int(t_anim[i]/sim_dt+1);
-        animation_tpm(T[t_id-2:t_id], tpm[1][t_id-2:t_id], inputs_tpm, height=h_d[i], save=1, filename=folder_loc + 'tpm' + str(i) + '.png');
+        # animation_tpm(T[t_id-2:t_id], tpm[1][t_id-2:t_id], inputs_tpm, height=h_d[i], save=1, filename=folder_loc + 'tpm' + str(i) + '.png');
