@@ -103,17 +103,17 @@ if __name__ == "__main__":
     # mpc variable parameters
     num_inputs  = 1;
     num_ssvar   = 2;
-    PH_length   = 20;
+    PH_length   = 10;
     knot_length = 1;
     time_step   = 0.05;
 
     # desired state constants
-    height = 0.90;
+    height = 1.0;
     theta  = np.pi/2;
 
     # mid-sim change in height
-    dh = [0.0, 0.90];
-    dh_next = [0.0, 0.90];
+    dh = [0.0, 1.0];
+    dh_next = [0.0, 1.0];
 
     # apply disturbance
     t_disturb = [0.0, 0.0, 0.0];
@@ -147,9 +147,9 @@ if __name__ == "__main__":
     tlist = [0 for i in range(Nt)];
 
 	# SET INITIAL STATES (TPM and ALIP)
-    # init_state = np.array([1.0236756190034337, 1.1651000155300129, -0.6137993852195395, 0, 0, 0]);
-    init_state = np.array([0.8217631258316602, 1.1976983872266735, -0.5667525458100534, -0.09402431958351876, 0.16078048669562325, -0.10869250496817745]);
-    # init_state = init_state + 0.1*np.random.randn(6);
+    init_state = np.array([1.0236756190034337, 1.1651000155300129, -0.6137993852195395, 0, 0, 0]);
+    # init_state = np.array([0.8217631258316602, 1.1976983872266735, -0.5667525458100534, -0.09402431958351876, 0.16078048669562325, -0.10869250496817745]);
+    init_state = init_state + 0.1*np.random.randn(6);
     q[0] = init_state.tolist();
     env.set_state(init_state[0:3],init_state[3:6]);
 
@@ -240,5 +240,5 @@ if __name__ == "__main__":
     alip_results = (T, s, v, Clist, nlist, brklist, tlist);
     tpm_results  = (T, q, u, z_a, z_d);
 
-    saveResults_alip("final_tests/resultsALIP_random.pickle", alip_results);
-    saveResults_tpm("final_tests/resultsTPM_random.pickle", tpm_results);
+    saveResults_alip("resultsALIP.pickle", alip_results);
+    saveResults_tpm("resultsTPM.pickle", tpm_results);

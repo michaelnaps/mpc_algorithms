@@ -40,8 +40,8 @@ if (__name__ == "__main__"):
     inputs_alip = InputsALIP([0]);
     inputs_tpm = InputsTPM();
 
-    alip_results = loadResults_alip("final_tests/resultsALIP_heightchange.pickle");
-    tpm_results  = loadResults_tpm("final_tests/resultsTPM_heightchange.pickle");
+    alip_results = loadResults_alip("resultsALIP.pickle");
+    tpm_results  = loadResults_tpm("resultsTPM.pickle");
 
     # alip_results = loadResults_alip("resultsALIP.pickle");
     # tpm_results  = loadResults_tpm("resultsTPM.pickle");
@@ -78,26 +78,6 @@ if (__name__ == "__main__"):
 
     ans = input("\nSee TPM animation? [y/n] ");
     if (ans == 'y'):
-        """
-        #==== Create custom MuJoCo Environment ====#
-        dynamics_randomization = 0;
-        apply_force = 1;
-        register(id='Pend3link-v0',
-                entry_point='mujoco_envs.pend_3link:Pend3LinkEnv',
-                kwargs={'dynamics_randomization': dynamics_randomization});
-        env = gym.make('Pend3link-v0');
-        state = env.reset();
-
-        print("initial state:");
-        print(tpm_results[1][0][0:3], tpm_results[1][0][3:6]);
-
-        Nt = len(tpm_results[0]);
-        for i in range(Nt):
-            env.set_state(np.array(tpm_results[1][i][0:3]), np.array(tpm_results[1][i][3:6]));
-            env.render();
-            time.sleep(0.0005);
-        """
-
         anim_dt = 0.01;
         anim_Nt = int(plot_time/anim_dt + 1);
         jump = int(anim_dt/sim_dt);
