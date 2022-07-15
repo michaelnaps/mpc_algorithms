@@ -97,13 +97,13 @@ if __name__ == "__main__":
 
     # initialize inputs and math expressions class
     inputs_tpm = InputsTPM();
-    inputs_alip  = InputsALIP([0]);
-    mathexp      = MathExpressions();
+    inputs_alip = InputsALIP([0]);
+    mathexp     = MathExpressions();
 
     # mpc variable parameters
     num_inputs  = 1;
     num_ssvar   = 2;
-    PH_length   = 10;
+    PH_length   = 20;
     knot_length = 1;
     time_step   = 0.05;
 
@@ -181,7 +181,7 @@ if __name__ == "__main__":
             if dh_next[0] != -1:
                 dh = dh_next;
 
-        # set alip model inputs
+        # set alip model parameters
         inputs_alip.prev_inputs = v[i-1][:num_inputs];
         inputs_alip.link_lengths = [h_c];
         mpc_alip.setModelInputs(inputs_alip);

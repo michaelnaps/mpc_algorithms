@@ -9,42 +9,22 @@ import matplotlib.pyplot as plt
 import numpy.random as rd
 
 def Cq(qd, q):
-    Cq = [
-        100*(qd[0] - q[0])**2,
-         10*(qd[1] - q[1])**2
-    ];
-
-    return np.sum(Cq);
+    kx = 250;  kL = 10;
+    return (kx*(qd[0] - q[0])**2 + kL*(qd[1] - q[1])**2);
 
 def Cu(u, du, inputs):
+    kdu = 100;  ku = 1;
     umax = inputs.input_bounds;
+    u_error = umax[0]**2 - u[0]**2;
+    return (kdu*(du[0])**2 - ku*np.log(u_error) + ku*np.log(umax[0]**2));
 
-    u_error = [
-        umax[0]**2 - u[0]**2
-        # umax[1] - np.abs(u[1])
-    ];
-
-    Cu = [
-        1e-5*(du[0])**2 - np.log(u_error[0]) + np.log(umax[0]**2)
-        # 1e-5*(du[1])**2 - np.log(u_error[1]) + np.log(umax[1]**2)
-    ];
-
-    return np.sum(Cu);
-
-def Ccmp(u, inputs):
+def Ccmp(q, inputs):
+    kcmp = 100;
     dmax = inputs.CP_maxdistance;
     g = inputs.gravity_acc;
     m = inputs.joint_masses[0];
-
     utip = m*g*dmax;
-
-    Ccmp = [
-        #-np.log(utip**2 - u[0]**2) + np.log(utip**2),
-        100*(u[0]/utip)**2
-        # 0
-    ];
-
-    return np.sum(Ccmp);
+    return kcmp*(q[1]/utip)**2;
 
 def cost(mpc_var, q, u, inputs):
     # MPC constants
@@ -64,7 +44,7 @@ def cost(mpc_var, q, u, inputs):
         du = [uc[i][j] - uc[i-1][j] for j in range(Nu)];
         C[i] = C[i] + Cq(qd, q[i]);                 # state cost
         C[i-1] = C[i-1] + Cu(uc[i-1], du, inputs);  # input costs
-        C[i-1] = C[i-1] + Ccmp(uc[i-1], inputs);    # CMP costs
+        C[i] = C[i] + Ccmp(q[i], inputs);    # CMP costs
 
     return np.sum(C);
 
@@ -88,30 +68,27 @@ def main():
     num_inputs  = 1;
     num_ssvar   = 2;
     PH_length   = 10;
-    knot_length = 1;
+    knot_length = 2;
+    time_step = 0.05;
 
-    disturb = 0.05; #*rd.random();
+    disturb = 0.05*rd.random();
     q0 = [0-disturb, 0];
     u0 = [0 for i in range(num_inputs*PH_length)];
 
-    for i in range(30):
-        PH_length = i + 1;
-        u0 = [0 for i in range(num_inputs*PH_length)];
+    # initialize mpc system
+    mpc_var = mpc.system('nno', cost, statespace_alip, inputs, num_inputs, num_ssvar, PH_length, knot_length, time_step);
+    # mpc_var.setAlpha(25);
+    # mpc_var.setAlphaMethod('bkl')
+    mpc_var.setMinTimeStep(1);  # very large (no adjustment)
 
-        ngd_var = mpc.system('ngd', cost, statespace_alip, inputs, num_inputs, num_ssvar, PH_length, knot_length);
-        ngd_var.setAlpha(25);
-        ngd_var.setAlphaMethod('bkl');
-        ngd_var.setMinTimeStep(1);  # very large (no adjustment)
+    # simulate results
+    sim_results = mpc_var.sim_root(10, q0, u0, updateFunction, output=1);
 
-        nno_var = mpc.system('nno', cost, statespace_alip, inputs, num_inputs, num_ssvar, PH_length, knot_length);
-        nno_var.setMinTimeStep(1);  # very large (no adjustment)
+    # save results
+    saveResults_alip("results.pickle", sim_results);
 
-        ngd_results = ngd_var.sim_root(2, q0, u0, updateFunction, 0);  print("\nNGD Complete");
-        nno_results = nno_var.sim_root(2, q0, u0, updateFunction, 0);
-
-        # reportResults_alip(sim_results, inputs);
-        saveResults_alip("ngdResults_p" + str(PH_length) + ".pickle", ngd_results);
-        saveResults_alip("nnoResults_p" + str(PH_length) + ".pickle", nno_results);
+    # report results
+    reportResults_alip(sim_results, inputs);
 
 if __name__ == "__main__":
     main();
